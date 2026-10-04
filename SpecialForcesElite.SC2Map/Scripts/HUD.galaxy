@@ -1,6 +1,6 @@
 //==================================================================================================
 // Special Forces Elite 5 - HUD & Tech Shop System
-// Panel en pantalla para asignación interactiva de atributos [+] y Tienda de Mejoras
+// Panel en pantalla para asignación interactiva de atributos [+] y Tienda Tecnológica
 //==================================================================================================
 
 #ifndef SFE_HUD_INCLUDED
@@ -27,7 +27,7 @@ int g_sfeTopBarLblWave;
 int g_sfeTopBarLblBaseHp;
 int g_sfeTopBarLblDiff;
 
-// Tienda de Mejoras
+// Tienda de Mejoras Tecnológicas
 int[c_SFE_MAX_PLAYERS + 1] g_sfeShopDialog;
 int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnWeapons;
 int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnArmor;
@@ -52,7 +52,7 @@ void SFE_CloseShop (int player);
 // Actualizar Valores del HUD para un Jugador
 //--------------------------------------------------------------------------------------------------
 void SFE_UpdatePlayerHUD (int player) {
-    playergroup pg = PlayerGroupSingle(player);
+    playergroup pg;
     text txtInfo;
     text txtStr;
     text txtDex;
@@ -64,6 +64,7 @@ void SFE_UpdatePlayerHUD (int player) {
         return;
     }
 
+    pg = PlayerGroupSingle(player);
     hid = g_sfeHeroStates[player].heroId;
 
     txtInfo = StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"FFE400\">" + g_sfeHeroes[hid].name + 
@@ -71,7 +72,7 @@ void SFE_UpdatePlayerHUD (int player) {
         " <c val=\"AAAAAA\">(" + IntToString(g_sfeHeroStates[player].currentXp) + "/" + IntToString(g_sfeHeroStates[player].requiredXp) + " XP)</c></s>");
 
     txtStr = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"FF4444\">Fuerza: " + IntToString(g_sfeHeroStates[player].strength) + 
-        "</c> <c val=\"AAAAAA\">(+" + FixedToString(g_sfeHeroStates[player].strength * c_FACTOR_ALPHA_STRENGTH_DAMAGE, 0) + " Dmg)</c></s>");
+        "</c> <c val=\"AAAAAA\">(+" + FixedToString(g_sfeHeroStates[player].strength * c_FACTOR_ALPHA_STRENGTH_DAMAGE, 1) + " Dmg)</c></s>");
 
     txtDex = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"55FF55\">Destreza: " + IntToString(g_sfeHeroStates[player].dexterity) + 
         "</c> <c val=\"AAAAAA\">(Cadencia " + FixedToString(g_sfeHeroStates[player].currentAttackInterval, 2) + "s)</c></s>");
@@ -139,7 +140,7 @@ void SFE_CloseShop (int player) {
 }
 
 //--------------------------------------------------------------------------------------------------
-// Procesar Compras en la Tienda
+// Procesar Compras en la Tienda Tecnológica
 //--------------------------------------------------------------------------------------------------
 void SFE_ProcessShopPurchase (int player, int itemType) {
     int cost;
@@ -154,11 +155,11 @@ void SFE_ProcessShopPurchase (int player, int itemType) {
     u = g_sfeHeroStates[player].heroUnit;
 
     if (itemType == 1) {
-        // Armamento Ofensivo (+5 Dano permanente)
+        // Calibre Pesado (+6 Daño permanente)
         cost = 350;
         if (minerals >= cost) {
             PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
-            g_sfeHeroStates[player].strength = g_sfeHeroStates[player].strength + 3;
+            g_sfeHeroStates[player].strength = g_sfeHeroStates[player].strength + 4;
             SFE_RecalculateStats(player);
             SFE_UpdatePlayerHUD(player);
             UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"55FF55\">Mejora de Armamento adquirida (+6 Dmg permanente).</c>"));
@@ -166,7 +167,7 @@ void SFE_ProcessShopPurchase (int player, int itemType) {
             UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"FF4444\">Minerales insuficientes (Requiere 350 min).</c>"));
         }
     } else if (itemType == 2) {
-        // Blindaje Reforzado (+2 Armadura / +100 HP)
+        // Placas de Blindaje (+100 HP permanente)
         cost = 300;
         if (minerals >= cost) {
             PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
@@ -178,7 +179,7 @@ void SFE_ProcessShopPurchase (int player, int itemType) {
             UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"FF4444\">Minerales insuficientes (Requiere 300 min).</c>"));
         }
     } else if (itemType == 3) {
-        // Recarga de Botiquin Nanomedico (Cura 100% Vida)
+        // Botiquín Nanomédico (Restaura 100% Vida)
         cost = 150;
         if (minerals >= cost) {
             PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
@@ -188,7 +189,7 @@ void SFE_ProcessShopPurchase (int player, int itemType) {
             UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"FF4444\">Minerales insuficientes (Requiere 150 min).</c>"));
         }
     } else if (itemType == 4) {
-        // Reparacion de Emergencia del Nucleo de Base (+25% HP)
+        // Reparación de Emergencia del Núcleo de Base (+25% HP)
         cost = 500;
         if (minerals >= cost) {
             PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
@@ -208,14 +209,21 @@ void SFE_ProcessShopPurchase (int player, int itemType) {
 // Trigger Callback: Interacciones del HUD y Tienda
 //--------------------------------------------------------------------------------------------------
 bool gt_SFE_HUD_Click_Func (bool testConds, bool runActions) {
-    int clickedCtrl = EventDialogControl();
-    int player = EventPlayer();
+    int clickedCtrl;
+    int player;
 
-    if (!runActions || player < 1 || player > c_SFE_MAX_PLAYERS) {
+    if (!runActions) {
         return true;
     }
 
-    // Botones de asignacion de atributos
+    clickedCtrl = EventDialogControl();
+    player = EventPlayer();
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return true;
+    }
+
+    // Botones de asignación de atributos
     if (clickedCtrl == g_sfeHudBtnAddStr[player]) {
         if (SFE_AllocateAttribute(player, c_ATTR_STRENGTH)) {
             SFE_UpdatePlayerHUD(player);
@@ -235,7 +243,7 @@ bool gt_SFE_HUD_Click_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    // Boton de Abrir Tienda
+    // Botón de Abrir Tienda
     if (clickedCtrl == g_sfeHudBtnOpenShop[player]) {
         SFE_OpenShop(player);
         return true;
@@ -271,9 +279,10 @@ bool gt_SFE_HUD_Click_Func (bool testConds, bool runActions) {
 //--------------------------------------------------------------------------------------------------
 void SFE_InitHUD () {
     trigger tClick;
-    int p = 1;
+    int p;
     playergroup pg;
 
+    p = 1;
     tClick = TriggerCreate("gt_SFE_HUD_Click_Func");
 
     // 1. Barra superior global de estado
@@ -336,7 +345,7 @@ void SFE_InitHUD () {
         DialogControlSetPosition(g_sfeHudBtnAddInt[p], pg, c_anchorTopLeft, 300, 108);
         DialogControlSetPropertyAsText(g_sfeHudBtnAddInt[p], c_triggerControlPropertyText, pg, StringToText("+ I"));
 
-        // Puntos disponibles y Boton de Tienda
+        // Puntos disponibles y Botón de Tienda
         g_sfeHudLblPoints[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
         DialogControlSetSize(g_sfeHudLblPoints[p], pg, 230, 30);
         DialogControlSetPosition(g_sfeHudLblPoints[p], pg, c_anchorTopLeft, 10, 145);
@@ -348,11 +357,11 @@ void SFE_InitHUD () {
 
         DialogSetVisible(g_sfeHudDialog[p], pg, true);
 
-        // Dialogo de la Tienda de Mejoras
+        // Diálogo de la Tienda de Mejoras
         g_sfeShopDialog[p] = DialogCreate(500, 380, c_anchorCenter, 0, 0, false);
         DialogSetImage(g_sfeShopDialog[p], "Assets\\Textures\\ui_glue_backgrounddialog.dds");
 
-        // Titulo Tienda
+        // Título Tienda
         DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeLabel);
         DialogControlSetSize(DialogControlLastCreated(), pg, 460, 35);
         DialogControlSetPosition(DialogControlLastCreated(), pg, c_anchorTop, 0, 15);
@@ -391,7 +400,7 @@ void SFE_InitHUD () {
 
         DialogSetVisible(g_sfeShopDialog[p], pg, false);
 
-        // Eventos
+        // Conectar Eventos
         TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnAddStr[p], c_triggerControlEventTypeClick);
         TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnAddDex[p], c_triggerControlEventTypeClick);
         TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnAddInt[p], c_triggerControlEventTypeClick);

@@ -1,82 +1,940 @@
 //==================================================================================================
-// Special Forces Elite 5 (SFE5) — StarCraft II Arcade
-// FASE 1: NÚCLEO JUGABLE MÍNIMO (VERTICAL SLICE 1) - REVISIÓN DIPLOMACIA Y BASE SANADORA
+// Special Forces Elite 5 (SFE5) — StarCraft II Arcade Master Script
+// Consolidated production build assembled from verified modular engine architecture
 //==================================================================================================
 
-// Constantes de Jugadores
-const int c_SFE_PLAYER_USER        = 1;
-const int c_SFE_PLAYER_ALLIED_BASE = 14;
-const int c_SFE_PLAYER_HOSTILE     = 15;
 
-// Variables Globales de Estado
-unit  g_sfeHeroUnit;
-unit  g_sfeCoreUnit;
-unit  g_sfeMedic1;
-unit  g_sfeMedic2;
-point g_sfeBasePoint;
-point g_sfeHeroSpawnPoint;
-point g_sfeSpawnNorth;
-point g_sfeSpawnSouth;
-point g_sfeSpawnEast;
-point g_sfeSpawnWest;
+//==================================================================================================
+// Special Forces Elite 5 - Constants & Definitions
+// Arquitectura modular para StarCraft II Arcade según Documento Maestro de Diseño
+//==================================================================================================
 
-timer g_sfeWaveTimer;
-timer g_sfeHealTimer;
-int   g_sfeCurrentWave;
-bool  g_sfeCoreAlive;
 
 //--------------------------------------------------------------------------------------------------
-// Inicialización de Diplomacia y Alianzas
-// Firma nativa de Galaxy: PlayerSetAlliance(sourcePlayer, allianceAspect, targetPlayer, value)
+// Configuración de Jugadores
 //--------------------------------------------------------------------------------------------------
-void SFE_SetupDiplomacy () {
-    // Jugador 1 -> Base Aliada (Amistoso, Visión y Ayuda mutua)
-    PlayerSetAlliance(c_SFE_PLAYER_USER, c_allianceIdPassive, c_SFE_PLAYER_ALLIED_BASE, true);
-    PlayerSetAlliance(c_SFE_PLAYER_USER, c_allianceIdVision, c_SFE_PLAYER_ALLIED_BASE, true);
-    PlayerSetAlliance(c_SFE_PLAYER_USER, c_allianceIdSeekHelp, c_SFE_PLAYER_ALLIED_BASE, true);
+const int c_SFE_MAX_PLAYERS        = 6;  // Hasta 6 jugadores cooperativos
+const int c_SFE_PLAYER_ALLIED_BASE = 14; // Base Aliada / Fortaleza Planetaria
+const int c_SFE_PLAYER_HOSTILE     = 15; // Invasores Zerg / Hostiles
+const int c_SFE_PLAYER_NEUTRAL     = 0;
 
-    // Base Aliada -> Jugador 1
-    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdPassive, c_SFE_PLAYER_USER, true);
-    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdVision, c_SFE_PLAYER_USER, true);
-    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdSeekHelp, c_SFE_PLAYER_USER, true);
+//--------------------------------------------------------------------------------------------------
+// Niveles de Dificultad (6 Dificultades Canónicas según Documento de Diseño)
+//--------------------------------------------------------------------------------------------------
+const int c_DIFF_CASUAL     = 0;
+const int c_DIFF_NORMAL     = 1;
+const int c_DIFF_HARD       = 2;
+const int c_DIFF_BRUTAL     = 3;
+const int c_DIFF_PRO        = 4;
+const int c_DIFF_TORMENT    = 5;
+const int c_DIFF_COUNT      = 6;
 
-    // Jugador 1 <-> Hostiles (Enemigos)
-    PlayerSetAlliance(c_SFE_PLAYER_USER, c_allianceIdPassive, c_SFE_PLAYER_HOSTILE, false);
-    PlayerSetAlliance(c_SFE_PLAYER_USER, c_allianceIdVision, c_SFE_PLAYER_HOSTILE, false);
-    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_allianceIdPassive, c_SFE_PLAYER_USER, false);
-    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_allianceIdVision, c_SFE_PLAYER_USER, false);
+// Multiplicadores de Dificultad
+fixed[c_DIFF_COUNT] g_sfeDiffIncomeMultiplier;       // M_inc
+fixed[c_DIFF_COUNT] g_sfeDiffHostileStatMultiplier;   // M_stat
+fixed[c_DIFF_COUNT] g_sfeDiffUpgradeIntervalSeconds; // T_up (intervalo de upgrades de la IA)
+fixed[c_DIFF_COUNT] g_sfeDiffWaveIntervalSeconds;    // Intervalo de oleadas
+string[c_DIFF_COUNT] g_sfeDiffNames;
 
-    // Base Aliada <-> Hostiles (Enemigos)
-    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdPassive, c_SFE_PLAYER_HOSTILE, false);
-    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdVision, c_SFE_PLAYER_HOSTILE, false);
-    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_allianceIdPassive, c_SFE_PLAYER_ALLIED_BASE, false);
-    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_allianceIdVision, c_SFE_PLAYER_ALLIED_BASE, false);
+void SFE_InitDifficultyTables () {
+    // M_inc: Multiplicador de ingreso por baja
+    g_sfeDiffIncomeMultiplier[c_DIFF_CASUAL]  = 1.50;
+    g_sfeDiffIncomeMultiplier[c_DIFF_NORMAL]  = 1.00;
+    g_sfeDiffIncomeMultiplier[c_DIFF_HARD]    = 0.75;
+    g_sfeDiffIncomeMultiplier[c_DIFF_BRUTAL]  = 0.50;
+    g_sfeDiffIncomeMultiplier[c_DIFF_PRO]     = 0.25;
+    g_sfeDiffIncomeMultiplier[c_DIFF_TORMENT] = 0.10;
+
+    // M_stat: Escalado de estadísticas hostiles
+    g_sfeDiffHostileStatMultiplier[c_DIFF_CASUAL]  = 0.50;
+    g_sfeDiffHostileStatMultiplier[c_DIFF_NORMAL]  = 1.00;
+    g_sfeDiffHostileStatMultiplier[c_DIFF_HARD]    = 2.00;
+    g_sfeDiffHostileStatMultiplier[c_DIFF_BRUTAL]  = 3.00;
+    g_sfeDiffHostileStatMultiplier[c_DIFF_PRO]     = 4.00;
+    g_sfeDiffHostileStatMultiplier[c_DIFF_TORMENT] = 5.00;
+
+    // T_up: Intervalo de mejoras periódicas enemigas (curva de entropía)
+    g_sfeDiffUpgradeIntervalSeconds[c_DIFF_CASUAL]  = 120.0;
+    g_sfeDiffUpgradeIntervalSeconds[c_DIFF_NORMAL]  = 60.0;
+    g_sfeDiffUpgradeIntervalSeconds[c_DIFF_HARD]    = 40.0;
+    g_sfeDiffUpgradeIntervalSeconds[c_DIFF_BRUTAL]  = 30.0;
+    g_sfeDiffUpgradeIntervalSeconds[c_DIFF_PRO]     = 20.0;
+    g_sfeDiffUpgradeIntervalSeconds[c_DIFF_TORMENT] = 15.0;
+
+    // Intervalo entre oleadas hostiles
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_CASUAL]  = 35.0;
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_NORMAL]  = 30.0;
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_HARD]    = 25.0;
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_BRUTAL]  = 22.0;
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_PRO]     = 18.0;
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_TORMENT] = 15.0;
+
+    g_sfeDiffNames[c_DIFF_CASUAL]  = "Casual (x1.5 Inc / x0.5 Stat / 120s Up)";
+    g_sfeDiffNames[c_DIFF_NORMAL]  = "Normal (x1.0 Inc / x1.0 Stat / 60s Up)";
+    g_sfeDiffNames[c_DIFF_HARD]    = "Hard (x0.75 Inc / x2.0 Stat / 40s Up)";
+    g_sfeDiffNames[c_DIFF_BRUTAL]  = "Brutal (x0.50 Inc / x3.0 Stat / 30s Up)";
+    g_sfeDiffNames[c_DIFF_PRO]     = "Pro (x0.25 Inc / x4.0 Stat / 20s Up)";
+    g_sfeDiffNames[c_DIFF_TORMENT] = "TORMENT (x0.10 Inc / x5.0 Stat / 15s Up)";
 }
 
 //--------------------------------------------------------------------------------------------------
-// Creación de la Base Aliada, Defensas y Unidad Médica de Soporte
+// Catálogo Canónico de 12 Héroes (+ 3 Héroes Secretos Satíricos del 1%)
 //--------------------------------------------------------------------------------------------------
-void SFE_SpawnBaseAndDefenses () {
-    unit uMedic;
+const int c_HERO_RAYNOR        = 0;
+const int c_HERO_MONTAG        = 1;
+const int c_HERO_KERRIGAN      = 2;
+const int c_HERO_DUKE          = 3;
+const int c_HERO_SWANN         = 4;
+const int c_HERO_BLACKHAMMER   = 5;
+const int c_HERO_TASSADAR      = 6;
+const int c_HERO_SHADOW_WALKER = 7;
+const int c_HERO_REVENANT      = 8;
+const int c_HERO_TORRASQUE     = 9;
+const int c_HERO_NYAMI         = 10;
+const int c_HERO_STUKOV        = 11;
 
-    // Núcleo: Fortaleza Planetaria
-    UnitCreate(1, "PlanetaryFortress", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBasePoint, 270.0);
-    g_sfeCoreUnit = UnitLastCreated();
-    if (g_sfeCoreUnit == null) {
-        UnitCreate(1, "CommandCenter", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBasePoint, 270.0);
-        g_sfeCoreUnit = UnitLastCreated();
+// Héroes Secretos Satíricos (1% Random Pick)
+const int c_HERO_SECRET_EVIL   = 12; // Dr. Evil
+const int c_HERO_SECRET_TRUMP  = 13; // Donald Trump
+const int c_HERO_SECRET_JONES  = 14; // Alex Jones
+
+const int c_HERO_CANONICAL_COUNT = 12;
+const int c_HERO_TOTAL_COUNT     = 15;
+
+// Tipos de Atributos Primarios
+const int c_ATTR_STRENGTH     = 0; // Fuerza: HP (+25) y Daño (+1.5)
+const int c_ATTR_DEXTERITY    = 1; // Destreza: Velocidad de ataque (+0.02) y Regen
+const int c_ATTR_INTELLIGENCE = 2; // Inteligencia: Energía (+10), Visión y Regen Maná
+
+struct SFE_HeroDefinition {
+    int id;
+    string unitType;
+    string fallbackUnitType;
+    string name;
+    string faction;
+    string archetype;
+    string description;
+    int primaryAttribute;
+    fixed baseHp;
+    fixed baseShields;
+    fixed baseEnergy;
+    fixed baseArmor;
+    fixed baseDamage;
+    fixed baseAttackInterval;
+    string portraitIcon;
+};
+
+SFE_HeroDefinition[c_HERO_TOTAL_COUNT] g_sfeHeroes;
+
+void SFE_InitHeroCatalog () {
+    // 0: Jim Raynor / Marine Élite (Terran)
+    g_sfeHeroes[c_HERO_RAYNOR].id = c_HERO_RAYNOR;
+    g_sfeHeroes[c_HERO_RAYNOR].unitType = "Marine";
+    g_sfeHeroes[c_HERO_RAYNOR].fallbackUnitType = "Marine";
+    g_sfeHeroes[c_HERO_RAYNOR].name = "Jim Raynor";
+    g_sfeHeroes[c_HERO_RAYNOR].faction = "Terran";
+    g_sfeHeroes[c_HERO_RAYNOR].archetype = "DPS Balístico Sostenido";
+    g_sfeHeroes[c_HERO_RAYNOR].description = "Disparo continuo monobjetivo, escalado lineal de daño y versatilidad frente a blindaje ligero.";
+    g_sfeHeroes[c_HERO_RAYNOR].primaryAttribute = c_ATTR_DEXTERITY;
+    g_sfeHeroes[c_HERO_RAYNOR].baseHp = 500.0;
+    g_sfeHeroes[c_HERO_RAYNOR].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_RAYNOR].baseEnergy = 100.0;
+    g_sfeHeroes[c_HERO_RAYNOR].baseArmor = 2.0;
+    g_sfeHeroes[c_HERO_RAYNOR].baseDamage = 28.0;
+    g_sfeHeroes[c_HERO_RAYNOR].baseAttackInterval = 0.65;
+    g_sfeHeroes[c_HERO_RAYNOR].portraitIcon = "Assets\\Textures\\btn-unit-terran-marine.dds";
+
+    // 1: Gui Montag / Firebat (Terran)
+    g_sfeHeroes[c_HERO_MONTAG].id = c_HERO_MONTAG;
+    g_sfeHeroes[c_HERO_MONTAG].unitType = "Firebat";
+    g_sfeHeroes[c_HERO_MONTAG].fallbackUnitType = "Firebat";
+    g_sfeHeroes[c_HERO_MONTAG].name = "Gui Montag";
+    g_sfeHeroes[c_HERO_MONTAG].faction = "Terran";
+    g_sfeHeroes[c_HERO_MONTAG].archetype = "Supresor Frontal de Área";
+    g_sfeHeroes[c_HERO_MONTAG].description = "Mitigación física biológica y proyección de daño cónico a corta distancia contra enjambres.";
+    g_sfeHeroes[c_HERO_MONTAG].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_MONTAG].baseHp = 900.0;
+    g_sfeHeroes[c_HERO_MONTAG].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_MONTAG].baseEnergy = 80.0;
+    g_sfeHeroes[c_HERO_MONTAG].baseArmor = 5.0;
+    g_sfeHeroes[c_HERO_MONTAG].baseDamage = 34.0;
+    g_sfeHeroes[c_HERO_MONTAG].baseAttackInterval = 1.0;
+    g_sfeHeroes[c_HERO_MONTAG].portraitIcon = "Assets\\Textures\\btn-unit-terran-firebat.dds";
+
+    // 2: Sarah Kerrigan / Nova (Terran)
+    g_sfeHeroes[c_HERO_KERRIGAN].id = c_HERO_KERRIGAN;
+    g_sfeHeroes[c_HERO_KERRIGAN].unitType = "Ghost";
+    g_sfeHeroes[c_HERO_KERRIGAN].fallbackUnitType = "Ghost";
+    g_sfeHeroes[c_HERO_KERRIGAN].name = "Sarah Kerrigan";
+    g_sfeHeroes[c_HERO_KERRIGAN].faction = "Terran";
+    g_sfeHeroes[c_HERO_KERRIGAN].archetype = "Asesino Táctico / Élite";
+    g_sfeHeroes[c_HERO_KERRIGAN].description = "Protocolos de camuflaje, disparo de precisión de largo alcance y eliminación de amenazas clave.";
+    g_sfeHeroes[c_HERO_KERRIGAN].primaryAttribute = c_ATTR_INTELLIGENCE;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseHp = 420.0;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseEnergy = 200.0;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseArmor = 1.0;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseDamage = 65.0;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseAttackInterval = 1.2;
+    g_sfeHeroes[c_HERO_KERRIGAN].portraitIcon = "Assets\\Textures\\btn-unit-terran-ghost.dds";
+
+    // 3: Edmund Duke / Siege Tank (Terran)
+    g_sfeHeroes[c_HERO_DUKE].id = c_HERO_DUKE;
+    g_sfeHeroes[c_HERO_DUKE].unitType = "SiegeTank";
+    g_sfeHeroes[c_HERO_DUKE].fallbackUnitType = "SiegeTank";
+    g_sfeHeroes[c_HERO_DUKE].name = "Edmund Duke";
+    g_sfeHeroes[c_HERO_DUKE].faction = "Terran";
+    g_sfeHeroes[c_HERO_DUKE].archetype = "Artillería de Choque";
+    g_sfeHeroes[c_HERO_DUKE].description = "Bombardeo estático de gran radio con daño disperso masivo y vulnerabilidad a corto alcance.";
+    g_sfeHeroes[c_HERO_DUKE].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_DUKE].baseHp = 650.0;
+    g_sfeHeroes[c_HERO_DUKE].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_DUKE].baseEnergy = 100.0;
+    g_sfeHeroes[c_HERO_DUKE].baseArmor = 3.0;
+    g_sfeHeroes[c_HERO_DUKE].baseDamage = 75.0;
+    g_sfeHeroes[c_HERO_DUKE].baseAttackInterval = 2.0;
+    g_sfeHeroes[c_HERO_DUKE].portraitIcon = "Assets\\Textures\\btn-unit-terran-siegetank.dds";
+
+    // 4: T-280 SCV / Swann (Terran)
+    g_sfeHeroes[c_HERO_SWANN].id = c_HERO_SWANN;
+    g_sfeHeroes[c_HERO_SWANN].unitType = "SCV";
+    g_sfeHeroes[c_HERO_SWANN].fallbackUnitType = "SCV";
+    g_sfeHeroes[c_HERO_SWANN].name = "T-280 SCV / Swann";
+    g_sfeHeroes[c_HERO_SWANN].faction = "Terran";
+    g_sfeHeroes[c_HERO_SWANN].archetype = "Constructor e Ingeniero";
+    g_sfeHeroes[c_HERO_SWANN].description = "Despliegue de torretas defensivas, reparación de estructuras y sellado de cuellos de botella.";
+    g_sfeHeroes[c_HERO_SWANN].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_SWANN].baseHp = 600.0;
+    g_sfeHeroes[c_HERO_SWANN].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_SWANN].baseEnergy = 160.0;
+    g_sfeHeroes[c_HERO_SWANN].baseArmor = 4.0;
+    g_sfeHeroes[c_HERO_SWANN].baseDamage = 22.0;
+    g_sfeHeroes[c_HERO_SWANN].baseAttackInterval = 0.85;
+    g_sfeHeroes[c_HERO_SWANN].portraitIcon = "Assets\\Textures\\btn-unit-terran-scv.dds";
+
+    // 5: Blackhammer / Goliath (Terran)
+    g_sfeHeroes[c_HERO_BLACKHAMMER].id = c_HERO_BLACKHAMMER;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].unitType = "Goliath";
+    g_sfeHeroes[c_HERO_BLACKHAMMER].fallbackUnitType = "Goliath";
+    g_sfeHeroes[c_HERO_BLACKHAMMER].name = "Blackhammer";
+    g_sfeHeroes[c_HERO_BLACKHAMMER].faction = "Terran";
+    g_sfeHeroes[c_HERO_BLACKHAMMER].archetype = "Antiaéreo y Asalto Mecánico";
+    g_sfeHeroes[c_HERO_BLACKHAMMER].description = "Ráfagas duales simultáneas de apoyo balístico terrestre y supresión antiaérea de alto impacto.";
+    g_sfeHeroes[c_HERO_BLACKHAMMER].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseHp = 750.0;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseEnergy = 80.0;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseArmor = 3.0;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseDamage = 38.0;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseAttackInterval = 0.8;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].portraitIcon = "Assets\\Textures\\btn-unit-terran-goliath.dds";
+
+    // 6: Tassadar / Alto Templario (Protoss)
+    g_sfeHeroes[c_HERO_TASSADAR].id = c_HERO_TASSADAR;
+    g_sfeHeroes[c_HERO_TASSADAR].unitType = "HighTemplar";
+    g_sfeHeroes[c_HERO_TASSADAR].fallbackUnitType = "HighTemplar";
+    g_sfeHeroes[c_HERO_TASSADAR].name = "Tassadar";
+    g_sfeHeroes[c_HERO_TASSADAR].faction = "Protoss";
+    g_sfeHeroes[c_HERO_TASSADAR].archetype = "Caster Psiónico de Choque";
+    g_sfeHeroes[c_HERO_TASSADAR].description = "Manipulación de tormentas psiónicas, dispersión de olas masivas y gestión intensiva de energía.";
+    g_sfeHeroes[c_HERO_TASSADAR].primaryAttribute = c_ATTR_INTELLIGENCE;
+    g_sfeHeroes[c_HERO_TASSADAR].baseHp = 150.0;
+    g_sfeHeroes[c_HERO_TASSADAR].baseShields = 400.0;
+    g_sfeHeroes[c_HERO_TASSADAR].baseEnergy = 280.0;
+    g_sfeHeroes[c_HERO_TASSADAR].baseArmor = 1.0;
+    g_sfeHeroes[c_HERO_TASSADAR].baseDamage = 30.0;
+    g_sfeHeroes[c_HERO_TASSADAR].baseAttackInterval = 1.4;
+    g_sfeHeroes[c_HERO_TASSADAR].portraitIcon = "Assets\\Textures\\btn-unit-protoss-hightemplar.dds";
+
+    // 7: Shadow Walker / Aniquilador (Protoss)
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].id = c_HERO_SHADOW_WALKER;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].unitType = "Immortal";
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].fallbackUnitType = "Stalker";
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].name = "Shadow Walker";
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].faction = "Protoss";
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].archetype = "Perforador Anti-Blindaje";
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].description = "Proyección de haces colimados, durabilidad por escudo plasmático y disrupción pesada.";
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].primaryAttribute = c_ATTR_DEXTERITY;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseHp = 380.0;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseShields = 500.0;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseEnergy = 100.0;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseArmor = 3.0;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseDamage = 42.0;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseAttackInterval = 0.95;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].portraitIcon = "Assets\\Textures\\btn-unit-protoss-immortal.dds";
+
+    // 8: Revenant / Arconte Oscuro (Protoss)
+    g_sfeHeroes[c_HERO_REVENANT].id = c_HERO_REVENANT;
+    g_sfeHeroes[c_HERO_REVENANT].unitType = "DarkArchon";
+    g_sfeHeroes[c_HERO_REVENANT].fallbackUnitType = "Archon";
+    g_sfeHeroes[c_HERO_REVENANT].name = "Revenant";
+    g_sfeHeroes[c_HERO_REVENANT].faction = "Protoss";
+    g_sfeHeroes[c_HERO_REVENANT].archetype = "Control de Masas y Disrupción";
+    g_sfeHeroes[c_HERO_REVENANT].description = "Manipulación energética, confusión de objetivos prioritarios y amortiguación de daño de choque.";
+    g_sfeHeroes[c_HERO_REVENANT].primaryAttribute = c_ATTR_INTELLIGENCE;
+    g_sfeHeroes[c_HERO_REVENANT].baseHp = 120.0;
+    g_sfeHeroes[c_HERO_REVENANT].baseShields = 750.0;
+    g_sfeHeroes[c_HERO_REVENANT].baseEnergy = 260.0;
+    g_sfeHeroes[c_HERO_REVENANT].baseArmor = 2.0;
+    g_sfeHeroes[c_HERO_REVENANT].baseDamage = 38.0;
+    g_sfeHeroes[c_HERO_REVENANT].baseAttackInterval = 1.1;
+    g_sfeHeroes[c_HERO_REVENANT].portraitIcon = "Assets\\Textures\\btn-unit-protoss-darkarchon.dds";
+
+    // 9: Torrasque / Ultralisco (Zerg)
+    g_sfeHeroes[c_HERO_TORRASQUE].id = c_HERO_TORRASQUE;
+    g_sfeHeroes[c_HERO_TORRASQUE].unitType = "Ultralisk";
+    g_sfeHeroes[c_HERO_TORRASQUE].fallbackUnitType = "Ultralisk";
+    g_sfeHeroes[c_HERO_TORRASQUE].name = "Torrasque";
+    g_sfeHeroes[c_HERO_TORRASQUE].faction = "Zerg";
+    g_sfeHeroes[c_HERO_TORRASQUE].archetype = "Tanque Colosal de Ruptura";
+    g_sfeHeroes[c_HERO_TORRASQUE].description = "Masa corporal masiva para absorción de impactos frontales e hendidura cuerpo a cuerpo.";
+    g_sfeHeroes[c_HERO_TORRASQUE].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseHp = 1350.0;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseEnergy = 50.0;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseArmor = 6.0;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseDamage = 55.0;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseAttackInterval = 0.86;
+    g_sfeHeroes[c_HERO_TORRASQUE].portraitIcon = "Assets\\Textures\\btn-unit-zerg-ultralisk.dds";
+
+    // 10: Nyami / Hidralisco (Zerg)
+    g_sfeHeroes[c_HERO_NYAMI].id = c_HERO_NYAMI;
+    g_sfeHeroes[c_HERO_NYAMI].unitType = "Hydralisk";
+    g_sfeHeroes[c_HERO_NYAMI].fallbackUnitType = "Hydralisk";
+    g_sfeHeroes[c_HERO_NYAMI].name = "Nyami";
+    g_sfeHeroes[c_HERO_NYAMI].faction = "Zerg";
+    g_sfeHeroes[c_HERO_NYAMI].archetype = "Artillero Versátil Rápido";
+    g_sfeHeroes[c_HERO_NYAMI].description = "Proyección sostenida de espinas corrosivas con rápida adaptabilidad contra aire y tierra.";
+    g_sfeHeroes[c_HERO_NYAMI].primaryAttribute = c_ATTR_DEXTERITY;
+    g_sfeHeroes[c_HERO_NYAMI].baseHp = 450.0;
+    g_sfeHeroes[c_HERO_NYAMI].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_NYAMI].baseEnergy = 100.0;
+    g_sfeHeroes[c_HERO_NYAMI].baseArmor = 1.0;
+    g_sfeHeroes[c_HERO_NYAMI].baseDamage = 26.0;
+    g_sfeHeroes[c_HERO_NYAMI].baseAttackInterval = 0.52;
+    g_sfeHeroes[c_HERO_NYAMI].portraitIcon = "Assets\\Textures\\btn-unit-zerg-hydralisk.dds";
+
+    // 11: Alexei Stukov / Infestado (Mixta)
+    g_sfeHeroes[c_HERO_STUKOV].id = c_HERO_STUKOV;
+    g_sfeHeroes[c_HERO_STUKOV].unitType = "InfestedTerran";
+    g_sfeHeroes[c_HERO_STUKOV].fallbackUnitType = "Marine";
+    g_sfeHeroes[c_HERO_STUKOV].name = "Alexei Stukov";
+    g_sfeHeroes[c_HERO_STUKOV].faction = "Mixta";
+    g_sfeHeroes[c_HERO_STUKOV].archetype = "Generador de Presión Biológica";
+    g_sfeHeroes[c_HERO_STUKOV].description = "Despliegue continuo de carne de cañón biológica y desgaste por absorción de fuego enemigo.";
+    g_sfeHeroes[c_HERO_STUKOV].primaryAttribute = c_ATTR_INTELLIGENCE;
+    g_sfeHeroes[c_HERO_STUKOV].baseHp = 480.0;
+    g_sfeHeroes[c_HERO_STUKOV].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_STUKOV].baseEnergy = 220.0;
+    g_sfeHeroes[c_HERO_STUKOV].baseArmor = 2.0;
+    g_sfeHeroes[c_HERO_STUKOV].baseDamage = 35.0;
+    g_sfeHeroes[c_HERO_STUKOV].baseAttackInterval = 0.8;
+    g_sfeHeroes[c_HERO_STUKOV].portraitIcon = "Assets\\Textures\\btn-unit-zerg-infestedterran.dds";
+
+    //----------------------------------------------------------------------------------------------
+    // HÉROES SECRETOS SATÍRICOS (1% DE PROBABILIDAD EN RANDOM PICK)
+    //----------------------------------------------------------------------------------------------
+
+    // 12: Dr. Evil (Tauren Space Marine Legendario)
+    g_sfeHeroes[c_HERO_SECRET_EVIL].id = c_HERO_SECRET_EVIL;
+    g_sfeHeroes[c_HERO_SECRET_EVIL].unitType = "TaurenSpaceMarine";
+    g_sfeHeroes[c_HERO_SECRET_EVIL].fallbackUnitType = "Marine";
+    g_sfeHeroes[c_HERO_SECRET_EVIL].name = "Dr. Evil (1% Secreto)";
+    g_sfeHeroes[c_HERO_SECRET_EVIL].faction = "Satírica";
+    g_sfeHeroes[c_HERO_SECRET_EVIL].archetype = "Cerebro Maligno Supremo";
+    g_sfeHeroes[c_HERO_SECRET_EVIL].description = "Exige un millón de dólares. Láser orbital continuo y blindaje hiperdimensional.";
+    g_sfeHeroes[c_HERO_SECRET_EVIL].primaryAttribute = c_ATTR_INTELLIGENCE;
+    g_sfeHeroes[c_HERO_SECRET_EVIL].baseHp = 1800.0;
+    g_sfeHeroes[c_HERO_SECRET_EVIL].baseShields = 500.0;
+    g_sfeHeroes[c_HERO_SECRET_EVIL].baseEnergy = 300.0;
+    g_sfeHeroes[c_HERO_SECRET_EVIL].baseArmor = 8.0;
+    g_sfeHeroes[c_HERO_SECRET_EVIL].baseDamage = 85.0;
+    g_sfeHeroes[c_HERO_SECRET_EVIL].baseAttackInterval = 0.6;
+    g_sfeHeroes[c_HERO_SECRET_EVIL].portraitIcon = "Assets\\Textures\\btn-unit-terran-taurenspacemarine.dds";
+
+    // 13: Donald Trump (Thor Titán Dorado)
+    g_sfeHeroes[c_HERO_SECRET_TRUMP].id = c_HERO_SECRET_TRUMP;
+    g_sfeHeroes[c_HERO_SECRET_TRUMP].unitType = "Thor";
+    g_sfeHeroes[c_HERO_SECRET_TRUMP].fallbackUnitType = "SiegeTank";
+    g_sfeHeroes[c_HERO_SECRET_TRUMP].name = "Donald Trump (1% Secreto)";
+    g_sfeHeroes[c_HERO_SECRET_TRUMP].faction = "Satírica";
+    g_sfeHeroes[c_HERO_SECRET_TRUMP].archetype = "Magnate Constructor de Muros";
+    g_sfeHeroes[c_HERO_SECRET_TRUMP].description = "Construye un muro perimetral masivo pagado por los Zerg. Cañones dorados de máximo impacto.";
+    g_sfeHeroes[c_HERO_SECRET_TRUMP].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_SECRET_TRUMP].baseHp = 2200.0;
+    g_sfeHeroes[c_HERO_SECRET_TRUMP].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_SECRET_TRUMP].baseEnergy = 150.0;
+    g_sfeHeroes[c_HERO_SECRET_TRUMP].baseArmor = 10.0;
+    g_sfeHeroes[c_HERO_SECRET_TRUMP].baseDamage = 120.0;
+    g_sfeHeroes[c_HERO_SECRET_TRUMP].baseAttackInterval = 1.0;
+    g_sfeHeroes[c_HERO_SECRET_TRUMP].portraitIcon = "Assets\\Textures\\btn-unit-terran-thor.dds";
+
+    // 14: Alex Jones (Marauder Sónico)
+    g_sfeHeroes[c_HERO_SECRET_JONES].id = c_HERO_SECRET_JONES;
+    g_sfeHeroes[c_HERO_SECRET_JONES].unitType = "Marauder";
+    g_sfeHeroes[c_HERO_SECRET_JONES].fallbackUnitType = "Firebat";
+    g_sfeHeroes[c_HERO_SECRET_JONES].name = "Alex Jones (1% Secreto)";
+    g_sfeHeroes[c_HERO_SECRET_JONES].faction = "Satírica";
+    g_sfeHeroes[c_HERO_SECRET_JONES].archetype = "Megáfono de Combate Sónico";
+    g_sfeHeroes[c_HERO_SECRET_JONES].description = "Proyectiles sónicos que vuelven locos a los Zerglings y denuncian conspiraciones intergalácticas.";
+    g_sfeHeroes[c_HERO_SECRET_JONES].primaryAttribute = c_ATTR_DEXTERITY;
+    g_sfeHeroes[c_HERO_SECRET_JONES].baseHp = 1600.0;
+    g_sfeHeroes[c_HERO_SECRET_JONES].baseShields = 200.0;
+    g_sfeHeroes[c_HERO_SECRET_JONES].baseEnergy = 200.0;
+    g_sfeHeroes[c_HERO_SECRET_JONES].baseArmor = 6.0;
+    g_sfeHeroes[c_HERO_SECRET_JONES].baseDamage = 75.0;
+    g_sfeHeroes[c_HERO_SECRET_JONES].baseAttackInterval = 0.5;
+    g_sfeHeroes[c_HERO_SECRET_JONES].portraitIcon = "Assets\\Textures\\btn-unit-terran-marauder.dds";
+}
+
+//==================================================================================================
+// Special Forces Elite 5 - Persistence & Bank Management
+// Sistema de guardado protegido con Checksum para perfiles y logros en Battle.net
+//==================================================================================================
+
+
+
+const string c_BANK_NAME = "SpecialForcesElite5_Profile";
+const string c_SEC_PROFILE = "Profile";
+const string c_SEC_WINS = "DifficultyWins";
+const string c_SEC_STATS = "Stats";
+const string c_SEC_SECURITY = "Security";
+
+const int c_SECURITY_SALT = 948271;
+
+struct SFE_PlayerProfile {
+    bank playerBank;
+    bool bankLoaded;
+    int accountLevel;
+    int accountXP;
+    int totalWins;
+    int[c_DIFF_COUNT] difficultyWins;
+    int bossesKilled;
+    bool tormentMaster;
+    bool secretUnlocked;
+};
+
+SFE_PlayerProfile[c_SFE_MAX_PLAYERS + 1] g_sfeProfiles;
+
+//--------------------------------------------------------------------------------------------------
+// Algoritmo de Suma de Verificacion (Checksum)
+//--------------------------------------------------------------------------------------------------
+int SFE_CalculateChecksum (int player) {
+    int sum;
+    int d;
+
+    sum = c_SECURITY_SALT;
+    d = 0;
+    sum = sum + (g_sfeProfiles[player].accountLevel * 179);
+    sum = sum + (g_sfeProfiles[player].accountXP * 31);
+    sum = sum + (g_sfeProfiles[player].totalWins * 719);
+    sum = sum + (g_sfeProfiles[player].bossesKilled * 1031);
+    while (d < c_DIFF_COUNT) {
+        sum = sum + (g_sfeProfiles[player].difficultyWins[d] * (211 + (d * 37)));
+        d = d + 1;
     }
-    UnitSetPropertyFixed(g_sfeCoreUnit, c_unitPropLifeMax, 5000.0);
-    UnitSetPropertyFixed(g_sfeCoreUnit, c_unitPropLifePercent, 100.0);
-    g_sfeCoreAlive = true;
+    return sum;
+}
 
-    // Torretas de Misiles Perimetrales (Norte, Sur, Este, Oeste)
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(100.0, 112.0), 270.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(100.0, 88.0), 90.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(112.0, 100.0), 180.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(88.0, 100.0), 0.0);
+//--------------------------------------------------------------------------------------------------
+// Cargar Banco de Datos de Jugador
+//--------------------------------------------------------------------------------------------------
+void SFE_BankInit (int player) {
+    bank b;
+    int storedChecksum;
+    int calculatedChecksum;
+    int d;
+    string keyName;
 
-    // Médicos de Campaña Aliados para curar al héroe
+    if (PlayerType(player) != c_playerTypeUser) {
+        return;
+    }
+
+    BankLoad(c_BANK_NAME, player);
+    b = BankLastCreated();
+    g_sfeProfiles[player].playerBank = b;
+
+    if (BankKeyExists(b, c_SEC_PROFILE, "Level")) {
+        g_sfeProfiles[player].accountLevel = BankValueGetAsInt(b, c_SEC_PROFILE, "Level");
+        g_sfeProfiles[player].accountXP = BankValueGetAsInt(b, c_SEC_PROFILE, "XP");
+        g_sfeProfiles[player].totalWins = BankValueGetAsInt(b, c_SEC_PROFILE, "Wins");
+        g_sfeProfiles[player].bossesKilled = BankValueGetAsInt(b, c_SEC_STATS, "Bosses");
+
+        d = 0;
+        while (d < c_DIFF_COUNT) {
+            keyName = "Diff_" + IntToString(d);
+            if (BankKeyExists(b, c_SEC_WINS, keyName)) {
+                g_sfeProfiles[player].difficultyWins[d] = BankValueGetAsInt(b, c_SEC_WINS, keyName);
+            } else {
+                g_sfeProfiles[player].difficultyWins[d] = 0;
+            }
+            d = d + 1;
+        }
+
+        storedChecksum = BankValueGetAsInt(b, c_SEC_SECURITY, "Checksum");
+        calculatedChecksum = SFE_CalculateChecksum(player);
+
+        if (storedChecksum != calculatedChecksum) {
+            // Deteccion de adulteracion: se reinician valores protegidos
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("[SFE5 Guardado] Suma de verificacion no coincidente. Reiniciando perfil seguro."));
+            g_sfeProfiles[player].accountLevel = 1;
+            g_sfeProfiles[player].accountXP = 0;
+            g_sfeProfiles[player].totalWins = 0;
+            g_sfeProfiles[player].bossesKilled = 0;
+            d = 0;
+            while (d < c_DIFF_COUNT) {
+                g_sfeProfiles[player].difficultyWins[d] = 0;
+                d = d + 1;
+            }
+        }
+    } else {
+        // Primer inicio del jugador
+        g_sfeProfiles[player].accountLevel = 1;
+        g_sfeProfiles[player].accountXP = 0;
+        g_sfeProfiles[player].totalWins = 0;
+        g_sfeProfiles[player].bossesKilled = 0;
+        d = 0;
+        while (d < c_DIFF_COUNT) {
+            g_sfeProfiles[player].difficultyWins[d] = 0;
+            d = d + 1;
+        }
+    }
+
+    if (g_sfeProfiles[player].difficultyWins[c_DIFF_TORMENT] > 0) {
+        g_sfeProfiles[player].tormentMaster = true;
+    }
+
+    g_sfeProfiles[player].bankLoaded = true;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Guardar Banco de Datos de Jugador
+//--------------------------------------------------------------------------------------------------
+void SFE_BankSave (int player) {
+    bank b;
+    int d;
+
+    if (!g_sfeProfiles[player].bankLoaded || PlayerType(player) != c_playerTypeUser) {
+        return;
+    }
+
+    b = g_sfeProfiles[player].playerBank;
+
+    BankValueSetFromInt(b, c_SEC_PROFILE, "Level", g_sfeProfiles[player].accountLevel);
+    BankValueSetFromInt(b, c_SEC_PROFILE, "XP", g_sfeProfiles[player].accountXP);
+    BankValueSetFromInt(b, c_SEC_PROFILE, "Wins", g_sfeProfiles[player].totalWins);
+    BankValueSetFromInt(b, c_SEC_STATS, "Bosses", g_sfeProfiles[player].bossesKilled);
+
+    d = 0;
+    while (d < c_DIFF_COUNT) {
+        BankValueSetFromInt(b, c_SEC_WINS, "Diff_" + IntToString(d), g_sfeProfiles[player].difficultyWins[d]);
+        d = d + 1;
+    }
+
+    // Escribir checksum firmado
+    BankValueSetFromInt(b, c_SEC_SECURITY, "Checksum", SFE_CalculateChecksum(player));
+
+    BankSave(b);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Registrar Victoria y Concesion de Experiencia
+//--------------------------------------------------------------------------------------------------
+void SFE_BankRecordVictory (int player, int difficulty) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    g_sfeProfiles[player].totalWins = g_sfeProfiles[player].totalWins + 1;
+    g_sfeProfiles[player].difficultyWins[difficulty] = g_sfeProfiles[player].difficultyWins[difficulty] + 1;
+    g_sfeProfiles[player].accountXP = g_sfeProfiles[player].accountXP + (500 * (difficulty + 1));
+
+    // Nivel = 1 + (XP / 2500)
+    g_sfeProfiles[player].accountLevel = 1 + (g_sfeProfiles[player].accountXP / 2500);
+
+    if (difficulty == c_DIFF_TORMENT) {
+        g_sfeProfiles[player].tormentMaster = true;
+    }
+
+    SFE_BankSave(player);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Registrar Muerte de Jefe
+//--------------------------------------------------------------------------------------------------
+void SFE_BankRecordBossKill (int player) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    g_sfeProfiles[player].bossesKilled = g_sfeProfiles[player].bossesKilled + 1;
+    g_sfeProfiles[player].accountXP = g_sfeProfiles[player].accountXP + 250;
+    g_sfeProfiles[player].accountLevel = 1 + (g_sfeProfiles[player].accountXP / 2500);
+
+    SFE_BankSave(player);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Concesion Generica de Experiencia de Cuenta
+//--------------------------------------------------------------------------------------------------
+void SFE_BankAddExp (int player, int amount) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    g_sfeProfiles[player].accountXP = g_sfeProfiles[player].accountXP + amount;
+    g_sfeProfiles[player].accountLevel = 1 + (g_sfeProfiles[player].accountXP / 2500);
+
+    SFE_BankSave(player);
+}
+
+//==================================================================================================
+// Special Forces Elite 5 - Attribute Engine (Fuerza, Destreza, Inteligencia)
+// Implementacion matemática determinista de combate y escalado táctico
+//==================================================================================================
+
+
+
+// Factores de conversión matemáticos según especificación oficial
+const fixed c_FACTOR_ALPHA_STRENGTH_DAMAGE = 1.5;
+const fixed c_FACTOR_ALPHA_STRENGTH_HP     = 25.0;
+const fixed c_FACTOR_BETA_DEXTERITY_SPEED  = 0.02;
+const fixed c_FACTOR_GAMMA_DEXTERITY_REGEN = 0.25;
+const fixed c_FACTOR_LAMBDA_INTEL_ENERGY   = 10.0;
+const fixed c_FACTOR_LAMBDA_INTEL_REGEN    = 0.20;
+const fixed c_FACTOR_LAMBDA_INTEL_SIGHT    = 0.05;
+
+struct SFE_HeroState {
+    unit heroUnit;
+    int heroId;
+    bool isActive;
+
+    int level;
+    int currentXp;
+    int requiredXp;
+    int unspentAttributePoints;
+
+    int strength;
+    int dexterity;
+    int intelligence;
+
+    fixed currentMaxHp;
+    fixed currentMaxShields;
+    fixed currentMaxEnergy;
+    fixed currentDamage;
+    fixed currentAttackInterval;
+    fixed currentLifeRegen;
+    fixed currentEnergyRegen;
+    fixed currentSightRadius;
+};
+
+SFE_HeroState[c_SFE_MAX_PLAYERS + 1] g_sfeHeroStates;
+
+// Declaraciones adelantadas
+void SFE_RecalculateStats (int player);
+void SFE_HeroLevelUp (int player);
+
+//--------------------------------------------------------------------------------------------------
+// Inicializar Atributos de un Heroe
+//--------------------------------------------------------------------------------------------------
+void SFE_InitHeroAttributes (int player, unit u, int heroId) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    g_sfeHeroStates[player].heroUnit = u;
+    g_sfeHeroStates[player].heroId = heroId;
+    g_sfeHeroStates[player].isActive = true;
+
+    g_sfeHeroStates[player].level = 1;
+    g_sfeHeroStates[player].currentXp = 0;
+    g_sfeHeroStates[player].requiredXp = 100;
+    g_sfeHeroStates[player].unspentAttributePoints = 5; // Puntos iniciales de cortesia
+
+    // Atributos base segun arquetipo
+    if (g_sfeHeroes[heroId].primaryAttribute == c_ATTR_STRENGTH) {
+        g_sfeHeroStates[player].strength = 15;
+        g_sfeHeroStates[player].dexterity = 8;
+        g_sfeHeroStates[player].intelligence = 5;
+    } else if (g_sfeHeroes[heroId].primaryAttribute == c_ATTR_DEXTERITY) {
+        g_sfeHeroStates[player].strength = 8;
+        g_sfeHeroStates[player].dexterity = 15;
+        g_sfeHeroStates[player].intelligence = 5;
+    } else {
+        g_sfeHeroStates[player].strength = 5;
+        g_sfeHeroStates[player].dexterity = 8;
+        g_sfeHeroStates[player].intelligence = 15;
+    }
+
+    SFE_RecalculateStats(player);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Recalcular Estadisticas Matematicas Deterministas
+//--------------------------------------------------------------------------------------------------
+void SFE_RecalculateStats (int player) {
+    unit u;
+    int hid;
+    fixed hp;
+    fixed shields;
+    fixed energy;
+    fixed lRegen;
+    fixed eRegen;
+    fixed sight;
+
+    if (!g_sfeHeroStates[player].isActive) {
+        return;
+    }
+
+    u = g_sfeHeroStates[player].heroUnit;
+    hid = g_sfeHeroStates[player].heroId;
+
+    if (!UnitIsAlive(u)) {
+        return;
+    }
+
+    // 1. Fuerza: Escala HP maximo y Dano base
+    hp = g_sfeHeroes[hid].baseHp + (g_sfeHeroStates[player].strength * c_FACTOR_ALPHA_STRENGTH_HP);
+    g_sfeHeroStates[player].currentMaxHp = hp;
+    g_sfeHeroStates[player].currentDamage = g_sfeHeroes[hid].baseDamage + (g_sfeHeroStates[player].strength * c_FACTOR_ALPHA_STRENGTH_DAMAGE);
+
+    // 2. Destreza: Escala Cadencia e Incrementa Regeneracion de Vida y Escudos
+    g_sfeHeroStates[player].currentAttackInterval = g_sfeHeroes[hid].baseAttackInterval / (1.0 + (g_sfeHeroStates[player].dexterity * c_FACTOR_BETA_DEXTERITY_SPEED));
+    lRegen = 0.5 + (g_sfeHeroStates[player].dexterity * c_FACTOR_GAMMA_DEXTERITY_REGEN);
+    g_sfeHeroStates[player].currentLifeRegen = lRegen;
+
+    // 3. Inteligencia: Escala Mana maximo, Regeneracion de Mana y Radio de Vision
+    energy = g_sfeHeroes[hid].baseEnergy + (g_sfeHeroStates[player].intelligence * c_FACTOR_LAMBDA_INTEL_ENERGY);
+    g_sfeHeroStates[player].currentMaxEnergy = energy;
+    eRegen = 0.75 + (g_sfeHeroStates[player].intelligence * c_FACTOR_LAMBDA_INTEL_REGEN);
+    g_sfeHeroStates[player].currentEnergyRegen = eRegen;
+    sight = 9.0 + (g_sfeHeroStates[player].intelligence * c_FACTOR_LAMBDA_INTEL_SIGHT);
+    g_sfeHeroStates[player].currentSightRadius = sight;
+
+    shields = g_sfeHeroes[hid].baseShields;
+    if (shields > 0.0) {
+        shields = shields + (g_sfeHeroStates[player].strength * 10.0);
+        g_sfeHeroStates[player].currentMaxShields = shields;
+        UnitSetPropertyFixed(u, c_unitPropShieldsMax, shields);
+        UnitSetPropertyFixed(u, c_unitPropShieldsRegen, lRegen);
+    }
+
+    // Aplicar al motor de la unidad en StarCraft II
+    UnitSetPropertyFixed(u, c_unitPropLifeMax, hp);
+    UnitSetPropertyFixed(u, c_unitPropLifeRegen, lRegen);
+    UnitSetPropertyFixed(u, c_unitPropEnergyMax, energy);
+    UnitSetPropertyFixed(u, c_unitPropEnergyRegen, eRegen);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Asignacion de Puntos de Atributo
+//--------------------------------------------------------------------------------------------------
+bool SFE_AllocateAttribute (int player, int attributeType) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return false;
+    }
+
+    if (g_sfeHeroStates[player].unspentAttributePoints <= 0) {
+        return false;
+    }
+
+    if (attributeType == c_ATTR_STRENGTH) {
+        g_sfeHeroStates[player].strength = g_sfeHeroStates[player].strength + 1;
+    } else if (attributeType == c_ATTR_DEXTERITY) {
+        g_sfeHeroStates[player].dexterity = g_sfeHeroStates[player].dexterity + 1;
+    } else if (attributeType == c_ATTR_INTELLIGENCE) {
+        g_sfeHeroStates[player].intelligence = g_sfeHeroStates[player].intelligence + 1;
+    } else {
+        return false;
+    }
+
+    g_sfeHeroStates[player].unspentAttributePoints = g_sfeHeroStates[player].unspentAttributePoints - 1;
+    SFE_RecalculateStats(player);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Concesion de Experiencia y Subida de Nivel
+//--------------------------------------------------------------------------------------------------
+void SFE_HeroAddExperience (int player, int amount) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS || !g_sfeHeroStates[player].isActive) {
+        return;
+    }
+
+    g_sfeHeroStates[player].currentXp = g_sfeHeroStates[player].currentXp + amount;
+
+    while (g_sfeHeroStates[player].currentXp >= g_sfeHeroStates[player].requiredXp && g_sfeHeroStates[player].level < 50) {
+        g_sfeHeroStates[player].currentXp = g_sfeHeroStates[player].currentXp - g_sfeHeroStates[player].requiredXp;
+        SFE_HeroLevelUp(player);
+    }
+}
+
+void SFE_HeroLevelUp (int player) {
+    unit u;
+    text msg;
+
+    g_sfeHeroStates[player].level = g_sfeHeroStates[player].level + 1;
+    g_sfeHeroStates[player].requiredXp = 100 * g_sfeHeroStates[player].level * g_sfeHeroStates[player].level;
+    g_sfeHeroStates[player].unspentAttributePoints = g_sfeHeroStates[player].unspentAttributePoints + 3;
+
+    u = g_sfeHeroStates[player].heroUnit;
+
+    // Restaurar completamente vida y energia al subir de nivel
+    UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+    UnitSetPropertyFixed(u, c_unitPropEnergyPercent, 100.0);
+    if (g_sfeHeroes[g_sfeHeroStates[player].heroId].baseShields > 0.0) {
+        UnitSetPropertyFixed(u, c_unitPropShieldsPercent, 100.0);
+    }
+
+    SFE_RecalculateStats(player);
+
+    // Notificación de subida de nivel
+    msg = StringToText("<s val=\"ModCenterSize22Bold\"><c val=\"FFFF00\">¡NIVEL " + IntToString(g_sfeHeroStates[player].level) + "! (+3 Puntos Disponibles)</c></s>");
+    UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, msg);
+
+    // Conceder experiencia de cuenta al banco
+    SFE_BankAddExp(player, 100);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Modificador de Dano Efectivo (Formula de Blindaje y Corte Minimo a 0.5)
+// Dano_real = max(0.5, (Dano_base + F * alpha) - Armadura)
+//--------------------------------------------------------------------------------------------------
+fixed SFE_CalculateEffectiveDamage (int attackerPlayer, fixed baseDamage, fixed targetArmor) {
+    fixed rawDamage;
+    fixed effectiveDamage;
+
+    if (attackerPlayer >= 1 && attackerPlayer <= c_SFE_MAX_PLAYERS && g_sfeHeroStates[attackerPlayer].isActive) {
+        rawDamage = baseDamage + (g_sfeHeroStates[attackerPlayer].strength * c_FACTOR_ALPHA_STRENGTH_DAMAGE);
+    } else {
+        rawDamage = baseDamage;
+    }
+
+    effectiveDamage = rawDamage - targetArmor;
+    if (effectiveDamage < 0.5) {
+        effectiveDamage = 0.5;
+    }
+
+    return effectiveDamage;
+}
+
+
+//--------------------------------------------------------------------------------------------------
+// Declaraciones Adelantadas de Funciones Cruzadas (Cross-Module Forward Declarations)
+//--------------------------------------------------------------------------------------------------
+void SFE_InitAlliedBase ();
+void SFE_BaseHealHeroesTick ();
+void SFE_UpdateBaseHealthStatus ();
+void SFE_TriggerDefeat ();
+void SFE_TriggerVictory ();
+void SFE_UpdatePlayerHUD (int player);
+void SFE_UpdateTopBarHUD ();
+void SFE_OpenShop (int player);
+void SFE_CloseShop (int player);
+void SFE_ProcessShopPurchase (int player, int itemType);
+bool gt_SFE_HUD_Click_Func (bool testConds, bool runActions);
+void SFE_InitHUD ();
+void SFE_UpdateHeroPreview (int player, int heroId);
+void SFE_ConfirmHeroSelection (int player, int heroId);
+void SFE_HeroSelectionRandom (int player);
+bool gt_SFE_HeroSelection_Click_Func (bool testConds, bool runActions);
+bool gt_SFE_HeroSelection_Timer_Func (bool testConds, bool runActions);
+void SFE_InitHeroSelectionUI ();
+void SFE_InitWaveSpawner ();
+void SFE_OrderHostilesToCore (unitgroup ug);
+void SFE_SpawnWave (int waveNum);
+void SFE_CheckOutpostStatus ();
+bool gt_SFE_EntropyUpgrade_Timer_Func (bool testConds, bool runActions);
+bool gt_SFE_WaveLoop_Timer_Func (bool testConds, bool runActions);
+bool gt_SFE_UnitDied_Reward_Func (bool testConds, bool runActions);
+void SFE_TriggerBossMaarSpawn ();
+void SFE_TriggerBossDestroyerSpawn ();
+void SFE_TriggerBossHybridsSpawn ();
+void SFE_TriggerBossChainDogSpawn ();
+void SFE_TriggerHellGateIncursion ();
+void SFE_TriggerBossDiabloSpawn ();
+void SFE_BossCastShockwave (unit bossUnit, fixed radius, fixed damage);
+void SFE_BossSummonMinions (point p, string minionType, int count);
+void SFE_CheckTerritorialInvocations ();
+bool gt_SFE_BossAI_Loop_Func (bool testConds, bool runActions);
+bool gt_SFE_BossDied_Func (bool testConds, bool runActions);
+void SFE_InitBossSystem ();
+bool gt_SFE_DamageHook_Func (bool testConds, bool runActions);
+bool gt_SFE_DiffSelect_Click_Func (bool testConds, bool runActions);
+void SFE_StartGameAfterDifficulty (int chosenDiff);
+void SFE_InitDifficultySelection ();
+void SFE_SetupDiplomacyAndAlliances ();
+void SFE_MainInit ();
+
+
+//==================================================================================================
+// Special Forces Elite 5 - Allied Base & Victory/Defeat Engine
+// Fortaleza central aliada, defensas perimetrales y condiciones de fin de partida
+//==================================================================================================
+
+
+
+unit g_sfeBaseCoreUnit;
+unit g_sfeMedic1;
+unit g_sfeMedic2;
+point g_sfeBaseCenterPoint;
+bool g_sfeGameOverTriggered;
+
+// Declaraciones
+void SFE_TriggerDefeat ();
+void SFE_TriggerVictory ();
+void SFE_BaseHealHeroesTick ();
+
+//--------------------------------------------------------------------------------------------------
+// Inicializar la Base Aliada y Estructuras Defensivas
+//--------------------------------------------------------------------------------------------------
+void SFE_InitAlliedBase () {
+    point pCore;
+    point pDefense;
+    unit u;
+
+    g_sfeBaseCenterPoint = Point(100.0, 100.0);
+    g_sfeGameOverTriggered = false;
+    g_sfeBaseCoreHpPercent = 100.0;
+
+    // Crear Fortaleza Planetaria Troncal (Jugador 14 - Aliado)
+    UnitCreate(1, "PlanetaryFortress", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBaseCenterPoint, 270.0);
+    u = UnitLastCreated();
+    if (u == null) {
+        UnitCreate(1, "CommandCenter", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBaseCenterPoint, 270.0);
+        u = UnitLastCreated();
+    }
+    g_sfeBaseCoreUnit = u;
+    UnitSetPropertyFixed(g_sfeBaseCoreUnit, c_unitPropLifeMax, 8000.0);
+    UnitSetPropertyFixed(g_sfeBaseCoreUnit, c_unitPropLifePercent, 100.0);
+    UnitSetPropertyFixed(g_sfeBaseCoreUnit, c_unitPropLifeRegen, 5.0);
+
+    // Torretas y Bunkers en los 4 accesos cardinales
+    // Norte
+    pDefense = Point(100.0, 115.0);
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 270.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(94.0, 115.0), 270.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(106.0, 115.0), 270.0);
+
+    // Sur
+    pDefense = Point(100.0, 85.0);
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 90.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(94.0, 85.0), 90.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(106.0, 85.0), 90.0);
+
+    // Este
+    pDefense = Point(115.0, 100.0);
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 180.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(115.0, 94.0), 180.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(115.0, 106.0), 180.0);
+
+    // Oeste
+    pDefense = Point(85.0, 100.0);
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 0.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(85.0, 94.0), 0.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(85.0, 106.0), 0.0);
+
+    // Médicos de Campaña Aliados para dar soporte continuo
     UnitCreate(1, "Medic", 0, c_SFE_PLAYER_ALLIED_BASE, Point(97.0, 95.0), 45.0);
     g_sfeMedic1 = UnitLastCreated();
     if (g_sfeMedic1 != null) {
@@ -91,65 +949,54 @@ void SFE_SpawnBaseAndDefenses () {
 }
 
 //--------------------------------------------------------------------------------------------------
-// Despliegue del Héroe: Marine de Élite
+// Aura de Curación de la Base: Regenera héroes cercanos y ordena a los médicos
 //--------------------------------------------------------------------------------------------------
-void SFE_SpawnHeroMarine () {
-    UnitCreate(1, "Marine", 0, c_SFE_PLAYER_USER, g_sfeHeroSpawnPoint, 90.0);
-    g_sfeHeroUnit = UnitLastCreated();
-
-    // Estadísticas de Héroe Élite para resistir el asedio inicial
-    UnitSetPropertyFixed(g_sfeHeroUnit, c_unitPropLifeMax, 600.0);
-    UnitSetPropertyFixed(g_sfeHeroUnit, c_unitPropLifePercent, 100.0);
-
-    // Centrar cámara en el héroe y seleccionarlo inmediatamente
-    CameraPan(c_SFE_PLAYER_USER, g_sfeHeroSpawnPoint, 0.4, -1, 10.0, false);
-    UnitSelect(g_sfeHeroUnit, c_SFE_PLAYER_USER, true);
-
-    // Recursos iniciales para pruebas
-    PlayerModifyPropertyInt(c_SFE_PLAYER_USER, c_playerPropMinerals, c_playerPropOperSetTo, 500);
-}
-
-//--------------------------------------------------------------------------------------------------
-// Aura de Curación de la Base: Regenera vida y comanda a los médicos hacia el héroe
-//--------------------------------------------------------------------------------------------------
-bool gt_SFE_BaseHealTimer_Func (bool testConds, bool runActions) {
-    fixed dist;
+void SFE_BaseHealHeroesTick () {
+    int p;
+    unit uHero;
     fixed curLife;
     fixed maxLife;
     fixed newLife;
+    fixed dist;
     order ordHeal;
+    bool healedAny;
 
-    if (!runActions || !g_sfeCoreAlive || g_sfeHeroUnit == null || !UnitIsAlive(g_sfeHeroUnit)) {
-        return true;
-    }
+    p = 1;
+    healedAny = false;
 
-    curLife = UnitGetPropertyFixed(g_sfeHeroUnit, c_unitPropLife, true);
-    maxLife = UnitGetPropertyFixed(g_sfeHeroUnit, c_unitPropLifeMax, true);
-    dist = DistanceBetweenPoints(UnitGetPosition(g_sfeHeroUnit), g_sfeBasePoint);
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (g_sfeHeroStates[p].isActive) {
+            uHero = g_sfeHeroStates[p].heroUnit;
+            if (uHero != null && UnitIsAlive(uHero)) {
+                dist = DistanceBetweenPoints(UnitGetPosition(uHero), g_sfeBaseCenterPoint);
+                if (dist <= 18.0) {
+                    curLife = UnitGetPropertyFixed(uHero, c_unitPropLife, true);
+                    maxLife = UnitGetPropertyFixed(uHero, c_unitPropLifeMax, true);
+                    if (curLife < maxLife) {
+                        newLife = curLife + 35.0;
+                        if (newLife > maxLife) {
+                            newLife = maxLife;
+                        }
+                        UnitSetPropertyFixed(uHero, c_unitPropLife, newLife);
 
-    // Si el héroe está en la base (a menos de 18 unidades)
-    if (dist <= 18.0) {
-        if (curLife < maxLife) {
-            // Curación de la base (+35 HP por segundo)
-            newLife = curLife + 35.0;
-            if (newLife > maxLife) {
-                newLife = maxLife;
-            }
-            UnitSetPropertyFixed(g_sfeHeroUnit, c_unitPropLife, newLife);
-
-            // Ordenar activamente a los dos médicos que canalicen su rayo hacia el Marine
-            ordHeal = OrderTargetingUnit(AbilityCommand("MedicHeal", 0), g_sfeHeroUnit);
-            if (g_sfeMedic1 != null && UnitIsAlive(g_sfeMedic1)) {
-                UnitSetPropertyFixed(g_sfeMedic1, c_unitPropEnergyPercent, 100.0);
-                UnitIssueOrder(g_sfeMedic1, ordHeal, c_orderQueueReplace);
-            }
-            if (g_sfeMedic2 != null && UnitIsAlive(g_sfeMedic2)) {
-                UnitSetPropertyFixed(g_sfeMedic2, c_unitPropEnergyPercent, 100.0);
-                UnitIssueOrder(g_sfeMedic2, ordHeal, c_orderQueueReplace);
+                        ordHeal = OrderTargetingUnit(AbilityCommand("MedicHeal", 0), uHero);
+                        if (g_sfeMedic1 != null && UnitIsAlive(g_sfeMedic1)) {
+                            UnitSetPropertyFixed(g_sfeMedic1, c_unitPropEnergyPercent, 100.0);
+                            UnitIssueOrder(g_sfeMedic1, ordHeal, c_orderQueueReplace);
+                        }
+                        if (g_sfeMedic2 != null && UnitIsAlive(g_sfeMedic2)) {
+                            UnitSetPropertyFixed(g_sfeMedic2, c_unitPropEnergyPercent, 100.0);
+                            UnitIssueOrder(g_sfeMedic2, ordHeal, c_orderQueueReplace);
+                        }
+                        healedAny = true;
+                    }
+                }
             }
         }
-    } else {
-        // Si el héroe sale a luchar, los médicos vuelven a su puesto de guardia en la base
+        p = p + 1;
+    }
+
+    if (!healedAny) {
         if (g_sfeMedic1 != null && UnitIsAlive(g_sfeMedic1)) {
             UnitIssueOrder(g_sfeMedic1, OrderTargetingPoint(AbilityCommand("move", 0), Point(97.0, 95.0)), c_orderQueueReplace);
         }
@@ -157,166 +1004,2055 @@ bool gt_SFE_BaseHealTimer_Func (bool testConds, bool runActions) {
             UnitIssueOrder(g_sfeMedic2, OrderTargetingPoint(AbilityCommand("move", 0), Point(103.0, 95.0)), c_orderQueueReplace);
         }
     }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Comprobacion de Salud de la Base (Monitoreo regular)
+//--------------------------------------------------------------------------------------------------
+void SFE_UpdateBaseHealthStatus () {
+    fixed currentHp;
+
+    if (g_sfeGameOverTriggered) {
+        return;
+    }
+
+    if (!UnitIsAlive(g_sfeBaseCoreUnit)) {
+        SFE_TriggerDefeat();
+        return;
+    }
+
+    currentHp = UnitGetPropertyFixed(g_sfeBaseCoreUnit, c_unitPropLifePercent, true);
+    g_sfeBaseCoreHpPercent = currentHp;
+
+    if (currentHp <= 0.0) {
+        SFE_TriggerDefeat();
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Secuencia de Derrota
+//--------------------------------------------------------------------------------------------------
+void SFE_TriggerDefeat () {
+    int p;
+    text defText;
+
+    if (g_sfeGameOverTriggered) {
+        return;
+    }
+    g_sfeGameOverTriggered = true;
+
+    p = 1;
+    defText = StringToText("<s val=\"ModCenterSize36Bold\"><c val=\"FF0000\">¡EL CUARTEL GENERAL HA SIDO DESTRUIDO!\nMISIÓN FALLIDA — DERROTA</c></s>");
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, defText);
+
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (PlayerType(p) == c_playerTypeUser) {
+            GameOver(p, c_gameOverDefeat, true, true);
+        }
+        p = p + 1;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Secuencia de Victoria
+//--------------------------------------------------------------------------------------------------
+void SFE_TriggerVictory () {
+    int p;
+    text vicText;
+
+    if (g_sfeGameOverTriggered) {
+        return;
+    }
+    g_sfeGameOverTriggered = true;
+
+    p = 1;
+    vicText = StringToText("<s val=\"ModCenterSize36Bold\"><c val=\"00FF7F\">¡¡VICTORIA SUPREMA EN SPECIAL FORCES ELITE 5!!\nTODAS LAS HORDAS Y JEFES HAN SIDO ERRADICADOS</c></s>");
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, vicText);
+
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (PlayerType(p) == c_playerTypeUser) {
+            // Registrar victoria de la dificultad alcanzada en el banco
+            SFE_BankRecordVictory(p, g_sfeCurrentDifficulty);
+            GameOver(p, c_gameOverVictory, true, true);
+        }
+        p = p + 1;
+    }
+}
+
+//==================================================================================================
+// Special Forces Elite 5 - HUD & Tech Shop System
+// Panel en pantalla para asignación interactiva de atributos [+] y Tienda Tecnológica
+//==================================================================================================
+
+
+
+// Panel HUD individual de Atributos (por jugador)
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudDialog;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudLblHeroInfo;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudLblStrength;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudLblDexterity;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudLblIntel;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudLblPoints;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnAddStr;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnAddDex;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnAddInt;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnOpenShop;
+
+// Barra superior global de estado de la partida
+int g_sfeTopBarDialog;
+int g_sfeTopBarLblWave;
+int g_sfeTopBarLblBaseHp;
+int g_sfeTopBarLblDiff;
+
+// Tienda de Mejoras Tecnológicas
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopDialog;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnWeapons;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnArmor;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnShields;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnMedkit;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnBaseRepair;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnClose;
+
+// Variables de estado de juego referenciadas por el HUD
+int g_sfeCurrentDifficulty;
+int g_sfeCurrentWaveNumber;
+int g_sfeWaveTimeRemaining;
+fixed g_sfeBaseCoreHpPercent;
+
+// Declaraciones de funciones
+void SFE_UpdatePlayerHUD (int player);
+void SFE_UpdateTopBarHUD ();
+void SFE_OpenShop (int player);
+void SFE_CloseShop (int player);
+
+//--------------------------------------------------------------------------------------------------
+// Actualizar Valores del HUD para un Jugador
+//--------------------------------------------------------------------------------------------------
+void SFE_UpdatePlayerHUD (int player) {
+    playergroup pg;
+    text txtInfo;
+    text txtStr;
+    text txtDex;
+    text txtInt;
+    text txtPts;
+    int hid;
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS || !g_sfeHeroStates[player].isActive) {
+        return;
+    }
+
+    pg = PlayerGroupSingle(player);
+    hid = g_sfeHeroStates[player].heroId;
+
+    txtInfo = StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"FFE400\">" + g_sfeHeroes[hid].name + 
+        "</c> | Nvl " + IntToString(g_sfeHeroStates[player].level) + 
+        " <c val=\"AAAAAA\">(" + IntToString(g_sfeHeroStates[player].currentXp) + "/" + IntToString(g_sfeHeroStates[player].requiredXp) + " XP)</c></s>");
+
+    txtStr = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"FF4444\">Fuerza: " + IntToString(g_sfeHeroStates[player].strength) + 
+        "</c> <c val=\"AAAAAA\">(+" + FixedToString(g_sfeHeroStates[player].strength * c_FACTOR_ALPHA_STRENGTH_DAMAGE, 1) + " Dmg)</c></s>");
+
+    txtDex = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"55FF55\">Destreza: " + IntToString(g_sfeHeroStates[player].dexterity) + 
+        "</c> <c val=\"AAAAAA\">(Cadencia " + FixedToString(g_sfeHeroStates[player].currentAttackInterval, 2) + "s)</c></s>");
+
+    txtInt = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"00CCFF\">Inteligencia: " + IntToString(g_sfeHeroStates[player].intelligence) + 
+        "</c> <c val=\"AAAAAA\">(+" + FixedToString(g_sfeHeroStates[player].intelligence * c_FACTOR_LAMBDA_INTEL_ENERGY, 0) + " Maná)</c></s>");
+
+    if (g_sfeHeroStates[player].unspentAttributePoints > 0) {
+        txtPts = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"FFFF00\">¡Puntos Disponibles: " + IntToString(g_sfeHeroStates[player].unspentAttributePoints) + "!</c></s>");
+    } else {
+        txtPts = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"888888\">Puntos Disponibles: 0</c></s>");
+    }
+
+    DialogControlSetPropertyAsText(g_sfeHudLblHeroInfo[player], c_triggerControlPropertyText, pg, txtInfo);
+    DialogControlSetPropertyAsText(g_sfeHudLblStrength[player], c_triggerControlPropertyText, pg, txtStr);
+    DialogControlSetPropertyAsText(g_sfeHudLblDexterity[player], c_triggerControlPropertyText, pg, txtDex);
+    DialogControlSetPropertyAsText(g_sfeHudLblIntel[player], c_triggerControlPropertyText, pg, txtInt);
+    DialogControlSetPropertyAsText(g_sfeHudLblPoints[player], c_triggerControlPropertyText, pg, txtPts);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Actualizar Barra Superior de Estado Global
+//--------------------------------------------------------------------------------------------------
+void SFE_UpdateTopBarHUD () {
+    text txtWave;
+    text txtBase;
+    text txtDiff;
+    string diffColor;
+
+    if (g_sfeCurrentDifficulty == c_DIFF_TORMENT) {
+        diffColor = "FF0044";
+    } else if (g_sfeCurrentDifficulty >= c_DIFF_BRUTAL) {
+        diffColor = "FF8800";
+    } else {
+        diffColor = "00FFEA";
+    }
+
+    txtDiff = StringToText("<s val=\"ModCenterSize18Bold\"><c val=\"" + diffColor + "\">[" + g_sfeDiffNames[g_sfeCurrentDifficulty] + "]</c></s>");
+    txtWave = StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"FFFFFF\">Oleada " + IntToString(g_sfeCurrentWaveNumber) + " / 25</c>  |  <c val=\"FFAA00\">Próxima: " + IntToString(g_sfeWaveTimeRemaining) + "s</c></s>");
+
+    if (g_sfeBaseCoreHpPercent < 35.0) {
+        txtBase = StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"FF0000\">¡ALERTA BASE!: " + FixedToString(g_sfeBaseCoreHpPercent, 0) + "%</c></s>");
+    } else {
+        txtBase = StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"55FF55\">Núcleo Base: " + FixedToString(g_sfeBaseCoreHpPercent, 0) + "%</c></s>");
+    }
+
+    DialogControlSetPropertyAsText(g_sfeTopBarLblDiff, c_triggerControlPropertyText, PlayerGroupAll(), txtDiff);
+    DialogControlSetPropertyAsText(g_sfeTopBarLblWave, c_triggerControlPropertyText, PlayerGroupAll(), txtWave);
+    DialogControlSetPropertyAsText(g_sfeTopBarLblBaseHp, c_triggerControlPropertyText, PlayerGroupAll(), txtBase);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Abrir y Cerrar Tienda de Mejoras
+//--------------------------------------------------------------------------------------------------
+void SFE_OpenShop (int player) {
+    if (player >= 1 && player <= c_SFE_MAX_PLAYERS) {
+        DialogSetVisible(g_sfeShopDialog[player], PlayerGroupSingle(player), true);
+    }
+}
+
+void SFE_CloseShop (int player) {
+    if (player >= 1 && player <= c_SFE_MAX_PLAYERS) {
+        DialogSetVisible(g_sfeShopDialog[player], PlayerGroupSingle(player), false);
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Procesar Compras en la Tienda Tecnológica
+//--------------------------------------------------------------------------------------------------
+void SFE_ProcessShopPurchase (int player, int itemType) {
+    int cost;
+    int minerals;
+    unit u;
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS || !g_sfeHeroStates[player].isActive) {
+        return;
+    }
+
+    minerals = PlayerGetPropertyInt(player, c_playerPropMinerals);
+    u = g_sfeHeroStates[player].heroUnit;
+
+    if (itemType == 1) {
+        // Calibre Pesado (+6 Daño permanente)
+        cost = 350;
+        if (minerals >= cost) {
+            PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
+            g_sfeHeroStates[player].strength = g_sfeHeroStates[player].strength + 4;
+            SFE_RecalculateStats(player);
+            SFE_UpdatePlayerHUD(player);
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"55FF55\">Mejora de Armamento adquirida (+6 Dmg permanente).</c>"));
+        } else {
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"FF4444\">Minerales insuficientes (Requiere 350 min).</c>"));
+        }
+    } else if (itemType == 2) {
+        // Placas de Blindaje (+100 HP permanente)
+        cost = 300;
+        if (minerals >= cost) {
+            PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
+            g_sfeHeroStates[player].strength = g_sfeHeroStates[player].strength + 4;
+            SFE_RecalculateStats(player);
+            SFE_UpdatePlayerHUD(player);
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"55FF55\">Blindaje reforzado adquirido (+100 HP max).</c>"));
+        } else {
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"FF4444\">Minerales insuficientes (Requiere 300 min).</c>"));
+        }
+    } else if (itemType == 3) {
+        // Botiquín Nanomédico (Restaura 100% Vida)
+        cost = 150;
+        if (minerals >= cost) {
+            PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
+            UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"55FF55\">¡Botiquín Nanomédico aplicado! Salud restaurada al 100%.</c>"));
+        } else {
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"FF4444\">Minerales insuficientes (Requiere 150 min).</c>"));
+        }
+    } else if (itemType == 4) {
+        // Reparación de Emergencia del Núcleo de Base (+25% HP)
+        cost = 500;
+        if (minerals >= cost) {
+            PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
+            g_sfeBaseCoreHpPercent = g_sfeBaseCoreHpPercent + 25.0;
+            if (g_sfeBaseCoreHpPercent > 100.0) {
+                g_sfeBaseCoreHpPercent = 100.0;
+            }
+            SFE_UpdateTopBarHUD();
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"00FFEA\">¡Jugador " + IntToString(player) + " ha reparado el Núcleo Aliado (+25% Vida)!</c>"));
+        } else {
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"FF4444\">Minerales insuficientes (Requiere 500 min).</c>"));
+        }
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger Callback: Interacciones del HUD y Tienda
+//--------------------------------------------------------------------------------------------------
+bool gt_SFE_HUD_Click_Func (bool testConds, bool runActions) {
+    int clickedCtrl;
+    int player;
+
+    if (!runActions) {
+        return true;
+    }
+
+    clickedCtrl = EventDialogControl();
+    player = EventPlayer();
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return true;
+    }
+
+    // Botones de asignación de atributos
+    if (clickedCtrl == g_sfeHudBtnAddStr[player]) {
+        if (SFE_AllocateAttribute(player, c_ATTR_STRENGTH)) {
+            SFE_UpdatePlayerHUD(player);
+        }
+        return true;
+    }
+    if (clickedCtrl == g_sfeHudBtnAddDex[player]) {
+        if (SFE_AllocateAttribute(player, c_ATTR_DEXTERITY)) {
+            SFE_UpdatePlayerHUD(player);
+        }
+        return true;
+    }
+    if (clickedCtrl == g_sfeHudBtnAddInt[player]) {
+        if (SFE_AllocateAttribute(player, c_ATTR_INTELLIGENCE)) {
+            SFE_UpdatePlayerHUD(player);
+        }
+        return true;
+    }
+
+    // Botón de Abrir Tienda
+    if (clickedCtrl == g_sfeHudBtnOpenShop[player]) {
+        SFE_OpenShop(player);
+        return true;
+    }
+
+    // Botones de la Tienda
+    if (clickedCtrl == g_sfeShopBtnWeapons[player]) {
+        SFE_ProcessShopPurchase(player, 1);
+        return true;
+    }
+    if (clickedCtrl == g_sfeShopBtnArmor[player]) {
+        SFE_ProcessShopPurchase(player, 2);
+        return true;
+    }
+    if (clickedCtrl == g_sfeShopBtnMedkit[player]) {
+        SFE_ProcessShopPurchase(player, 3);
+        return true;
+    }
+    if (clickedCtrl == g_sfeShopBtnBaseRepair[player]) {
+        SFE_ProcessShopPurchase(player, 4);
+        return true;
+    }
+    if (clickedCtrl == g_sfeShopBtnClose[player]) {
+        SFE_CloseShop(player);
+        return true;
+    }
 
     return true;
 }
 
 //--------------------------------------------------------------------------------------------------
-// Generador de Oleadas Hostiles
+// Inicializar Interfaces HUD
 //--------------------------------------------------------------------------------------------------
-void SFE_SpawnWaveGroup (string unitType, int count, point spawnPt) {
-    int i;
+void SFE_InitHUD () {
+    trigger tClick;
+    int p;
+    playergroup pg;
+
+    p = 1;
+    tClick = TriggerCreate("gt_SFE_HUD_Click_Func");
+
+    // 1. Barra superior global de estado
+    g_sfeTopBarDialog = DialogCreate(700, 75, c_anchorTop, 0, 10, false);
+    DialogSetImage(g_sfeTopBarDialog, "Assets\\Textures\\ui_glue_backgrounddialog.dds");
+
+    g_sfeTopBarLblDiff = DialogControlCreate(g_sfeTopBarDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfeTopBarLblDiff, PlayerGroupAll(), 660, 25);
+    DialogControlSetPosition(g_sfeTopBarLblDiff, PlayerGroupAll(), c_anchorTop, 0, 5);
+
+    g_sfeTopBarLblWave = DialogControlCreate(g_sfeTopBarDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfeTopBarLblWave, PlayerGroupAll(), 350, 25);
+    DialogControlSetPosition(g_sfeTopBarLblWave, PlayerGroupAll(), c_anchorBottomLeft, 20, 10);
+
+    g_sfeTopBarLblBaseHp = DialogControlCreate(g_sfeTopBarDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfeTopBarLblBaseHp, PlayerGroupAll(), 280, 25);
+    DialogControlSetPosition(g_sfeTopBarLblBaseHp, PlayerGroupAll(), c_anchorBottomRight, 20, 10);
+
+    DialogSetVisible(g_sfeTopBarDialog, PlayerGroupAll(), true);
+
+    // 2. Paneles HUD y Tiendas para cada jugador
+    while (p <= c_SFE_MAX_PLAYERS) {
+        pg = PlayerGroupSingle(p);
+
+        // Panel HUD de Atributos (Superior Izquierda)
+        g_sfeHudDialog[p] = DialogCreate(380, 230, c_anchorTopLeft, 20, 90, false);
+        DialogSetImage(g_sfeHudDialog[p], "Assets\\Textures\\ui_glue_backgrounddialog.dds");
+
+        g_sfeHudLblHeroInfo[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(g_sfeHudLblHeroInfo[p], pg, 360, 25);
+        DialogControlSetPosition(g_sfeHudLblHeroInfo[p], pg, c_anchorTopLeft, 10, 10);
+
+        // Fila Fuerza
+        g_sfeHudLblStrength[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(g_sfeHudLblStrength[p], pg, 280, 25);
+        DialogControlSetPosition(g_sfeHudLblStrength[p], pg, c_anchorTopLeft, 10, 42);
+
+        g_sfeHudBtnAddStr[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeHudBtnAddStr[p], pg, 65, 26);
+        DialogControlSetPosition(g_sfeHudBtnAddStr[p], pg, c_anchorTopLeft, 300, 42);
+        DialogControlSetPropertyAsText(g_sfeHudBtnAddStr[p], c_triggerControlPropertyText, pg, StringToText("+ F"));
+
+        // Fila Destreza
+        g_sfeHudLblDexterity[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(g_sfeHudLblDexterity[p], pg, 280, 25);
+        DialogControlSetPosition(g_sfeHudLblDexterity[p], pg, c_anchorTopLeft, 10, 75);
+
+        g_sfeHudBtnAddDex[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeHudBtnAddDex[p], pg, 65, 26);
+        DialogControlSetPosition(g_sfeHudBtnAddDex[p], pg, c_anchorTopLeft, 300, 75);
+        DialogControlSetPropertyAsText(g_sfeHudBtnAddDex[p], c_triggerControlPropertyText, pg, StringToText("+ D"));
+
+        // Fila Inteligencia
+        g_sfeHudLblIntel[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(g_sfeHudLblIntel[p], pg, 280, 25);
+        DialogControlSetPosition(g_sfeHudLblIntel[p], pg, c_anchorTopLeft, 10, 108);
+
+        g_sfeHudBtnAddInt[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeHudBtnAddInt[p], pg, 65, 26);
+        DialogControlSetPosition(g_sfeHudBtnAddInt[p], pg, c_anchorTopLeft, 300, 108);
+        DialogControlSetPropertyAsText(g_sfeHudBtnAddInt[p], c_triggerControlPropertyText, pg, StringToText("+ I"));
+
+        // Puntos disponibles y Botón de Tienda
+        g_sfeHudLblPoints[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(g_sfeHudLblPoints[p], pg, 230, 30);
+        DialogControlSetPosition(g_sfeHudLblPoints[p], pg, c_anchorTopLeft, 10, 145);
+
+        g_sfeHudBtnOpenShop[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeHudBtnOpenShop[p], pg, 130, 35);
+        DialogControlSetPosition(g_sfeHudBtnOpenShop[p], pg, c_anchorTopLeft, 235, 145);
+        DialogControlSetPropertyAsText(g_sfeHudBtnOpenShop[p], c_triggerControlPropertyText, pg, StringToText("<c val=\"FFE400\">TIENDA</c>"));
+
+        DialogSetVisible(g_sfeHudDialog[p], pg, true);
+
+        // Diálogo de la Tienda de Mejoras
+        g_sfeShopDialog[p] = DialogCreate(500, 380, c_anchorCenter, 0, 0, false);
+        DialogSetImage(g_sfeShopDialog[p], "Assets\\Textures\\ui_glue_backgrounddialog.dds");
+
+        // Título Tienda
+        DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(DialogControlLastCreated(), pg, 460, 35);
+        DialogControlSetPosition(DialogControlLastCreated(), pg, c_anchorTop, 0, 15);
+        DialogControlSetPropertyAsText(DialogControlLastCreated(), c_triggerControlPropertyText, pg, 
+            StringToText("<s val=\"ModCenterSize22Bold\"><c val=\"FFE400\">ARSENAL Y MEJORAS TÁCTICAS</c></s>"));
+
+        // Opciones Tienda
+        g_sfeShopBtnWeapons[p] = DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeShopBtnWeapons[p], pg, 440, 45);
+        DialogControlSetPosition(g_sfeShopBtnWeapons[p], pg, c_anchorTop, 0, 65);
+        DialogControlSetPropertyAsText(g_sfeShopBtnWeapons[p], c_triggerControlPropertyText, pg, 
+            StringToText("Calibre Pesado (+6 Daño permanente) — <c val=\"55FF55\">350 Min</c>"));
+
+        g_sfeShopBtnArmor[p] = DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeShopBtnArmor[p], pg, 440, 45);
+        DialogControlSetPosition(g_sfeShopBtnArmor[p], pg, c_anchorTop, 0, 120);
+        DialogControlSetPropertyAsText(g_sfeShopBtnArmor[p], c_triggerControlPropertyText, pg, 
+            StringToText("Placas de Blindaje (+100 HP permanente) — <c val=\"55FF55\">300 Min</c>"));
+
+        g_sfeShopBtnMedkit[p] = DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeShopBtnMedkit[p], pg, 440, 45);
+        DialogControlSetPosition(g_sfeShopBtnMedkit[p], pg, c_anchorTop, 0, 175);
+        DialogControlSetPropertyAsText(g_sfeShopBtnMedkit[p], c_triggerControlPropertyText, pg, 
+            StringToText("Botiquín Nanomédico (Cura 100% Vida) — <c val=\"55FF55\">150 Min</c>"));
+
+        g_sfeShopBtnBaseRepair[p] = DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeShopBtnBaseRepair[p], pg, 440, 45);
+        DialogControlSetPosition(g_sfeShopBtnBaseRepair[p], pg, c_anchorTop, 0, 230);
+        DialogControlSetPropertyAsText(g_sfeShopBtnBaseRepair[p], c_triggerControlPropertyText, pg, 
+            StringToText("Reparación del Núcleo Aliado (+25% HP Base) — <c val=\"55FF55\">500 Min</c>"));
+
+        g_sfeShopBtnClose[p] = DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeShopBtnClose[p], pg, 180, 40);
+        DialogControlSetPosition(g_sfeShopBtnClose[p], pg, c_anchorBottom, 0, 15);
+        DialogControlSetPropertyAsText(g_sfeShopBtnClose[p], c_triggerControlPropertyText, pg, StringToText("CERRAR"));
+
+        DialogSetVisible(g_sfeShopDialog[p], pg, false);
+
+        // Conectar Eventos
+        TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnAddStr[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnAddDex[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnAddInt[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnOpenShop[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnWeapons[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnArmor[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnMedkit[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnBaseRepair[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnClose[p], c_triggerControlEventTypeClick);
+
+        p = p + 1;
+    }
+}
+
+//==================================================================================================
+// Special Forces Elite 5 - Hero Selection System
+// Interfaz de diálogo avanzada: 12 héroes canónicos, previsualización táctica, cuenta atrás de 45s
+// y selección aleatoria (con 1% de easter egg de héroes secretos satíricos)
+//==================================================================================================
+
+
+
+// Variables de UI
+int g_sfeSelectDialog;
+int g_sfeSelectTimerLabel;
+int[c_HERO_CANONICAL_COUNT] g_sfeHeroButtons;
+int g_sfeBtnConfirm;
+int g_sfeBtnRandom;
+
+int g_sfePreviewName;
+int g_sfePreviewArchetype;
+int g_sfePreviewDesc;
+int g_sfePreviewStats;
+
+int[c_SFE_MAX_PLAYERS + 1] g_sfePlayerSelectedHeroId;
+bool[c_SFE_MAX_PLAYERS + 1] g_sfePlayerHasConfirmed;
+timer g_sfeSelectCountdownTimer;
+int g_sfeSelectSecondsRemaining;
+
+// Declaraciones adelantadas de funciones
+void SFE_UpdateHeroPreview (int player, int heroId);
+void SFE_ConfirmHeroSelection (int player, int heroId);
+void SFE_HeroSelectionRandom (int player);
+
+//--------------------------------------------------------------------------------------------------
+// Actualizar Panel de Previsualización para un Jugador
+//--------------------------------------------------------------------------------------------------
+void SFE_UpdateHeroPreview (int player, int heroId) {
+    playergroup pg;
+    text txtName;
+    text txtArchetype;
+    text txtDesc;
+    text txtStats;
+    string attrName;
+
+    if (heroId < 0 || heroId >= c_HERO_TOTAL_COUNT) {
+        return;
+    }
+
+    pg = PlayerGroupSingle(player);
+    g_sfePlayerSelectedHeroId[player] = heroId;
+
+    if (g_sfeHeroes[heroId].primaryAttribute == c_ATTR_STRENGTH) {
+        attrName = "FUERZA (HP + Daño)";
+    } else if (g_sfeHeroes[heroId].primaryAttribute == c_ATTR_DEXTERITY) {
+        attrName = "DESTREZA (Cadencia + Regen)";
+    } else {
+        attrName = "INTELIGENCIA (Maná + Visión)";
+    }
+
+    txtName = StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"FFE400\">" + g_sfeHeroes[heroId].name + "</c> <c val=\"AAAAAA\">(" + g_sfeHeroes[heroId].faction + ")</c></s>");
+    txtArchetype = StringToText("<s val=\"ModLeftSize18\"><c val=\"00FFEA\">Rol:</c> " + g_sfeHeroes[heroId].archetype + "  |  <c val=\"FFB700\">Atributo:</c> " + attrName + "</s>");
+    txtDesc = StringToText("<s val=\"ModLeftSize15\">" + g_sfeHeroes[heroId].description + "</s>");
+    
+    txtStats = StringToText("<s val=\"ModLeftSize15\"><c val=\"55FF55\">Vida Base:</c> " + FixedToString(g_sfeHeroes[heroId].baseHp, 0) + 
+        "   |   <c val=\"00CCFF\">Escudos:</c> " + FixedToString(g_sfeHeroes[heroId].baseShields, 0) + 
+        "   |   <c val=\"CC88FF\">Energía:</c> " + FixedToString(g_sfeHeroes[heroId].baseEnergy, 0) + 
+        "\n<c val=\"FF4444\">Daño Base:</c> " + FixedToString(g_sfeHeroes[heroId].baseDamage, 0) + 
+        "   |   <c val=\"FFFF44\">Intervalo Ataque:</c> " + FixedToString(g_sfeHeroes[heroId].baseAttackInterval, 2) + "s" + 
+        "   |   <c val=\"AAAAAA\">Blindaje:</c> " + FixedToString(g_sfeHeroes[heroId].baseArmor, 0) + "</s>");
+
+    DialogControlSetPropertyAsText(g_sfePreviewName, c_triggerControlPropertyText, pg, txtName);
+    DialogControlSetPropertyAsText(g_sfePreviewArchetype, c_triggerControlPropertyText, pg, txtArchetype);
+    DialogControlSetPropertyAsText(g_sfePreviewDesc, c_triggerControlPropertyText, pg, txtDesc);
+    DialogControlSetPropertyAsText(g_sfePreviewStats, c_triggerControlPropertyText, pg, txtStats);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Confirmar Selección y Desplegar Héroe
+//--------------------------------------------------------------------------------------------------
+void SFE_ConfirmHeroSelection (int player, int heroId) {
     unit u;
-    order ordAttack;
+    string unitType;
+    text announce;
+    point pSpawn;
 
-    i = 0;
-    ordAttack = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBasePoint);
+    if (player < 1 || player > c_SFE_MAX_PLAYERS || g_sfePlayerHasConfirmed[player]) {
+        return;
+    }
 
-    while (i < count) {
-        UnitCreate(1, unitType, 0, c_SFE_PLAYER_HOSTILE, spawnPt, 270.0);
+    g_sfePlayerHasConfirmed[player] = true;
+    unitType = g_sfeHeroes[heroId].unitType;
+    pSpawn = Point(100.0, 92.0);
+
+    // Despliegue de la unidad
+    UnitCreate(1, unitType, 0, player, pSpawn, 90.0);
+    u = UnitLastCreated();
+    if (u == null) {
+        UnitCreate(1, g_sfeHeroes[heroId].fallbackUnitType, 0, player, pSpawn, 90.0);
         u = UnitLastCreated();
-        if (u != null) {
-            UnitIssueOrder(u, ordAttack, c_orderQueueReplace);
+    }
+
+    // Inicializar atributos matemáticos del héroe
+    SFE_InitHeroAttributes(player, u, heroId);
+
+    // Centrar cámara y seleccionar unidad
+    CameraPan(player, pSpawn, 0.4, -1, 10.0, false);
+    UnitSelect(u, player, true);
+
+    // Ocultar diálogo para este jugador
+    DialogSetVisible(g_sfeSelectDialog, PlayerGroupSingle(player), false);
+
+    // Anuncio a toda la partida
+    announce = StringToText("<c val=\"00FF7F\">Jugador " + IntToString(player) + " ha seleccionado a </c><c val=\"FFE400\">" + g_sfeHeroes[heroId].name + "</c> <c val=\"AAAAAA\">(" + g_sfeHeroes[heroId].archetype + ")</c>");
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, announce);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Selección Aleatoria (1% probabilidad de héroes satíricos secretos)
+//--------------------------------------------------------------------------------------------------
+void SFE_HeroSelectionRandom (int player) {
+    int roll;
+    int pickedHero;
+    int secretIdx;
+
+    if (g_sfePlayerHasConfirmed[player]) {
+        return;
+    }
+
+    roll = RandomInt(1, 100);
+    if (roll == 100) {
+        // 1% Easter Egg Satírico (Dr. Evil, Donald Trump, Alex Jones)
+        secretIdx = RandomInt(c_HERO_SECRET_EVIL, c_HERO_SECRET_JONES);
+        pickedHero = secretIdx;
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+            StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF00FF\">¡¡EVENTO ESPECIAL!! ¡Jugador " + IntToString(player) + " ha obtenido a " + g_sfeHeroes[secretIdx].name + " (1% Probabilidad)!</c></s>"));
+    } else {
+        // Uno de los 12 héroes canónicos
+        pickedHero = RandomInt(0, c_HERO_CANONICAL_COUNT - 1);
+    }
+
+    SFE_ConfirmHeroSelection(player, pickedHero);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger Callback: Clic en Controles del Diálogo
+//--------------------------------------------------------------------------------------------------
+bool gt_SFE_HeroSelection_Click_Func (bool testConds, bool runActions) {
+    int clickedCtrl;
+    int player;
+    int i;
+
+    if (!runActions) {
+        return true;
+    }
+
+    clickedCtrl = EventDialogControl();
+    player = EventPlayer();
+    i = 0;
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS || g_sfePlayerHasConfirmed[player]) {
+        return true;
+    }
+
+    // Revisar si pulsó algún héroe de la matriz
+    while (i < c_HERO_CANONICAL_COUNT) {
+        if (clickedCtrl == g_sfeHeroButtons[i]) {
+            SFE_UpdateHeroPreview(player, i);
+            return true;
+        }
+        i = i + 1;
+    }
+
+    // Botón de Confirmar
+    if (clickedCtrl == g_sfeBtnConfirm) {
+        SFE_ConfirmHeroSelection(player, g_sfePlayerSelectedHeroId[player]);
+        return true;
+    }
+
+    // Botón de Aleatorio
+    if (clickedCtrl == g_sfeBtnRandom) {
+        SFE_HeroSelectionRandom(player);
+        return true;
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger Callback: Temporizador de Cuenta Atrás de Selección (45s)
+//--------------------------------------------------------------------------------------------------
+bool gt_SFE_HeroSelection_Timer_Func (bool testConds, bool runActions) {
+    int p;
+    text timerText;
+
+    if (!runActions) {
+        return true;
+    }
+
+    p = 1;
+    g_sfeSelectSecondsRemaining = g_sfeSelectSecondsRemaining - 1;
+    timerText = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF5555\">Tiempo restante para elegir:</c> " + IntToString(g_sfeSelectSecondsRemaining) + "s</s>");
+    DialogControlSetPropertyAsText(g_sfeSelectTimerLabel, c_triggerControlPropertyText, PlayerGroupAll(), timerText);
+
+    if (g_sfeSelectSecondsRemaining <= 0) {
+        // Tiempo agotado: forzar selección aleatoria para quienes falten
+        while (p <= c_SFE_MAX_PLAYERS) {
+            if (PlayerType(p) == c_playerTypeUser && !g_sfePlayerHasConfirmed[p]) {
+                SFE_HeroSelectionRandom(p);
+            }
+            p = p + 1;
+        }
+        DialogSetVisible(g_sfeSelectDialog, PlayerGroupAll(), false);
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Creación del Diálogo de Selección de Héroes
+//--------------------------------------------------------------------------------------------------
+void SFE_InitHeroSelectionUI () {
+    trigger tClick;
+    trigger tTimer;
+    int row;
+    int col;
+    int i;
+    int btnX;
+    int btnY;
+    int p;
+
+    g_sfeSelectSecondsRemaining = 45;
+
+    // Crear Diálogo principal
+    g_sfeSelectDialog = DialogCreate(1140, 700, c_anchorCenter, 0, 0, true);
+    DialogSetImage(g_sfeSelectDialog, "Assets\\Textures\\ui_glue_backgrounddialog.dds");
+
+    // Título superior
+    DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(DialogControlLastCreated(), PlayerGroupAll(), 1100, 45);
+    DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTop, 0, 20);
+    DialogControlSetPropertyAsText(DialogControlLastCreated(), c_triggerControlPropertyText, PlayerGroupAll(), 
+        StringToText("<s val=\"ModCenterSize28Bold\"><c val=\"00FFEA\">SPECIAL FORCES ELITE 5</c> — <c val=\"FFFFFF\">SELECCIÓN DE HÉROE</c></s>"));
+
+    // Etiqueta del temporizador
+    g_sfeSelectTimerLabel = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfeSelectTimerLabel, PlayerGroupAll(), 600, 35);
+    DialogControlSetPosition(g_sfeSelectTimerLabel, PlayerGroupAll(), c_anchorTop, 0, 68);
+    DialogControlSetPropertyAsText(g_sfeSelectTimerLabel, c_triggerControlPropertyText, PlayerGroupAll(), 
+        StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF5555\">Tiempo restante para elegir:</c> 45s</s>"));
+
+    // Matriz 3 filas x 4 columnas para los 12 héroes canónicos
+    i = 0;
+    while (i < c_HERO_CANONICAL_COUNT) {
+        col = i % 4;
+        row = i / 4;
+        btnX = 40 + (col * 140);
+        btnY = 125 + (row * 135);
+
+        g_sfeHeroButtons[i] = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeHeroButtons[i], PlayerGroupAll(), 130, 120);
+        DialogControlSetPosition(g_sfeHeroButtons[i], PlayerGroupAll(), c_anchorTopLeft, btnX, btnY);
+        DialogControlSetPropertyAsText(g_sfeHeroButtons[i], c_triggerControlPropertyText, PlayerGroupAll(), 
+            StringToText("<s val=\"ModCenterSize14Bold\">" + g_sfeHeroes[i].name + "\n<c val=\"AAAAAA\">(" + g_sfeHeroes[i].faction + ")</c></s>"));
+
+        i = i + 1;
+    }
+
+    // Panel derecho: Ficha Técnica de Previsualización
+    g_sfePreviewName = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfePreviewName, PlayerGroupAll(), 480, 40);
+    DialogControlSetPosition(g_sfePreviewName, PlayerGroupAll(), c_anchorTopLeft, 630, 125);
+
+    g_sfePreviewArchetype = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfePreviewArchetype, PlayerGroupAll(), 480, 35);
+    DialogControlSetPosition(g_sfePreviewArchetype, PlayerGroupAll(), c_anchorTopLeft, 630, 170);
+
+    g_sfePreviewDesc = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfePreviewDesc, PlayerGroupAll(), 480, 80);
+    DialogControlSetPosition(g_sfePreviewDesc, PlayerGroupAll(), c_anchorTopLeft, 630, 215);
+
+    g_sfePreviewStats = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfePreviewStats, PlayerGroupAll(), 480, 120);
+    DialogControlSetPosition(g_sfePreviewStats, PlayerGroupAll(), c_anchorTopLeft, 630, 305);
+
+    // Botón de Confirmar Selección
+    g_sfeBtnConfirm = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeButton);
+    DialogControlSetSize(g_sfeBtnConfirm, PlayerGroupAll(), 230, 55);
+    DialogControlSetPosition(g_sfeBtnConfirm, PlayerGroupAll(), c_anchorTopLeft, 630, 480);
+    DialogControlSetPropertyAsText(g_sfeBtnConfirm, c_triggerControlPropertyText, PlayerGroupAll(), 
+        StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"55FF55\">CONFIRMAR</c></s>"));
+
+    // Botón de Selección Aleatoria (con 1% de héroe secreto)
+    g_sfeBtnRandom = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeButton);
+    DialogControlSetSize(g_sfeBtnRandom, PlayerGroupAll(), 230, 55);
+    DialogControlSetPosition(g_sfeBtnRandom, PlayerGroupAll(), c_anchorTopLeft, 880, 480);
+    DialogControlSetPropertyAsText(g_sfeBtnRandom, c_triggerControlPropertyText, PlayerGroupAll(), 
+        StringToText("<s val=\"ModCenterSize18Bold\"><c val=\"FFAA00\">ALEATORIO (1%)</c></s>"));
+
+    // Conectar Triggers de Interacción
+    tClick = TriggerCreate("gt_SFE_HeroSelection_Click_Func");
+    i = 0;
+    while (i < c_HERO_CANONICAL_COUNT) {
+        TriggerAddEventDialogControl(tClick, c_playerAny, g_sfeHeroButtons[i], c_triggerControlEventTypeClick);
+        i = i + 1;
+    }
+    TriggerAddEventDialogControl(tClick, c_playerAny, g_sfeBtnConfirm, c_triggerControlEventTypeClick);
+    TriggerAddEventDialogControl(tClick, c_playerAny, g_sfeBtnRandom, c_triggerControlEventTypeClick);
+
+    // Inicializar previsualización predeterminada (Jim Raynor) para cada jugador
+    p = 1;
+    while (p <= c_SFE_MAX_PLAYERS) {
+        g_sfePlayerSelectedHeroId[p] = c_HERO_RAYNOR;
+        g_sfePlayerHasConfirmed[p] = false;
+        SFE_UpdateHeroPreview(p, c_HERO_RAYNOR);
+        p = p + 1;
+    }
+
+    // Mostrar el diálogo
+    DialogSetVisible(g_sfeSelectDialog, PlayerGroupAll(), true);
+
+    // Temporizador de 1s para cuenta atrás
+    g_sfeSelectCountdownTimer = TimerCreate();
+    TimerStart(g_sfeSelectCountdownTimer, 1.0, true, c_timeGame);
+    tTimer = TriggerCreate("gt_SFE_HeroSelection_Timer_Func");
+    TriggerAddEventTimer(tTimer, g_sfeSelectCountdownTimer);
+}
+
+//==================================================================================================
+// Special Forces Elite 5 - Wave Spawner & Hostile AI Engine
+// Generador perimetral de 25 oleadas, nidos destructibles, escalado de estadísticas,
+// curva de entropía (T_up) y asignación táctica hacia el núcleo
+//==================================================================================================
+
+
+
+const int c_TOTAL_WAVES = 25;
+
+// Estructuras de Nidos Hostiles Destructibles
+unit g_sfeOutpostNorth;
+unit g_sfeOutpostEast;
+unit g_sfeOutpostWest;
+
+bool g_sfeOutpostNorthAlive;
+bool g_sfeOutpostEastAlive;
+bool g_sfeOutpostWestAlive;
+
+// Puntos de aparición cardinales
+point g_sfeSpawnNorth;
+point g_sfeSpawnSouth;
+point g_sfeSpawnEast;
+point g_sfeSpawnWest;
+
+// Temporizadores de oleada
+timer g_sfeWaveTimer;
+timer g_sfeWaveTickTimer;
+timer g_sfeEntropyTimer;
+
+// Bonificaciones acumulativas de entropía enemiga (T_up)
+fixed g_sfeHostileArmorBonus;
+fixed g_sfeHostileLifeBonusPct;
+
+// Declaraciones de funciones
+void SFE_SpawnWave (int waveNum);
+void SFE_CheckOutpostStatus ();
+void SFE_OrderHostilesToCore (unitgroup ug);
+void SFE_TriggerBossMaarSpawn ();
+void SFE_TriggerBossDestroyerSpawn ();
+void SFE_TriggerBossDiabloSpawn ();
+
+//--------------------------------------------------------------------------------------------------
+// Inicializar Puntos Cardinales y Nidos de Asedio
+//--------------------------------------------------------------------------------------------------
+void SFE_InitWaveSpawner () {
+    trigger tEntropy;
+
+    g_sfeSpawnNorth = Point(100.0, 185.0);
+    g_sfeSpawnSouth = Point(100.0, 15.0);
+    g_sfeSpawnEast  = Point(185.0, 100.0);
+    g_sfeSpawnWest  = Point(15.0, 100.0);
+
+    g_sfeCurrentWaveNumber = 1;
+    g_sfeWaveTimeRemaining = FixedToInt(g_sfeDiffWaveIntervalSeconds[g_sfeCurrentDifficulty]);
+
+    g_sfeHostileArmorBonus = 0.0;
+    g_sfeHostileLifeBonusPct = 0.0;
+
+    // Crear los 3 reductos/nidos hostiles (Jugador 15)
+    // 1. Colmena Zerg Norte
+    UnitCreate(1, "Hive", 0, c_SFE_PLAYER_HOSTILE, Point(100.0, 160.0), 270.0);
+    g_sfeOutpostNorth = UnitLastCreated();
+    UnitSetPropertyFixed(g_sfeOutpostNorth, c_unitPropLifeMax, 4000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
+    UnitSetPropertyFixed(g_sfeOutpostNorth, c_unitPropLifePercent, 100.0);
+    g_sfeOutpostNorthAlive = true;
+
+    // 2. Fortaleza Protoss Corrompida Este
+    UnitCreate(1, "Nexus", 0, c_SFE_PLAYER_HOSTILE, Point(160.0, 100.0), 180.0);
+    g_sfeOutpostEast = UnitLastCreated();
+    UnitSetPropertyFixed(g_sfeOutpostEast, c_unitPropLifeMax, 4000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
+    UnitSetPropertyFixed(g_sfeOutpostEast, c_unitPropLifePercent, 100.0);
+    g_sfeOutpostEastAlive = true;
+
+    // 3. Complejo Infestado Oeste
+    UnitCreate(1, "InfestedCommandCenter", 0, c_SFE_PLAYER_HOSTILE, Point(40.0, 100.0), 0.0);
+    g_sfeOutpostWest = UnitLastCreated();
+    if (g_sfeOutpostWest == null) {
+        UnitCreate(1, "CommandCenter", 0, c_SFE_PLAYER_HOSTILE, Point(40.0, 100.0), 0.0);
+        g_sfeOutpostWest = UnitLastCreated();
+    }
+    UnitSetPropertyFixed(g_sfeOutpostWest, c_unitPropLifeMax, 4000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
+    UnitSetPropertyFixed(g_sfeOutpostWest, c_unitPropLifePercent, 100.0);
+    g_sfeOutpostWestAlive = true;
+
+    // Inicializar temporizador de evolución de entropía (T_up)
+    g_sfeEntropyTimer = TimerCreate();
+    TimerStart(g_sfeEntropyTimer, g_sfeDiffUpgradeIntervalSeconds[g_sfeCurrentDifficulty], true, c_timeGame);
+    tEntropy = TriggerCreate("gt_SFE_EntropyUpgrade_Timer_Func");
+    TriggerAddEventTimer(tEntropy, g_sfeEntropyTimer);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Enviar Grupo de Unidades Hostiles hacia el Núcleo Aliado
+//--------------------------------------------------------------------------------------------------
+void SFE_OrderHostilesToCore (unitgroup ug) {
+    int i;
+    int count;
+    unit u;
+    order ord;
+
+    i = 1;
+    count = UnitGroupCount(ug, c_unitCountAlive);
+    ord = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint);
+
+    while (i <= count) {
+        u = UnitGroupUnit(ug, i);
+        UnitIssueOrder(u, ord, c_orderQueueReplace);
+        i = i + 1;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Desplegar Oleada Hostil
+//--------------------------------------------------------------------------------------------------
+void SFE_SpawnWave (int waveNum) {
+    unitgroup ug;
+    fixed statMult;
+    int countNorth;
+    int countSouth;
+    int countEast;
+    int countWest;
+    string uType1;
+    string uType2;
+    int k;
+    unit u;
+
+    ug = UnitGroupEmpty();
+    statMult = g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty] * (1.0 + (g_sfeHostileLifeBonusPct / 100.0));
+    countNorth = 4 + (waveNum * 2);
+    countSouth = 4 + (waveNum * 2);
+    countEast  = 4 + (waveNum * 2);
+    countWest  = 4 + (waveNum * 2);
+
+    // Selección escalonada de unidades según el número de oleada
+    if (waveNum <= 5) {
+        uType1 = "Zergling";
+        uType2 = "Roach";
+    } else if (waveNum <= 10) {
+        uType1 = "Hydralisk";
+        uType2 = "Marauder";
+    } else if (waveNum <= 15) {
+        uType1 = "Ultralisk";
+        uType2 = "Immortal";
+    } else if (waveNum <= 20) {
+        uType1 = "Thor";
+        uType2 = "Colossus";
+    } else {
+        uType1 = "HybridDestroyer";
+        uType2 = "Aberration";
+    }
+
+    // Generar tropas en los 4 cuadrantes
+    k = 0;
+    while (k < countNorth) {
+        UnitCreate(1, uType1, 0, c_SFE_PLAYER_HOSTILE, g_sfeSpawnNorth, 270.0);
+        u = UnitLastCreated();
+        UnitSetPropertyFixed(u, c_unitPropLifeMax, UnitGetPropertyFixed(u, c_unitPropLifeMax, false) * statMult);
+        UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+        UnitGroupAdd(ug, u);
+        k = k + 1;
+    }
+
+    k = 0;
+    while (k < countSouth) {
+        UnitCreate(1, uType2, 0, c_SFE_PLAYER_HOSTILE, g_sfeSpawnSouth, 90.0);
+        u = UnitLastCreated();
+        UnitSetPropertyFixed(u, c_unitPropLifeMax, UnitGetPropertyFixed(u, c_unitPropLifeMax, false) * statMult);
+        UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+        UnitGroupAdd(ug, u);
+        k = k + 1;
+    }
+
+    k = 0;
+    while (k < countEast) {
+        UnitCreate(1, uType1, 0, c_SFE_PLAYER_HOSTILE, g_sfeSpawnEast, 180.0);
+        u = UnitLastCreated();
+        UnitSetPropertyFixed(u, c_unitPropLifeMax, UnitGetPropertyFixed(u, c_unitPropLifeMax, false) * statMult);
+        UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+        UnitGroupAdd(ug, u);
+        k = k + 1;
+    }
+
+    k = 0;
+    while (k < countWest) {
+        UnitCreate(1, uType2, 0, c_SFE_PLAYER_HOSTILE, g_sfeSpawnWest, 0.0);
+        u = UnitLastCreated();
+        UnitSetPropertyFixed(u, c_unitPropLifeMax, UnitGetPropertyFixed(u, c_unitPropLifeMax, false) * statMult);
+        UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+        UnitGroupAdd(ug, u);
+        k = k + 1;
+    }
+
+    // Ordenar avance general al núcleo
+    SFE_OrderHostilesToCore(ug);
+
+    // Eventos especiales de Jefes por hito de oleada
+    if (waveNum == 10) {
+        SFE_TriggerBossMaarSpawn();
+    } else if (waveNum == 20) {
+        SFE_TriggerBossDestroyerSpawn();
+    } else if (waveNum == 25) {
+        SFE_TriggerBossDiabloSpawn();
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Verificacion de Reductos Destruidos y Concesion de Recompensas
+//--------------------------------------------------------------------------------------------------
+void SFE_CheckOutpostStatus () {
+    int p;
+    text bountyText;
+
+    if (g_sfeOutpostNorthAlive && !UnitIsAlive(g_sfeOutpostNorth)) {
+        g_sfeOutpostNorthAlive = false;
+        bountyText = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FFE400\">¡COLMENA ZERG NORTE DESTRUIDA! +1000 MINERALES PARA EL EQUIPO</c></s>");
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, bountyText);
+
+        p = 1;
+        while (p <= c_SFE_MAX_PLAYERS) {
+            PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 1000);
+            p = p + 1;
+        }
+        SFE_TriggerBossMaarSpawn();
+    }
+
+    if (g_sfeOutpostEastAlive && !UnitIsAlive(g_sfeOutpostEast)) {
+        g_sfeOutpostEastAlive = false;
+        bountyText = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FFE400\">¡FORTALEZA PROTOSS ESTE DESTRUIDA! +1000 MINERALES PARA EL EQUIPO</c></s>");
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, bountyText);
+
+        p = 1;
+        while (p <= c_SFE_MAX_PLAYERS) {
+            PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 1000);
+            p = p + 1;
+        }
+        SFE_TriggerBossDestroyerSpawn();
+    }
+
+    if (g_sfeOutpostWestAlive && !UnitIsAlive(g_sfeOutpostWest)) {
+        g_sfeOutpostWestAlive = false;
+        bountyText = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FFE400\">¡COMPLEJO INFESTADO OESTE DESTRUIDO! +1000 MINERALES PARA EL EQUIPO</c></s>");
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, bountyText);
+
+        p = 1;
+        while (p <= c_SFE_MAX_PLAYERS) {
+            PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 1000);
+            p = p + 1;
+        }
+        SFE_TriggerBossDiabloSpawn();
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Bucle de Entropía: Mejoras Periódicas de la IA Hostil (T_up)
+//--------------------------------------------------------------------------------------------------
+bool gt_SFE_EntropyUpgrade_Timer_Func (bool testConds, bool runActions) {
+    if (!runActions) {
+        return true;
+    }
+
+    g_sfeHostileArmorBonus = g_sfeHostileArmorBonus + 1.0;
+    g_sfeHostileLifeBonusPct = g_sfeHostileLifeBonusPct + 10.0;
+
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, 
+        StringToText("<c val=\"FF4444\">[Evolución Hostil T_up] +1 Blindaje / +10% Vitalidad enemiga acumulada</c>"));
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Bucle del Temporizador de Oleadas (Tick cada 1 segundo)
+//--------------------------------------------------------------------------------------------------
+bool gt_SFE_WaveLoop_Timer_Func (bool testConds, bool runActions) {
+    if (!runActions) {
+        return true;
+    }
+
+    g_sfeWaveTimeRemaining = g_sfeWaveTimeRemaining - 1;
+
+    // Actualizar estado de salud de la base, curación y HUD
+    SFE_UpdateBaseHealthStatus();
+    SFE_BaseHealHeroesTick();
+    SFE_CheckOutpostStatus();
+    SFE_UpdateTopBarHUD();
+
+    if (g_sfeWaveTimeRemaining <= 0) {
+        // Desplegar oleada
+        SFE_SpawnWave(g_sfeCurrentWaveNumber);
+
+        g_sfeCurrentWaveNumber = g_sfeCurrentWaveNumber + 1;
+        if (g_sfeCurrentWaveNumber > c_TOTAL_WAVES) {
+            g_sfeCurrentWaveNumber = c_TOTAL_WAVES;
+        }
+
+        // Reiniciar tiempo según dificultad
+        g_sfeWaveTimeRemaining = FixedToInt(g_sfeDiffWaveIntervalSeconds[g_sfeCurrentDifficulty]);
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Recompensa de Minerales y XP por Enemigo Eliminado (Last Hit)
+//--------------------------------------------------------------------------------------------------
+bool gt_SFE_UnitDied_Reward_Func (bool testConds, bool runActions) {
+    unit dyingU;
+    unit killerU;
+    int killerPlayer;
+    int bounty;
+
+    if (!runActions) {
+        return true;
+    }
+
+    dyingU = EventUnit();
+    killerU = EventUnitDamageSourceUnit();
+
+    if (UnitGetOwner(dyingU) != c_SFE_PLAYER_HOSTILE) {
+        return true;
+    }
+
+    killerPlayer = UnitGetOwner(killerU);
+    if (killerPlayer >= 1 && killerPlayer <= c_SFE_MAX_PLAYERS) {
+        // Recompensa en minerales escalada por la dificultad (M_inc)
+        bounty = FixedToInt(15.0 * g_sfeDiffIncomeMultiplier[g_sfeCurrentDifficulty]);
+        if (bounty < 5) {
+            bounty = 5;
+        }
+
+        PlayerModifyPropertyInt(killerPlayer, c_playerPropMinerals, c_playerPropOperAdd, bounty);
+        SFE_HeroAddExperience(killerPlayer, 25);
+        SFE_UpdatePlayerHUD(killerPlayer);
+    }
+
+    return true;
+}
+
+//==================================================================================================
+// Special Forces Elite 5 - Boss AI & Encounter Engine
+// Mecánica de jefes mayores por fases (75%, 50%, 25%), tabla de amenaza, esbirros,
+// habilidades de zona y los 5 eventos de invocación territorial secreta (120s)
+//==================================================================================================
+
+
+
+// Unidades de Jefes
+unit g_sfeBossMaarUnit;
+unit g_sfeBossDestroyerUnit;
+unit g_sfeBossDiabloUnit;
+unit g_sfeBossChainDogUnit;
+unit g_sfeBossHybridsUnit;
+
+// Banderas de aparición
+bool g_sfeBossMaarSpawned;
+bool g_sfeBossDestroyerSpawned;
+bool g_sfeBossDiabloSpawned;
+bool g_sfeBossChainDogSpawned;
+bool g_sfeBossHybridsSpawned;
+bool g_sfeBossHellGateTriggered;
+
+// Fases de combate
+int g_sfeBossMaarPhase;
+int g_sfeBossDestroyerPhase;
+int g_sfeBossDiabloPhase;
+int g_sfeBossChainDogPhase;
+int g_sfeBossHybridsPhase;
+
+// Contadores de Invocación Secreta Territorial (en segundos)
+int g_sfeTimerDestroyer;
+int g_sfeTimerHybrids;
+int g_sfeTimerChainDog;
+int g_sfeTimerHellGate;
+int g_sfeTimerDiablo;
+
+timer g_sfeBossAITimer;
+
+// Declaraciones de funciones
+void SFE_BossCastShockwave (unit bossUnit, fixed radius, fixed damage);
+void SFE_BossSummonMinions (point p, string minionType, int count);
+void SFE_TriggerBossMaarSpawn ();
+void SFE_TriggerBossDestroyerSpawn ();
+void SFE_TriggerBossDiabloSpawn ();
+void SFE_TriggerBossChainDogSpawn ();
+void SFE_TriggerBossHybridsSpawn ();
+void SFE_TriggerHellGateIncursion ();
+
+//--------------------------------------------------------------------------------------------------
+// Invocación del Jefe 1: Híbrido Maar (Sector Norte)
+//--------------------------------------------------------------------------------------------------
+void SFE_TriggerBossMaarSpawn () {
+    point pSpawn;
+    unit u;
+    fixed hp;
+
+    if (g_sfeBossMaarSpawned) {
+        return;
+    }
+    g_sfeBossMaarSpawned = true;
+    g_sfeBossMaarPhase = 1;
+
+    pSpawn = Point(100.0, 150.0);
+    UnitCreate(1, "HybridDestroyer", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+    u = UnitLastCreated();
+    if (u == null) {
+        UnitCreate(1, "Archon", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+        u = UnitLastCreated();
+    }
+    g_sfeBossMaarUnit = u;
+
+    hp = 12000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty];
+    UnitSetPropertyFixed(u, c_unitPropLifeMax, hp);
+    UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+    UnitSetPropertyFixed(u, c_unitPropLifeRegen, 15.0);
+
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+        StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"FF00FF\">¡ALERTA MAYOR! ¡EL HÍBRIDO MAAR HA DESPERTADO EN EL SECTOR NORTE!</c></s>"));
+
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Invocación Secreta 1: Destroyer of Worlds (NW - Restos de Nave Nodriza)
+//--------------------------------------------------------------------------------------------------
+void SFE_TriggerBossDestroyerSpawn () {
+    point pSpawn;
+    unit u;
+    fixed hp;
+
+    if (g_sfeBossDestroyerSpawned) {
+        return;
+    }
+    g_sfeBossDestroyerSpawned = true;
+    g_sfeBossDestroyerPhase = 1;
+
+    pSpawn = Point(40.0, 160.0);
+    UnitCreate(1, "HybridReaver", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+    u = UnitLastCreated();
+    if (u == null) {
+        UnitCreate(1, "Colossus", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+        u = UnitLastCreated();
+    }
+    g_sfeBossDestroyerUnit = u;
+
+    hp = 22000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty];
+    UnitSetPropertyFixed(u, c_unitPropLifeMax, hp);
+    UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+    UnitSetPropertyFixed(u, c_unitPropLifeRegen, 25.0);
+
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+        StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"FF4400\">¡RITUAL COMPLETADO! ¡DESTROYER OF WORLDS HA SIDO INVOCADO EN EL CUADRANTE NW!</c></s>"));
+
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Invocación Secreta 2: Híbridos Ancestrales (SE - Artefacto Xel'Naga)
+//--------------------------------------------------------------------------------------------------
+void SFE_TriggerBossHybridsSpawn () {
+    point pSpawn;
+    unit u;
+    fixed hp;
+
+    if (g_sfeBossHybridsSpawned) {
+        return;
+    }
+    g_sfeBossHybridsSpawned = true;
+    g_sfeBossHybridsPhase = 1;
+
+    pSpawn = Point(160.0, 40.0);
+    UnitCreate(1, "HybridDominator", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 90.0);
+    u = UnitLastCreated();
+    if (u == null) {
+        UnitCreate(1, "Archon", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 90.0);
+        u = UnitLastCreated();
+    }
+    g_sfeBossHybridsUnit = u;
+
+    hp = 18000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty];
+    UnitSetPropertyFixed(u, c_unitPropLifeMax, hp);
+    UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+    UnitSetPropertyFixed(u, c_unitPropLifeRegen, 20.0);
+
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+        StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"CC00FF\">¡ARTEFACTO ACTIVADO! ¡HÍBRIDOS ANCESTRALES DESPIERTAN EN EL SECTOR SE!</c></s>"));
+
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Invocación Secreta 3: ChainDog (Centro - Monumento Estatua)
+//--------------------------------------------------------------------------------------------------
+void SFE_TriggerBossChainDogSpawn () {
+    point pSpawn;
+    unit u;
+    fixed hp;
+
+    if (g_sfeBossChainDogSpawned) {
+        return;
+    }
+    g_sfeBossChainDogSpawned = true;
+    g_sfeBossChainDogPhase = 1;
+
+    pSpawn = Point(100.0, 125.0);
+    UnitCreate(1, "Ultralisk", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+    u = UnitLastCreated();
+    g_sfeBossChainDogUnit = u;
+
+    hp = 16000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty];
+    UnitSetPropertyFixed(u, c_unitPropLifeMax, hp);
+    UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+    UnitSetPropertyFixed(u, c_unitPropLifeRegen, 30.0);
+
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+        StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"FF2222\">¡GUARDIÁN LIBERADO! ¡CHAINDOG HA ROTO SUS CADENAS EN LA ESTATUA CENTRAL!</c></s>"));
+
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Invocación Secreta 4: Hell Gate (NE - Gran Nydus)
+//--------------------------------------------------------------------------------------------------
+void SFE_TriggerHellGateIncursion () {
+    point pSpawn;
+    int k;
+    unit u;
+    order ord;
+    int p;
+
+    if (g_sfeBossHellGateTriggered) {
+        return;
+    }
+    g_sfeBossHellGateTriggered = true;
+
+    pSpawn = Point(160.0, 160.0);
+    ord = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint);
+
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+        StringToText("<s val=\"ModCenterSize28Bold\"><c val=\"FF0000\">¡¡PORTAL DEL INFIERNO DESATADO!! ¡INCURSIÓN MASIVA DE ÉLITE EN EL SECTOR NE!</c></s>"));
+
+    k = 0;
+    while (k < 12) {
+        UnitCreate(1, "Aberration", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
+        u = UnitLastCreated();
+        UnitIssueOrder(u, ord, c_orderQueueReplace);
+        k = k + 1;
+    }
+
+    k = 0;
+    while (k < 6) {
+        UnitCreate(1, "HybridDestroyer", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
+        u = UnitLastCreated();
+        UnitIssueOrder(u, ord, c_orderQueueReplace);
+        k = k + 1;
+    }
+
+    // Registrar logro Hell Gate en banco para todos los jugadores
+    p = 1;
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (PlayerType(p) == c_playerTypeUser) {
+            SFE_BankAddExp(p, 500);
+        }
+        p = p + 1;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Invocación Secreta 5: Diablo Megaboss (SW - Gasolinera en Dificultad Torment)
+//--------------------------------------------------------------------------------------------------
+void SFE_TriggerBossDiabloSpawn () {
+    point pSpawn;
+    unit u;
+    fixed hp;
+
+    if (g_sfeBossDiabloSpawned) {
+        return;
+    }
+    g_sfeBossDiabloSpawned = true;
+    g_sfeBossDiabloPhase = 1;
+
+    pSpawn = Point(40.0, 40.0);
+    UnitCreate(1, "HybridDominator", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 45.0);
+    u = UnitLastCreated();
+    if (u == null) {
+        UnitCreate(1, "Ultralisk", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 45.0);
+        u = UnitLastCreated();
+    }
+    g_sfeBossDiabloUnit = u;
+
+    hp = 35000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty];
+    UnitSetPropertyFixed(u, c_unitPropLifeMax, hp);
+    UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+    UnitSetPropertyFixed(u, c_unitPropLifeRegen, 40.0);
+
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+        StringToText("<s val=\"ModCenterSize28Bold\"><c val=\"FF0000\">¡¡AMENAZA DESTRUCTORA FINAL!! ¡DIABLO HA ENTRADO AL CAMPO DE BATALLA!</c></s>"));
+
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Habilidad de Jefe: Onda de Choque Zonal
+//--------------------------------------------------------------------------------------------------
+void SFE_BossCastShockwave (unit bossUnit, fixed radius, fixed damage) {
+    point p;
+    unitgroup ug;
+    int count;
+    int i;
+    unit target;
+    int owner;
+
+    p = UnitGetPosition(bossUnit);
+    ug = UnitGroup(null, c_playerAny, RegionCircle(p, radius), null, 0);
+    count = UnitGroupCount(ug, c_unitCountAlive);
+    i = 1;
+
+    while (i <= count) {
+        target = UnitGroupUnit(ug, i);
+        owner = UnitGetOwner(target);
+        if (owner >= 1 && owner <= c_SFE_MAX_PLAYERS || owner == c_SFE_PLAYER_ALLIED_BASE) {
+            UnitDamage(bossUnit, "WeaponNull", target, damage);
         }
         i = i + 1;
     }
 }
 
 //--------------------------------------------------------------------------------------------------
-// Callback del Temporizador: Ejecución Periódica de Oleadas
+// Habilidad de Jefe: Invocación de Esbirros de Soporte
 //--------------------------------------------------------------------------------------------------
-bool gt_SFE_WaveTimer_Func (bool testConds, bool runActions) {
-    text waveMsg;
+void SFE_BossSummonMinions (point p, string minionType, int count) {
+    int i;
+    unit u;
+    unitgroup ug;
 
-    if (!runActions || !g_sfeCoreAlive) {
-        return true;
+    i = 0;
+    ug = UnitGroupEmpty();
+
+    while (i < count) {
+        UnitCreate(1, minionType, 0, c_SFE_PLAYER_HOSTILE, p, RandomFixed(0.0, 360.0));
+        u = UnitLastCreated();
+        UnitGroupAdd(ug, u);
+        i = i + 1;
     }
 
-    g_sfeCurrentWave = g_sfeCurrentWave + 1;
-
-    if (g_sfeCurrentWave == 1) {
-        waveMsg = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF4444\">¡ALERTA OLEADA 1! Enjambre Zerg atacando desde el Norte.</c></s>");
-        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, waveMsg);
-        SFE_SpawnWaveGroup("Zergling", 8, g_sfeSpawnNorth);
-        TimerStart(g_sfeWaveTimer, 30.0, true, c_timeGame);
-    } else if (g_sfeCurrentWave == 2) {
-        waveMsg = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF4444\">¡ALERTA OLEADA 2! Cucarachas acorazadas desde el Este.</c></s>");
-        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, waveMsg);
-        SFE_SpawnWaveGroup("Roach", 6, g_sfeSpawnEast);
-    } else if (g_sfeCurrentWave == 3) {
-        waveMsg = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF4444\">¡ALERTA OLEADA 3! Espinas de Hidralisco desde el Oeste.</c></s>");
-        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, waveMsg);
-        SFE_SpawnWaveGroup("Hydralisk", 8, g_sfeSpawnWest);
-    } else if (g_sfeCurrentWave == 4) {
-        waveMsg = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF4444\">¡ALERTA OLEADA 4! Ataque combinado desde el Sur.</c></s>");
-        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, waveMsg);
-        SFE_SpawnWaveGroup("Zergling", 10, g_sfeSpawnSouth);
-        SFE_SpawnWaveGroup("Roach", 4, g_sfeSpawnSouth);
-    } else {
-        waveMsg = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF2222\">¡ASALTO PESADO OLEADA " + IntToString(g_sfeCurrentWave) + "! Ultraliscos y escolta desde el Norte.</c></s>");
-        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, waveMsg);
-        SFE_SpawnWaveGroup("Ultralisk", 2, g_sfeSpawnNorth);
-        SFE_SpawnWaveGroup("Zergling", 10, g_sfeSpawnNorth);
-    }
-
-    return true;
+    SFE_OrderHostilesToCore(ug);
 }
 
 //--------------------------------------------------------------------------------------------------
-// Callback: Muerte de Unidades (Recompensa de Minerales y Chequeo de Núcleo)
+// Bucle de Chequeo Territorial de Invocaciones Secretas (cada 2s)
 //--------------------------------------------------------------------------------------------------
-bool gt_SFE_UnitDied_Func (bool testConds, bool runActions) {
-    unit deadUnit;
-    unit killerUnit;
-    int deadOwner;
-    int killerOwner;
-    text bountyText;
+void SFE_CheckTerritorialInvocations () {
+    int p;
+    int nwCount;
+    int seCount;
+    int centerCount;
+    int neHeroesInZone;
+    int swCount;
+    int livingHeroesTotal;
+    unit u;
+    fixed d;
+
+    nwCount = 0;
+    seCount = 0;
+    centerCount = 0;
+    neHeroesInZone = 0;
+    swCount = 0;
+    livingHeroesTotal = 0;
+
+    p = 1;
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (g_sfeHeroStates[p].isActive) {
+            u = g_sfeHeroStates[p].heroUnit;
+            if (u != null && UnitIsAlive(u)) {
+                livingHeroesTotal = livingHeroesTotal + 1;
+
+                // 1. NW (Destroyer of Worlds) - Point(40.0, 160.0)
+                d = DistanceBetweenPoints(UnitGetPosition(u), Point(40.0, 160.0));
+                if (d <= 12.0) {
+                    nwCount = nwCount + 1;
+                }
+
+                // 2. SE (Híbridos Ancestrales) - Point(160.0, 40.0)
+                d = DistanceBetweenPoints(UnitGetPosition(u), Point(160.0, 40.0));
+                if (d <= 12.0) {
+                    seCount = seCount + 1;
+                }
+
+                // 3. Centro (ChainDog) - Point(100.0, 125.0)
+                d = DistanceBetweenPoints(UnitGetPosition(u), Point(100.0, 125.0));
+                if (d <= 10.0) {
+                    centerCount = centerCount + 1;
+                }
+
+                // 4. NE (Hell Gate) - Point(160.0, 160.0)
+                d = DistanceBetweenPoints(UnitGetPosition(u), Point(160.0, 160.0));
+                if (d <= 15.0) {
+                    neHeroesInZone = neHeroesInZone + 1;
+                }
+
+                // 5. SW (Diablo en Torment) - Point(40.0, 40.0)
+                d = DistanceBetweenPoints(UnitGetPosition(u), Point(40.0, 40.0));
+                if (d <= 15.0) {
+                    swCount = swCount + 1;
+                }
+            }
+        }
+        p = p + 1;
+    }
+
+    // Protocolo 1: NW Destroyer (exactamente 1 unidad aislada durante 120s)
+    if (!g_sfeBossDestroyerSpawned) {
+        if (nwCount == 1) {
+            g_sfeTimerDestroyer = g_sfeTimerDestroyer + 2;
+            if (g_sfeTimerDestroyer % 30 == 0) {
+                UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, 
+                    StringToText("<c val=\"FF8800\">[Nave Nodriza NW] Resonancia del Destructor: " + IntToString(g_sfeTimerDestroyer) + "s / 120s</c>"));
+            }
+            if (g_sfeTimerDestroyer >= 120) {
+                SFE_TriggerBossDestroyerSpawn();
+            }
+        } else {
+            g_sfeTimerDestroyer = 0;
+        }
+    }
+
+    // Protocolo 2: SE Híbridos (exactamente 1 unidad durante 120s)
+    if (!g_sfeBossHybridsSpawned) {
+        if (seCount == 1) {
+            g_sfeTimerHybrids = g_sfeTimerHybrids + 2;
+            if (g_sfeTimerHybrids % 30 == 0) {
+                UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, 
+                    StringToText("<c val=\"CC00FF\">[Artefacto SE] Sincronización Xel'Naga: " + IntToString(g_sfeTimerHybrids) + "s / 120s</c>"));
+            }
+            if (g_sfeTimerHybrids >= 120) {
+                SFE_TriggerBossHybridsSpawn();
+            }
+        } else {
+            g_sfeTimerHybrids = 0;
+        }
+    }
+
+    // Protocolo 3: Centro ChainDog (exactamente 1 unidad durante 120s)
+    if (!g_sfeBossChainDogSpawned) {
+        if (centerCount == 1) {
+            g_sfeTimerChainDog = g_sfeTimerChainDog + 2;
+            if (g_sfeTimerChainDog % 30 == 0) {
+                UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, 
+                    StringToText("<c val=\"FF4444\">[Estatua Central] Despertar de ChainDog: " + IntToString(g_sfeTimerChainDog) + "s / 120s</c>"));
+            }
+            if (g_sfeTimerChainDog >= 120) {
+                SFE_TriggerBossChainDogSpawn();
+            }
+        } else {
+            g_sfeTimerChainDog = 0;
+        }
+    }
+
+    // Protocolo 4: NE Hell Gate (todos los héroes vivos juntos durante 10s)
+    if (!g_sfeBossHellGateTriggered && livingHeroesTotal > 0) {
+        if (neHeroesInZone == livingHeroesTotal) {
+            g_sfeTimerHellGate = g_sfeTimerHellGate + 2;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, 
+                StringToText("<c val=\"FF0000\">[Hell Gate NE] ¡Apertura inminente! " + IntToString(g_sfeTimerHellGate) + "s / 10s</c>"));
+            if (g_sfeTimerHellGate >= 10) {
+                SFE_TriggerHellGateIncursion();
+            }
+        } else {
+            g_sfeTimerHellGate = 0;
+        }
+    }
+
+    // Protocolo 5: SW Diablo (en dificultad Torment, presencia en la gasolinera por 20s)
+    if (!g_sfeBossDiabloSpawned && g_sfeCurrentDifficulty == c_DIFF_TORMENT) {
+        if (swCount >= 1) {
+            g_sfeTimerDiablo = g_sfeTimerDiablo + 2;
+            if (g_sfeTimerDiablo % 10 == 0) {
+                UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, 
+                    StringToText("<c val=\"FF0000\">[Torment SW] Presencia de Diablo incrementando: " + IntToString(g_sfeTimerDiablo) + "s / 20s</c>"));
+            }
+            if (g_sfeTimerDiablo >= 20) {
+                SFE_TriggerBossDiabloSpawn();
+            }
+        } else {
+            g_sfeTimerDiablo = 0;
+        }
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Bucle de Inteligencia Artificial y Fases de Jefes (Tick cada 2 segundos)
+//--------------------------------------------------------------------------------------------------
+bool gt_SFE_BossAI_Loop_Func (bool testConds, bool runActions) {
+    fixed hpPct;
+    point bPos;
 
     if (!runActions) {
         return true;
     }
 
-    deadUnit = EventUnit();
-    killerUnit = EventUnitDamageSourceUnit();
-    deadOwner = UnitGetOwner(deadUnit);
-    killerOwner = UnitGetOwner(killerUnit);
+    // Chequear invocaciones territoriales secretas
+    SFE_CheckTerritorialInvocations();
 
-    // ¿Cayó el Núcleo Aliado? -> Derrota
-    if (deadUnit == g_sfeCoreUnit) {
-        g_sfeCoreAlive = false;
-        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-            StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"FF0000\">¡EL NÚCLEO ALIADO HA SIDO DESTRUIDO! MISIÓN FALLIDA.</c></s>"));
-        GameOver(c_SFE_PLAYER_USER, c_gameOverDefeat, true, true);
-        return true;
+    // 1. Lógica Híbrido Maar
+    if (g_sfeBossMaarSpawned && UnitIsAlive(g_sfeBossMaarUnit)) {
+        hpPct = UnitGetPropertyFixed(g_sfeBossMaarUnit, c_unitPropLifePercent, true);
+        bPos = UnitGetPosition(g_sfeBossMaarUnit);
+
+        if (hpPct <= 75.0 && g_sfeBossMaarPhase == 1) {
+            g_sfeBossMaarPhase = 2;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF00FF\">Híbrido Maar Fase 2: ¡Invocando Enjambre del Vacío!</c>"));
+            SFE_BossSummonMinions(bPos, "Mutalisk", 8);
+            SFE_BossCastShockwave(g_sfeBossMaarUnit, 8.0, 150.0);
+        } else if (hpPct <= 50.0 && g_sfeBossMaarPhase == 2) {
+            g_sfeBossMaarPhase = 3;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF00FF\">Híbrido Maar Fase 3: ¡Onda Psiónica Devastadora!</c>"));
+            SFE_BossSummonMinions(bPos, "Roach", 12);
+            SFE_BossCastShockwave(g_sfeBossMaarUnit, 10.0, 250.0);
+        } else if (hpPct <= 25.0 && g_sfeBossMaarPhase == 3) {
+            g_sfeBossMaarPhase = 4;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF00FF\">Híbrido Maar ¡ENFURECIDO!: Regeneración y Nova Crítica!</c>"));
+            UnitSetPropertyFixed(g_sfeBossMaarUnit, c_unitPropLifeRegen, 60.0);
+            SFE_BossCastShockwave(g_sfeBossMaarUnit, 12.0, 400.0);
+        }
     }
 
-    // ¿Murió un enemigo a manos del Jugador 1? -> Recompensa de Minerales
-    if (deadOwner == c_SFE_PLAYER_HOSTILE && killerOwner == c_SFE_PLAYER_USER) {
-        PlayerModifyPropertyInt(c_SFE_PLAYER_USER, c_playerPropMinerals, c_playerPropOperAdd, 25);
-        bountyText = StringToText("<c val=\"55FF55\">+25 Minerales</c>");
-        UIDisplayMessage(PlayerGroupSingle(c_SFE_PLAYER_USER), c_messageAreaSubtitle, bountyText);
+    // 2. Lógica Destroyer of Worlds
+    if (g_sfeBossDestroyerSpawned && UnitIsAlive(g_sfeBossDestroyerUnit)) {
+        hpPct = UnitGetPropertyFixed(g_sfeBossDestroyerUnit, c_unitPropLifePercent, true);
+        bPos = UnitGetPosition(g_sfeBossDestroyerUnit);
+
+        if (hpPct <= 75.0 && g_sfeBossDestroyerPhase == 1) {
+            g_sfeBossDestroyerPhase = 2;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF4400\">Destroyer of Worlds Fase 2: ¡Impacto Sísmico!</c>"));
+            SFE_BossSummonMinions(bPos, "Immortal", 4);
+            SFE_BossCastShockwave(g_sfeBossDestroyerUnit, 9.0, 200.0);
+        } else if (hpPct <= 50.0 && g_sfeBossDestroyerPhase == 2) {
+            g_sfeBossDestroyerPhase = 3;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF4400\">Destroyer of Worlds Fase 3: ¡Bombardeo Masivo!</c>"));
+            SFE_BossSummonMinions(bPos, "Colossus", 3);
+            SFE_BossCastShockwave(g_sfeBossDestroyerUnit, 11.0, 350.0);
+        } else if (hpPct <= 25.0 && g_sfeBossDestroyerPhase == 3) {
+            g_sfeBossDestroyerPhase = 4;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF4400\">Destroyer of Worlds ¡SOBRECARGA NUCLEAR TOTAL!</c>"));
+            SFE_BossCastShockwave(g_sfeBossDestroyerUnit, 14.0, 500.0);
+        }
+    }
+
+    // 3. Lógica ChainDog
+    if (g_sfeBossChainDogSpawned && UnitIsAlive(g_sfeBossChainDogUnit)) {
+        hpPct = UnitGetPropertyFixed(g_sfeBossChainDogUnit, c_unitPropLifePercent, true);
+        bPos = UnitGetPosition(g_sfeBossChainDogUnit);
+
+        if (hpPct <= 50.0 && g_sfeBossChainDogPhase == 1) {
+            g_sfeBossChainDogPhase = 2;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF2222\">ChainDog ¡Furia Salvaje! Velocidad y Hendidura Aumentadas!</c>"));
+            SFE_BossCastShockwave(g_sfeBossChainDogUnit, 8.0, 180.0);
+        }
+    }
+
+    // 4. Lógica Híbridos Ancestrales
+    if (g_sfeBossHybridsSpawned && UnitIsAlive(g_sfeBossHybridsUnit)) {
+        hpPct = UnitGetPropertyFixed(g_sfeBossHybridsUnit, c_unitPropLifePercent, true);
+        bPos = UnitGetPosition(g_sfeBossHybridsUnit);
+
+        if (hpPct <= 50.0 && g_sfeBossHybridsPhase == 1) {
+            g_sfeBossHybridsPhase = 2;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"CC00FF\">Híbridos Ancestrales ¡Drenaje Psiónico Masivo!</c>"));
+            SFE_BossSummonMinions(bPos, "HighTemplar", 3);
+            SFE_BossCastShockwave(g_sfeBossHybridsUnit, 9.0, 220.0);
+        }
+    }
+
+    // 5. Lógica Diablo Final
+    if (g_sfeBossDiabloSpawned && UnitIsAlive(g_sfeBossDiabloUnit)) {
+        hpPct = UnitGetPropertyFixed(g_sfeBossDiabloUnit, c_unitPropLifePercent, true);
+        bPos = UnitGetPosition(g_sfeBossDiabloUnit);
+
+        if (hpPct <= 75.0 && g_sfeBossDiabloPhase == 1) {
+            g_sfeBossDiabloPhase = 2;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF0000\">Diablo Fase 2: ¡Llamas del Infierno!</c>"));
+            SFE_BossSummonMinions(bPos, "Ultralisk", 4);
+            SFE_BossCastShockwave(g_sfeBossDiabloUnit, 10.0, 300.0);
+        } else if (hpPct <= 50.0 && g_sfeBossDiabloPhase == 2) {
+            g_sfeBossDiabloPhase = 3;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF0000\">Diablo Fase 3: ¡Tormenta de Almas!</c>"));
+            SFE_BossSummonMinions(bPos, "HybridDestroyer", 3);
+            SFE_BossCastShockwave(g_sfeBossDiabloUnit, 12.0, 450.0);
+        } else if (hpPct <= 25.0 && g_sfeBossDiabloPhase == 3) {
+            g_sfeBossDiabloPhase = 4;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF0000\">Diablo ¡CATACLISMO FINAL!</c>"));
+            SFE_BossCastShockwave(g_sfeBossDiabloUnit, 15.0, 700.0);
+        }
     }
 
     return true;
 }
 
 //--------------------------------------------------------------------------------------------------
-// Inicialización Principal de Fase 1
+// Muerte de Jefe y Registro de Victoria
 //--------------------------------------------------------------------------------------------------
-void SFE_Phase1_Init () {
-    trigger tWave;
-    trigger tDeath;
-    trigger tHeal;
+bool gt_SFE_BossDied_Func (bool testConds, bool runActions) {
+    unit dyingU;
+    int p;
 
-    // Coordenadas del Mapa (200x200)
-    g_sfeBasePoint      = Point(100.0, 100.0);
-    g_sfeHeroSpawnPoint = Point(100.0, 92.0);
-    g_sfeSpawnNorth     = Point(100.0, 165.0);
-    g_sfeSpawnSouth     = Point(100.0, 35.0);
-    g_sfeSpawnEast      = Point(165.0, 100.0);
-    g_sfeSpawnWest      = Point(35.0, 100.0);
+    if (!runActions) {
+        return true;
+    }
 
-    g_sfeCurrentWave    = 0;
-    g_sfeCoreAlive      = false;
+    dyingU = EventUnit();
+    p = 1;
 
-    // Configuración diplomática exacta
-    SFE_SetupDiplomacy();
+    if (dyingU == g_sfeBossMaarUnit) {
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+            StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"55FF55\">¡HÍBRIDO MAAR ELIMINADO! +2500 MINERALES PARA CADA JUGADOR</c></s>"));
+        while (p <= c_SFE_MAX_PLAYERS) {
+            PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 2500);
+            SFE_BankRecordBossKill(p);
+            p = p + 1;
+        }
+    } else if (dyingU == g_sfeBossDestroyerUnit) {
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+            StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"55FF55\">¡DESTROYER OF WORLDS ERRADICADO! +3500 MINERALES PARA CADA JUGADOR</c></s>"));
+        while (p <= c_SFE_MAX_PLAYERS) {
+            PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 3500);
+            SFE_BankRecordBossKill(p);
+            p = p + 1;
+        }
+    } else if (dyingU == g_sfeBossChainDogUnit) {
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+            StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"55FF55\">¡CHAINDOG DERROTADO! +2000 MINERALES PARA CADA JUGADOR</c></s>"));
+        while (p <= c_SFE_MAX_PLAYERS) {
+            PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 2000);
+            SFE_BankRecordBossKill(p);
+            p = p + 1;
+        }
+    } else if (dyingU == g_sfeBossHybridsUnit) {
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+            StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"55FF55\">¡HÍBRIDOS ANCESTRALES PURGADOS! +2500 MINERALES PARA CADA JUGADOR</c></s>"));
+        while (p <= c_SFE_MAX_PLAYERS) {
+            PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 2500);
+            SFE_BankRecordBossKill(p);
+            p = p + 1;
+        }
+    } else if (dyingU == g_sfeBossDiabloUnit) {
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+            StringToText("<s val=\"ModCenterSize28Bold\"><c val=\"FFE400\">¡¡DIABLO HA SIDO DERROTADO EN TORMENT!! ¡HÉROE DIABLO DESBLOQUEADO!</c></s>"));
+        while (p <= c_SFE_MAX_PLAYERS) {
+            SFE_BankRecordBossKill(p);
+            // Si fue derrotado en Torment, desbloquearlo permanentemente
+            if (g_sfeCurrentDifficulty == c_DIFF_TORMENT) {
+                g_sfeProfiles[p].secretUnlocked = true;
+                SFE_BankSave(p);
+            }
+            p = p + 1;
+        }
+        // Desencadenar la Victoria Absoluta
+        SFE_TriggerVictory();
+    }
 
-    // Despliegue de entidades principales
-    SFE_SpawnBaseAndDefenses();
-    SFE_SpawnHeroMarine();
-
-    // Mensajes de bienvenida y estado
-    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-        StringToText("<s val=\"ModCenterSize22Bold\"><c val=\"FFE400\">SPECIAL FORCES ELITE 5 (SFE5)</c></s>"));
-    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-        StringToText("<c val=\"00FFEA\">[FASE 1 ACTIVA] Núcleo Jugable</c>"));
-    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-        StringToText("<c val=\"FFFFFF\">Héroe: Marine de Élite. Defiende la base. Retrocede a ella para curarte.</c>"));
-    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-        StringToText("<c val=\"AAAAAA\">La primera oleada Zerg atacará en 5 segundos por el Norte.</c>"));
-
-    // Temporizador de oleadas: Oleada 1 a los 5 segundos, luego cada 30 segundos
-    g_sfeWaveTimer = TimerCreate();
-    TimerStart(g_sfeWaveTimer, 5.0, false, c_timeGame);
-
-    tWave = TriggerCreate("gt_SFE_WaveTimer_Func");
-    TriggerAddEventTimer(tWave, g_sfeWaveTimer);
-
-    // Temporizador de curación de la base (cada 1.0 segundo)
-    g_sfeHealTimer = TimerCreate();
-    TimerStart(g_sfeHealTimer, 1.0, true, c_timeGame);
-
-    tHeal = TriggerCreate("gt_SFE_BaseHealTimer_Func");
-    TriggerAddEventTimer(tHeal, g_sfeHealTimer);
-
-    // Disparador de muertes y recompensas
-    tDeath = TriggerCreate("gt_SFE_UnitDied_Func");
-    TriggerAddEventUnitDied(tDeath, null);
+    return true;
 }
 
 //--------------------------------------------------------------------------------------------------
-// Puntos de Entrada del Motor SC2
+// Inicializar el Sistema de Jefes
+//--------------------------------------------------------------------------------------------------
+void SFE_InitBossSystem () {
+    trigger tBossAI;
+    trigger tBossDied;
+
+    g_sfeBossMaarSpawned = false;
+    g_sfeBossDestroyerSpawned = false;
+    g_sfeBossDiabloSpawned = false;
+    g_sfeBossChainDogSpawned = false;
+    g_sfeBossHybridsSpawned = false;
+    g_sfeBossHellGateTriggered = false;
+
+    g_sfeTimerDestroyer = 0;
+    g_sfeTimerHybrids = 0;
+    g_sfeTimerChainDog = 0;
+    g_sfeTimerHellGate = 0;
+    g_sfeTimerDiablo = 0;
+
+    // Timer recurrente de IA de jefes cada 2 segundos
+    g_sfeBossAITimer = TimerCreate();
+    TimerStart(g_sfeBossAITimer, 2.0, true, c_timeGame);
+    tBossAI = TriggerCreate("gt_SFE_BossAI_Loop_Func");
+    TriggerAddEventTimer(tBossAI, g_sfeBossAITimer);
+
+    // Evento de muerte de unidad para jefes
+    tBossDied = TriggerCreate("gt_SFE_BossDied_Func");
+    TriggerAddEventUnitDied(tBossDied, null);
+}
+
+//==================================================================================================
+// Special Forces Elite 5 - Game Loop & Orchestration Master
+// Orquestador principal del ciclo de vida, selector de dificultad, inicialización y eventos
+//==================================================================================================
+
+
+
+// Diálogo de Selección de Dificultad (para el anfitrión - Jugador 1)
+int g_sfeDiffDialog;
+int[c_DIFF_COUNT] g_sfeDiffButtons;
+bool g_sfeDifficultyChosen;
+
+// Declaraciones
+void SFE_StartGameAfterDifficulty (int chosenDiff);
+
+//--------------------------------------------------------------------------------------------------
+// Trigger Callback: Daño de Héroes con Escalado de Fuerza
+//--------------------------------------------------------------------------------------------------
+bool gt_SFE_DamageHook_Func (bool testConds, bool runActions) {
+    unit attacker;
+    unit victim;
+    int attackerPlayer;
+    fixed strBonus;
+
+    if (!runActions) {
+        return true;
+    }
+
+    attacker = EventUnitDamageSourceUnit();
+    victim = EventUnit();
+    attackerPlayer = UnitGetOwner(attacker);
+
+    if (attackerPlayer >= 1 && attackerPlayer <= c_SFE_MAX_PLAYERS && g_sfeHeroStates[attackerPlayer].isActive) {
+        if (attacker == g_sfeHeroStates[attackerPlayer].heroUnit && UnitGetOwner(victim) == c_SFE_PLAYER_HOSTILE) {
+            strBonus = g_sfeHeroStates[attackerPlayer].strength * c_FACTOR_ALPHA_STRENGTH_DAMAGE;
+            if (strBonus > 0.0) {
+                UnitDamage(attacker, "WeaponNull", victim, strBonus);
+            }
+        }
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger Callback: Selección de Dificultad por el Anfitrión
+//--------------------------------------------------------------------------------------------------
+bool gt_SFE_DiffSelect_Click_Func (bool testConds, bool runActions) {
+    int clicked;
+    int d;
+
+    if (!runActions || g_sfeDifficultyChosen) {
+        return true;
+    }
+
+    clicked = EventDialogControl();
+    d = 0;
+
+    while (d < c_DIFF_COUNT) {
+        if (clicked == g_sfeDiffButtons[d]) {
+            g_sfeDifficultyChosen = true;
+            DialogSetVisible(g_sfeDiffDialog, PlayerGroupAll(), false);
+            SFE_StartGameAfterDifficulty(d);
+            return true;
+        }
+        d = d + 1;
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Iniciar Todo el Ecosistema Tras Fijar Dificultad
+//--------------------------------------------------------------------------------------------------
+void SFE_StartGameAfterDifficulty (int chosenDiff) {
+    int p;
+    int startingMinerals;
+    trigger tWaveTick;
+    trigger tReward;
+    trigger tDamage;
+    text diffNotice;
+
+    g_sfeCurrentDifficulty = chosenDiff;
+
+    diffNotice = StringToText("<s val=\"ModCenterSize22Bold\"><c val=\"FFE400\">DIFICULTAD ESTABLECIDA EN: </c><c val=\"00FFEA\">" + g_sfeDiffNames[chosenDiff] + "</c></s>");
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, diffNotice);
+
+    // Calcular minerales iniciales según dificultad
+    if (chosenDiff == c_DIFF_CASUAL) {
+        startingMinerals = 800;
+    } else if (chosenDiff == c_DIFF_NORMAL) {
+        startingMinerals = 500;
+    } else if (chosenDiff == c_DIFF_HARD) {
+        startingMinerals = 350;
+    } else if (chosenDiff == c_DIFF_BRUTAL) {
+        startingMinerals = 200;
+    } else if (chosenDiff == c_DIFF_PRO) {
+        startingMinerals = 100;
+    } else {
+        startingMinerals = 0; // Torment
+    }
+
+    p = 1;
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (PlayerType(p) == c_playerTypeUser) {
+            PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperSetTo, startingMinerals);
+        }
+        p = p + 1;
+    }
+
+    // Inicializar Base Aliada
+    SFE_InitAlliedBase();
+
+    // Inicializar HUD de Jugadores y Barra Superior
+    SFE_InitHUD();
+
+    // Inicializar Sistema de Oleadas
+    SFE_InitWaveSpawner();
+
+    // Inicializar Sistema de Jefes
+    SFE_InitBossSystem();
+
+    // Abrir Selector de Héroes
+    SFE_InitHeroSelectionUI();
+
+    // Disparador del bucle de oleadas cada 1 segundo
+    g_sfeWaveTickTimer = TimerCreate();
+    TimerStart(g_sfeWaveTickTimer, 1.0, true, c_timeGame);
+    tWaveTick = TriggerCreate("gt_SFE_WaveLoop_Timer_Func");
+    TriggerAddEventTimer(tWaveTick, g_sfeWaveTickTimer);
+
+    // Disparador de recompensas de eliminación
+    tReward = TriggerCreate("gt_SFE_UnitDied_Reward_Func");
+    TriggerAddEventUnitDied(tReward, null);
+
+    // Disparador de escalado de daño de Fuerza
+    tDamage = TriggerCreate("gt_SFE_DamageHook_Func");
+    TriggerAddEventUnitDamaged(tDamage, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Crear Selector de Dificultad Inicial
+//--------------------------------------------------------------------------------------------------
+void SFE_InitDifficultySelection () {
+    trigger tClick;
+    int d;
+    int btnY;
+
+    g_sfeDifficultyChosen = false;
+
+    // Crear Diálogo de dificultad
+    g_sfeDiffDialog = DialogCreate(540, 520, c_anchorCenter, 0, 0, true);
+    DialogSetImage(g_sfeDiffDialog, "Assets\\Textures\\ui_glue_backgrounddialog.dds");
+
+    // Título
+    DialogControlCreate(g_sfeDiffDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(DialogControlLastCreated(), PlayerGroupAll(), 500, 35);
+    DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTop, 0, 20);
+    DialogControlSetPropertyAsText(DialogControlLastCreated(), c_triggerControlPropertyText, PlayerGroupAll(), 
+        StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"FFE400\">SELECCIONA LA DIFICULTAD</c></s>"));
+
+    tClick = TriggerCreate("gt_SFE_DiffSelect_Click_Func");
+
+    d = 0;
+    while (d < c_DIFF_COUNT) {
+        btnY = 70 + (d * 58);
+        g_sfeDiffButtons[d] = DialogControlCreate(g_sfeDiffDialog, c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeDiffButtons[d], PlayerGroupAll(), 460, 48);
+        DialogControlSetPosition(g_sfeDiffButtons[d], PlayerGroupAll(), c_anchorTop, 0, btnY);
+        
+        DialogControlSetPropertyAsText(g_sfeDiffButtons[d], c_triggerControlPropertyText, PlayerGroupAll(), 
+            StringToText("<s val=\"ModCenterSize16Bold\">" + g_sfeDiffNames[d] + "</s>"));
+
+        TriggerAddEventDialogControl(tClick, 1, g_sfeDiffButtons[d], c_triggerControlEventTypeClick);
+        d = d + 1;
+    }
+
+    // Visible para todos los jugadores
+    DialogSetVisible(g_sfeDiffDialog, PlayerGroupAll(), true);
+}
+
+void SFE_SetupDiplomacyAndAlliances () {
+    int p1;
+    int p2;
+
+    p1 = 1;
+    while (p1 <= c_SFE_MAX_PLAYERS) {
+        PlayerSetAlliance(p1, c_allianceIdPassive, c_SFE_PLAYER_ALLIED_BASE, true);
+        PlayerSetAlliance(p1, c_allianceIdVision, c_SFE_PLAYER_ALLIED_BASE, true);
+        PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdPassive, p1, true);
+        PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdVision, p1, true);
+
+        PlayerSetAlliance(p1, c_allianceIdPassive, c_SFE_PLAYER_HOSTILE, false);
+        PlayerSetAlliance(p1, c_allianceIdVision, c_SFE_PLAYER_HOSTILE, false);
+        PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_allianceIdPassive, p1, false);
+        PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_allianceIdVision, p1, false);
+
+        p2 = 1;
+        while (p2 <= c_SFE_MAX_PLAYERS) {
+            if (p1 != p2) {
+                PlayerSetAlliance(p1, c_allianceIdPassive, p2, true);
+                PlayerSetAlliance(p1, c_allianceIdVision, p2, true);
+                PlayerSetAlliance(p1, c_allianceIdSeekHelp, p2, true);
+            }
+            p2 = p2 + 1;
+        }
+        p1 = p1 + 1;
+    }
+
+    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdPassive, c_SFE_PLAYER_HOSTILE, false);
+    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdVision, c_SFE_PLAYER_HOSTILE, false);
+    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_allianceIdPassive, c_SFE_PLAYER_ALLIED_BASE, false);
+    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_allianceIdVision, c_SFE_PLAYER_ALLIED_BASE, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Punto de Entrada Principal del Juego
+//--------------------------------------------------------------------------------------------------
+void SFE_MainInit () {
+    int p;
+
+    // Configurar Diplomacia y Visión Compartida
+    SFE_SetupDiplomacyAndAlliances();
+
+    // Inicializar Tablas y Catálogo
+    SFE_InitDifficultyTables();
+    SFE_InitHeroCatalog();
+
+    // Inicializar Bancos Persistentes para cada jugador
+    p = 1;
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (PlayerType(p) == c_playerTypeUser) {
+            SFE_BankInit(p);
+        }
+        p = p + 1;
+    }
+
+    // Desplegar Selector de Dificultad
+    SFE_InitDifficultySelection();
+}
+
+
+//--------------------------------------------------------------------------------------------------
+// Puntos de Entrada del Motor StarCraft II
 //--------------------------------------------------------------------------------------------------
 void InitLibs () {
     libNtve_InitLib();
@@ -324,5 +3060,5 @@ void InitLibs () {
 
 void InitMap () {
     InitLibs();
-    SFE_Phase1_Init();
+    SFE_MainInit();
 }

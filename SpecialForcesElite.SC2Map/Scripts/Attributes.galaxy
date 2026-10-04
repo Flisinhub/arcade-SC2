@@ -9,12 +9,12 @@
 include "Scripts/Constants.galaxy"
 include "Scripts/Persistence.galaxy"
 
-// Factores de conversion matematicos segun especificacion
-const fixed c_FACTOR_ALPHA_STRENGTH_DAMAGE = 2.0;
+// Factores de conversión matemáticos según especificación oficial
+const fixed c_FACTOR_ALPHA_STRENGTH_DAMAGE = 1.5;
 const fixed c_FACTOR_ALPHA_STRENGTH_HP     = 25.0;
-const fixed c_FACTOR_BETA_DEXTERITY_SPEED  = 0.025;
+const fixed c_FACTOR_BETA_DEXTERITY_SPEED  = 0.02;
 const fixed c_FACTOR_GAMMA_DEXTERITY_REGEN = 0.25;
-const fixed c_FACTOR_LAMBDA_INTEL_ENERGY   = 15.0;
+const fixed c_FACTOR_LAMBDA_INTEL_ENERGY   = 10.0;
 const fixed c_FACTOR_LAMBDA_INTEL_REGEN    = 0.20;
 const fixed c_FACTOR_LAMBDA_INTEL_SIGHT    = 0.05;
 

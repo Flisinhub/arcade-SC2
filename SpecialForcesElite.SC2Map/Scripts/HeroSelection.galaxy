@@ -1,7 +1,7 @@
 //==================================================================================================
 // Special Forces Elite 5 - Hero Selection System
-// Interfaz de diálogo avanzada con selector de los 16 héroes, previsualización, cuenta atrás
-// y selección aleatoria (con 1% de easter egg Tauren Space Marine)
+// Interfaz de diálogo avanzada: 12 héroes canónicos, previsualización táctica, cuenta atrás de 45s
+// y selección aleatoria (con 1% de easter egg de héroes secretos satíricos)
 //==================================================================================================
 
 #ifndef SFE_HEROSELECTION_INCLUDED
@@ -13,7 +13,7 @@ include "Scripts/Attributes.galaxy"
 // Variables de UI
 int g_sfeSelectDialog;
 int g_sfeSelectTimerLabel;
-int[c_HERO_TOTAL_COUNT] g_sfeHeroButtons;
+int[c_HERO_CANONICAL_COUNT] g_sfeHeroButtons;
 int g_sfeBtnConfirm;
 int g_sfeBtnRandom;
 
@@ -27,19 +27,16 @@ bool[c_SFE_MAX_PLAYERS + 1] g_sfePlayerHasConfirmed;
 timer g_sfeSelectCountdownTimer;
 int g_sfeSelectSecondsRemaining;
 
-// Puntos de despliegue en la base aliada
-point g_sfeSpawnPoint;
-
-// Declaraciones de funciones
+// Declaraciones adelantadas de funciones
 void SFE_UpdateHeroPreview (int player, int heroId);
 void SFE_ConfirmHeroSelection (int player, int heroId);
 void SFE_HeroSelectionRandom (int player);
 
 //--------------------------------------------------------------------------------------------------
-// Actualizar Panel de Previsualizacion para un Jugador
+// Actualizar Panel de Previsualización para un Jugador
 //--------------------------------------------------------------------------------------------------
 void SFE_UpdateHeroPreview (int player, int heroId) {
-    playergroup pg = PlayerGroupSingle(player);
+    playergroup pg;
     text txtName;
     text txtArchetype;
     text txtDesc;
@@ -50,21 +47,22 @@ void SFE_UpdateHeroPreview (int player, int heroId) {
         return;
     }
 
+    pg = PlayerGroupSingle(player);
     g_sfePlayerSelectedHeroId[player] = heroId;
 
     if (g_sfeHeroes[heroId].primaryAttribute == c_ATTR_STRENGTH) {
-        attrName = "FUERZA";
+        attrName = "FUERZA (HP + Daño)";
     } else if (g_sfeHeroes[heroId].primaryAttribute == c_ATTR_DEXTERITY) {
-        attrName = "DESTREZA";
+        attrName = "DESTREZA (Cadencia + Regen)";
     } else {
-        attrName = "INTELIGENCIA";
+        attrName = "INTELIGENCIA (Maná + Visión)";
     }
 
-    txtName = StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"FFE400\">" + g_sfeHeroes[heroId].name + "</c></s>");
-    txtArchetype = StringToText("<s val=\"ModLeftSize18\"><c val=\"00FFEA\">Arquetipo:</c> " + g_sfeHeroes[heroId].archetype + "  |  <c val=\"FFB700\">Atributo Clave:</c> " + attrName + "</s>");
-    txtDesc = StringToText("<s val=\"ModLeftSize16\">" + g_sfeHeroes[heroId].description + "</s>");
+    txtName = StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"FFE400\">" + g_sfeHeroes[heroId].name + "</c> <c val=\"AAAAAA\">(" + g_sfeHeroes[heroId].faction + ")</c></s>");
+    txtArchetype = StringToText("<s val=\"ModLeftSize18\"><c val=\"00FFEA\">Rol:</c> " + g_sfeHeroes[heroId].archetype + "  |  <c val=\"FFB700\">Atributo:</c> " + attrName + "</s>");
+    txtDesc = StringToText("<s val=\"ModLeftSize15\">" + g_sfeHeroes[heroId].description + "</s>");
     
-    txtStats = StringToText("<s val=\"ModLeftSize16\"><c val=\"55FF55\">Vida Base:</c> " + FixedToString(g_sfeHeroes[heroId].baseHp, 0) + 
+    txtStats = StringToText("<s val=\"ModLeftSize15\"><c val=\"55FF55\">Vida Base:</c> " + FixedToString(g_sfeHeroes[heroId].baseHp, 0) + 
         "   |   <c val=\"00CCFF\">Escudos:</c> " + FixedToString(g_sfeHeroes[heroId].baseShields, 0) + 
         "   |   <c val=\"CC88FF\">Energía:</c> " + FixedToString(g_sfeHeroes[heroId].baseEnergy, 0) + 
         "\n<c val=\"FF4444\">Daño Base:</c> " + FixedToString(g_sfeHeroes[heroId].baseDamage, 0) + 
@@ -78,12 +76,13 @@ void SFE_UpdateHeroPreview (int player, int heroId) {
 }
 
 //--------------------------------------------------------------------------------------------------
-// Confirmar Seleccion y Desplegar Heroe
+// Confirmar Selección y Desplegar Héroe
 //--------------------------------------------------------------------------------------------------
 void SFE_ConfirmHeroSelection (int player, int heroId) {
     unit u;
     string unitType;
     text announce;
+    point pSpawn;
 
     if (player < 1 || player > c_SFE_MAX_PLAYERS || g_sfePlayerHasConfirmed[player]) {
         return;
@@ -91,23 +90,24 @@ void SFE_ConfirmHeroSelection (int player, int heroId) {
 
     g_sfePlayerHasConfirmed[player] = true;
     unitType = g_sfeHeroes[heroId].unitType;
+    pSpawn = Point(100.0, 92.0);
 
-    // Intentar crear la unidad con el tipo principal o con el sustituto en caso de falta de modelo
-    UnitCreate(1, unitType, 0, player, g_sfeSpawnPoint, 90.0);
+    // Despliegue de la unidad
+    UnitCreate(1, unitType, 0, player, pSpawn, 90.0);
     u = UnitLastCreated();
     if (u == null) {
-        UnitCreate(1, g_sfeHeroes[heroId].fallbackUnitType, 0, player, g_sfeSpawnPoint, 90.0);
+        UnitCreate(1, g_sfeHeroes[heroId].fallbackUnitType, 0, player, pSpawn, 90.0);
         u = UnitLastCreated();
     }
 
-    // Inicializar atributos matematicos del heroe
+    // Inicializar atributos matemáticos del héroe
     SFE_InitHeroAttributes(player, u, heroId);
 
-    // Centrar camara y seleccionar unidad
-    CameraPan(player, g_sfeSpawnPoint, 0.4, -1, 10.0, false);
+    // Centrar cámara y seleccionar unidad
+    CameraPan(player, pSpawn, 0.4, -1, 10.0, false);
     UnitSelect(u, player, true);
 
-    // Ocultar dialogo para este jugador
+    // Ocultar diálogo para este jugador
     DialogSetVisible(g_sfeSelectDialog, PlayerGroupSingle(player), false);
 
     // Anuncio a toda la partida
@@ -116,11 +116,12 @@ void SFE_ConfirmHeroSelection (int player, int heroId) {
 }
 
 //--------------------------------------------------------------------------------------------------
-// Seleccion Aleatoria (1% probabilidad de variante legendaria secreta)
+// Selección Aleatoria (1% probabilidad de héroes satíricos secretos)
 //--------------------------------------------------------------------------------------------------
 void SFE_HeroSelectionRandom (int player) {
     int roll;
     int pickedHero;
+    int secretIdx;
 
     if (g_sfePlayerHasConfirmed[player]) {
         return;
@@ -128,34 +129,41 @@ void SFE_HeroSelectionRandom (int player) {
 
     roll = RandomInt(1, 100);
     if (roll == 100) {
-        // 1% Easter Egg
-        pickedHero = c_HERO_SECRET_TAUREN;
-        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("<c val=\"FF00FF\">¡¡EVENTO ESPECIAL!! ¡Jugador " + IntToString(player) + " ha obtenido al TAUREN SPACE MARINE LEGENDARIO (1% Probabilidad)!</c>"));
+        // 1% Easter Egg Satírico (Dr. Evil, Donald Trump, Alex Jones)
+        secretIdx = RandomInt(c_HERO_SECRET_EVIL, c_HERO_SECRET_JONES);
+        pickedHero = secretIdx;
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+            StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF00FF\">¡¡EVENTO ESPECIAL!! ¡Jugador " + IntToString(player) + " ha obtenido a " + g_sfeHeroes[secretIdx].name + " (1% Probabilidad)!</c></s>"));
     } else {
-        pickedHero = RandomInt(0, 15);
+        // Uno de los 12 héroes canónicos
+        pickedHero = RandomInt(0, c_HERO_CANONICAL_COUNT - 1);
     }
 
     SFE_ConfirmHeroSelection(player, pickedHero);
 }
 
 //--------------------------------------------------------------------------------------------------
-// Trigger Callback: Clic en Controles del Dialogo
+// Trigger Callback: Clic en Controles del Diálogo
 //--------------------------------------------------------------------------------------------------
 bool gt_SFE_HeroSelection_Click_Func (bool testConds, bool runActions) {
-    int clickedCtrl = EventDialogControl();
-    int player = EventPlayer();
-    int i = 0;
+    int clickedCtrl;
+    int player;
+    int i;
 
-    if (!runActions || player < 1 || player > c_SFE_MAX_PLAYERS) {
+    if (!runActions) {
         return true;
     }
 
-    if (g_sfePlayerHasConfirmed[player]) {
+    clickedCtrl = EventDialogControl();
+    player = EventPlayer();
+    i = 0;
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS || g_sfePlayerHasConfirmed[player]) {
         return true;
     }
 
-    // Revisar si pulso algun heroe
-    while (i < 16) {
+    // Revisar si pulsó algún héroe de la matriz
+    while (i < c_HERO_CANONICAL_COUNT) {
         if (clickedCtrl == g_sfeHeroButtons[i]) {
             SFE_UpdateHeroPreview(player, i);
             return true;
@@ -163,13 +171,13 @@ bool gt_SFE_HeroSelection_Click_Func (bool testConds, bool runActions) {
         i = i + 1;
     }
 
-    // Boton de Confirmar
+    // Botón de Confirmar
     if (clickedCtrl == g_sfeBtnConfirm) {
         SFE_ConfirmHeroSelection(player, g_sfePlayerSelectedHeroId[player]);
         return true;
     }
 
-    // Boton de Aleatorio
+    // Botón de Aleatorio
     if (clickedCtrl == g_sfeBtnRandom) {
         SFE_HeroSelectionRandom(player);
         return true;
@@ -179,22 +187,23 @@ bool gt_SFE_HeroSelection_Click_Func (bool testConds, bool runActions) {
 }
 
 //--------------------------------------------------------------------------------------------------
-// Trigger Callback: Temporizador de Cuenta Atras de Seleccion
+// Trigger Callback: Temporizador de Cuenta Atrás de Selección (45s)
 //--------------------------------------------------------------------------------------------------
 bool gt_SFE_HeroSelection_Timer_Func (bool testConds, bool runActions) {
-    int p = 1;
+    int p;
     text timerText;
 
     if (!runActions) {
         return true;
     }
 
+    p = 1;
     g_sfeSelectSecondsRemaining = g_sfeSelectSecondsRemaining - 1;
     timerText = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF5555\">Tiempo restante para elegir:</c> " + IntToString(g_sfeSelectSecondsRemaining) + "s</s>");
     DialogControlSetPropertyAsText(g_sfeSelectTimerLabel, c_triggerControlPropertyText, PlayerGroupAll(), timerText);
 
     if (g_sfeSelectSecondsRemaining <= 0) {
-        // Tiempo agotado: forzar seleccion aleatoria para quienes falten
+        // Tiempo agotado: forzar selección aleatoria para quienes falten
         while (p <= c_SFE_MAX_PLAYERS) {
             if (PlayerType(p) == c_playerTypeUser && !g_sfePlayerHasConfirmed[p]) {
                 SFE_HeroSelectionRandom(p);
@@ -208,7 +217,7 @@ bool gt_SFE_HeroSelection_Timer_Func (bool testConds, bool runActions) {
 }
 
 //--------------------------------------------------------------------------------------------------
-// Creacion del Dialogo de Seleccion
+// Creación del Diálogo de Selección de Héroes
 //--------------------------------------------------------------------------------------------------
 void SFE_InitHeroSelectionUI () {
     trigger tClick;
@@ -220,14 +229,13 @@ void SFE_InitHeroSelectionUI () {
     int btnY;
     int p;
 
-    g_sfeSpawnPoint = Point(100.0, 95.0); // Coordenada central de despliegue
     g_sfeSelectSecondsRemaining = 45;
 
-    // Crear Dialogo principal
-    g_sfeSelectDialog = DialogCreate(1140, 740, c_anchorCenter, 0, 0, true);
+    // Crear Diálogo principal
+    g_sfeSelectDialog = DialogCreate(1140, 700, c_anchorCenter, 0, 0, true);
     DialogSetImage(g_sfeSelectDialog, "Assets\\Textures\\ui_glue_backgrounddialog.dds");
 
-    // Titulo superior
+    // Título superior
     DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
     DialogControlSetSize(DialogControlLastCreated(), PlayerGroupAll(), 1100, 45);
     DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTop, 0, 20);
@@ -241,65 +249,65 @@ void SFE_InitHeroSelectionUI () {
     DialogControlSetPropertyAsText(g_sfeSelectTimerLabel, c_triggerControlPropertyText, PlayerGroupAll(), 
         StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF5555\">Tiempo restante para elegir:</c> 45s</s>"));
 
-    // Matriz 4x4 para los 16 heroes canónicos
+    // Matriz 3 filas x 4 columnas para los 12 héroes canónicos
     i = 0;
-    while (i < 16) {
+    while (i < c_HERO_CANONICAL_COUNT) {
         col = i % 4;
         row = i / 4;
         btnX = 40 + (col * 140);
-        btnY = 120 + (row * 125);
+        btnY = 125 + (row * 135);
 
         g_sfeHeroButtons[i] = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeButton);
-        DialogControlSetSize(g_sfeHeroButtons[i], PlayerGroupAll(), 130, 115);
+        DialogControlSetSize(g_sfeHeroButtons[i], PlayerGroupAll(), 130, 120);
         DialogControlSetPosition(g_sfeHeroButtons[i], PlayerGroupAll(), c_anchorTopLeft, btnX, btnY);
         DialogControlSetPropertyAsText(g_sfeHeroButtons[i], c_triggerControlPropertyText, PlayerGroupAll(), 
-            StringToText("<s val=\"ModCenterSize14Bold\">" + g_sfeHeroes[i].name + "</s>"));
+            StringToText("<s val=\"ModCenterSize14Bold\">" + g_sfeHeroes[i].name + "\n<c val=\"AAAAAA\">(" + g_sfeHeroes[i].faction + ")</c></s>"));
 
         i = i + 1;
     }
 
-    // Panel derecho: Ficha Tecnica de Previsualizacion
+    // Panel derecho: Ficha Técnica de Previsualización
     g_sfePreviewName = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
     DialogControlSetSize(g_sfePreviewName, PlayerGroupAll(), 480, 40);
-    DialogControlSetPosition(g_sfePreviewName, PlayerGroupAll(), c_anchorTopLeft, 630, 120);
+    DialogControlSetPosition(g_sfePreviewName, PlayerGroupAll(), c_anchorTopLeft, 630, 125);
 
     g_sfePreviewArchetype = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
     DialogControlSetSize(g_sfePreviewArchetype, PlayerGroupAll(), 480, 35);
-    DialogControlSetPosition(g_sfePreviewArchetype, PlayerGroupAll(), c_anchorTopLeft, 630, 165);
+    DialogControlSetPosition(g_sfePreviewArchetype, PlayerGroupAll(), c_anchorTopLeft, 630, 170);
 
     g_sfePreviewDesc = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
     DialogControlSetSize(g_sfePreviewDesc, PlayerGroupAll(), 480, 80);
-    DialogControlSetPosition(g_sfePreviewDesc, PlayerGroupAll(), c_anchorTopLeft, 630, 205);
+    DialogControlSetPosition(g_sfePreviewDesc, PlayerGroupAll(), c_anchorTopLeft, 630, 215);
 
     g_sfePreviewStats = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
     DialogControlSetSize(g_sfePreviewStats, PlayerGroupAll(), 480, 120);
-    DialogControlSetPosition(g_sfePreviewStats, PlayerGroupAll(), c_anchorTopLeft, 630, 300);
+    DialogControlSetPosition(g_sfePreviewStats, PlayerGroupAll(), c_anchorTopLeft, 630, 305);
 
-    // Boton de Confirmar Selección
+    // Botón de Confirmar Selección
     g_sfeBtnConfirm = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeButton);
     DialogControlSetSize(g_sfeBtnConfirm, PlayerGroupAll(), 230, 55);
-    DialogControlSetPosition(g_sfeBtnConfirm, PlayerGroupAll(), c_anchorTopLeft, 630, 460);
+    DialogControlSetPosition(g_sfeBtnConfirm, PlayerGroupAll(), c_anchorTopLeft, 630, 480);
     DialogControlSetPropertyAsText(g_sfeBtnConfirm, c_triggerControlPropertyText, PlayerGroupAll(), 
         StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"55FF55\">CONFIRMAR</c></s>"));
 
-    // Boton de Selección Aleatoria
+    // Botón de Selección Aleatoria (con 1% de héroe secreto)
     g_sfeBtnRandom = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeButton);
     DialogControlSetSize(g_sfeBtnRandom, PlayerGroupAll(), 230, 55);
-    DialogControlSetPosition(g_sfeBtnRandom, PlayerGroupAll(), c_anchorTopLeft, 880, 460);
+    DialogControlSetPosition(g_sfeBtnRandom, PlayerGroupAll(), c_anchorTopLeft, 880, 480);
     DialogControlSetPropertyAsText(g_sfeBtnRandom, c_triggerControlPropertyText, PlayerGroupAll(), 
         StringToText("<s val=\"ModCenterSize18Bold\"><c val=\"FFAA00\">ALEATORIO (1%)</c></s>"));
 
-    // Conectar Triggers de Interaccion
+    // Conectar Triggers de Interacción
     tClick = TriggerCreate("gt_SFE_HeroSelection_Click_Func");
     i = 0;
-    while (i < 16) {
+    while (i < c_HERO_CANONICAL_COUNT) {
         TriggerAddEventDialogControl(tClick, c_playerAny, g_sfeHeroButtons[i], c_triggerControlEventTypeClick);
         i = i + 1;
     }
     TriggerAddEventDialogControl(tClick, c_playerAny, g_sfeBtnConfirm, c_triggerControlEventTypeClick);
     TriggerAddEventDialogControl(tClick, c_playerAny, g_sfeBtnRandom, c_triggerControlEventTypeClick);
 
-    // Inicializar previsualizacion predeterminada (Jim Raynor) para cada jugador
+    // Inicializar previsualización predeterminada (Jim Raynor) para cada jugador
     p = 1;
     while (p <= c_SFE_MAX_PLAYERS) {
         g_sfePlayerSelectedHeroId[p] = c_HERO_RAYNOR;
@@ -308,10 +316,10 @@ void SFE_InitHeroSelectionUI () {
         p = p + 1;
     }
 
-    // Mostrar el dialogo a todos los usuarios
+    // Mostrar el diálogo
     DialogSetVisible(g_sfeSelectDialog, PlayerGroupAll(), true);
 
-    // Configurar e iniciar temporizador de 1 segundo recurrente
+    // Temporizador de 1s para cuenta atrás
     g_sfeSelectCountdownTimer = TimerCreate();
     TimerStart(g_sfeSelectCountdownTimer, 1.0, true, c_timeGame);
     tTimer = TriggerCreate("gt_SFE_HeroSelection_Timer_Func");

@@ -8,15 +8,19 @@
 
 include "Scripts/Constants.galaxy"
 include "Scripts/Persistence.galaxy"
+include "Scripts/Attributes.galaxy"
 include "Scripts/HUD.galaxy"
 
 unit g_sfeBaseCoreUnit;
+unit g_sfeMedic1;
+unit g_sfeMedic2;
 point g_sfeBaseCenterPoint;
 bool g_sfeGameOverTriggered;
 
 // Declaraciones
 void SFE_TriggerDefeat ();
 void SFE_TriggerVictory ();
+void SFE_BaseHealHeroesTick ();
 
 //--------------------------------------------------------------------------------------------------
 // Inicializar la Base Aliada y Estructuras Defensivas
@@ -30,7 +34,7 @@ void SFE_InitAlliedBase () {
     g_sfeGameOverTriggered = false;
     g_sfeBaseCoreHpPercent = 100.0;
 
-    // Crear Fortaleza Planetaria Troncal (Jugador 7 - Aliado)
+    // Crear Fortaleza Planetaria Troncal (Jugador 14 - Aliado)
     UnitCreate(1, "PlanetaryFortress", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBaseCenterPoint, 270.0);
     u = UnitLastCreated();
     if (u == null) {
@@ -66,6 +70,77 @@ void SFE_InitAlliedBase () {
     UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 0.0);
     UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(85.0, 94.0), 0.0);
     UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(85.0, 106.0), 0.0);
+
+    // Médicos de Campaña Aliados para dar soporte continuo
+    UnitCreate(1, "Medic", 0, c_SFE_PLAYER_ALLIED_BASE, Point(97.0, 95.0), 45.0);
+    g_sfeMedic1 = UnitLastCreated();
+    if (g_sfeMedic1 != null) {
+        UnitSetPropertyFixed(g_sfeMedic1, c_unitPropEnergyPercent, 100.0);
+    }
+
+    UnitCreate(1, "Medic", 0, c_SFE_PLAYER_ALLIED_BASE, Point(103.0, 95.0), 135.0);
+    g_sfeMedic2 = UnitLastCreated();
+    if (g_sfeMedic2 != null) {
+        UnitSetPropertyFixed(g_sfeMedic2, c_unitPropEnergyPercent, 100.0);
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Aura de Curación de la Base: Regenera héroes cercanos y ordena a los médicos
+//--------------------------------------------------------------------------------------------------
+void SFE_BaseHealHeroesTick () {
+    int p;
+    unit uHero;
+    fixed curLife;
+    fixed maxLife;
+    fixed newLife;
+    fixed dist;
+    order ordHeal;
+    bool healedAny;
+
+    p = 1;
+    healedAny = false;
+
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (g_sfeHeroStates[p].isActive) {
+            uHero = g_sfeHeroStates[p].heroUnit;
+            if (uHero != null && UnitIsAlive(uHero)) {
+                dist = DistanceBetweenPoints(UnitGetPosition(uHero), g_sfeBaseCenterPoint);
+                if (dist <= 18.0) {
+                    curLife = UnitGetPropertyFixed(uHero, c_unitPropLife, true);
+                    maxLife = UnitGetPropertyFixed(uHero, c_unitPropLifeMax, true);
+                    if (curLife < maxLife) {
+                        newLife = curLife + 35.0;
+                        if (newLife > maxLife) {
+                            newLife = maxLife;
+                        }
+                        UnitSetPropertyFixed(uHero, c_unitPropLife, newLife);
+
+                        ordHeal = OrderTargetingUnit(AbilityCommand("MedicHeal", 0), uHero);
+                        if (g_sfeMedic1 != null && UnitIsAlive(g_sfeMedic1)) {
+                            UnitSetPropertyFixed(g_sfeMedic1, c_unitPropEnergyPercent, 100.0);
+                            UnitIssueOrder(g_sfeMedic1, ordHeal, c_orderQueueReplace);
+                        }
+                        if (g_sfeMedic2 != null && UnitIsAlive(g_sfeMedic2)) {
+                            UnitSetPropertyFixed(g_sfeMedic2, c_unitPropEnergyPercent, 100.0);
+                            UnitIssueOrder(g_sfeMedic2, ordHeal, c_orderQueueReplace);
+                        }
+                        healedAny = true;
+                    }
+                }
+            }
+        }
+        p = p + 1;
+    }
+
+    if (!healedAny) {
+        if (g_sfeMedic1 != null && UnitIsAlive(g_sfeMedic1)) {
+            UnitIssueOrder(g_sfeMedic1, OrderTargetingPoint(AbilityCommand("move", 0), Point(97.0, 95.0)), c_orderQueueReplace);
+        }
+        if (g_sfeMedic2 != null && UnitIsAlive(g_sfeMedic2)) {
+            UnitIssueOrder(g_sfeMedic2, OrderTargetingPoint(AbilityCommand("move", 0), Point(103.0, 95.0)), c_orderQueueReplace);
+        }
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -95,7 +170,7 @@ void SFE_UpdateBaseHealthStatus () {
 // Secuencia de Derrota
 //--------------------------------------------------------------------------------------------------
 void SFE_TriggerDefeat () {
-    int p = 1;
+    int p;
     text defText;
 
     if (g_sfeGameOverTriggered) {
@@ -103,6 +178,7 @@ void SFE_TriggerDefeat () {
     }
     g_sfeGameOverTriggered = true;
 
+    p = 1;
     defText = StringToText("<s val=\"ModCenterSize36Bold\"><c val=\"FF0000\">¡EL CUARTEL GENERAL HA SIDO DESTRUIDO!\nMISIÓN FALLIDA — DERROTA</c></s>");
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, defText);
 
@@ -118,7 +194,7 @@ void SFE_TriggerDefeat () {
 // Secuencia de Victoria
 //--------------------------------------------------------------------------------------------------
 void SFE_TriggerVictory () {
-    int p = 1;
+    int p;
     text vicText;
 
     if (g_sfeGameOverTriggered) {
@@ -126,6 +202,7 @@ void SFE_TriggerVictory () {
     }
     g_sfeGameOverTriggered = true;
 
+    p = 1;
     vicText = StringToText("<s val=\"ModCenterSize36Bold\"><c val=\"00FF7F\">¡¡VICTORIA SUPREMA EN SPECIAL FORCES ELITE 5!!\nTODAS LAS HORDAS Y JEFES HAN SIDO ERRADICADOS</c></s>");
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, vicText);
 

@@ -10,3 +10,5 @@ MapInfo/Player05/Name=Fuerza Especial 5
 MapInfo/Player06/Name=Fuerza Especial 6
 MapInfo/Player07/Name=Base Central Aliada
 MapInfo/Player08/Name=Enjambre Hostil y Jefes
+MapInfo/Player14/Name=Base Central Aliada
+MapInfo/Player15/Name=Enjambre Hostil y Jefes

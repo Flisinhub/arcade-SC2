@@ -1,6 +1,7 @@
 //==================================================================================================
 // Special Forces Elite 5 - Wave Spawner & Hostile AI Engine
-// Generador perimetral de 25 oleadas, nidos destructibles, escalado de estadísticas e IA de asedio
+// Generador perimetral de 25 oleadas, nidos destructibles, escalado de estadísticas,
+// curva de entropía (T_up) y asignación táctica hacia el núcleo
 //==================================================================================================
 
 #ifndef SFE_WAVESPAWNER_INCLUDED
@@ -22,7 +23,7 @@ bool g_sfeOutpostNorthAlive;
 bool g_sfeOutpostEastAlive;
 bool g_sfeOutpostWestAlive;
 
-// Puntos de aparicion cardinales
+// Puntos de aparición cardinales
 point g_sfeSpawnNorth;
 point g_sfeSpawnSouth;
 point g_sfeSpawnEast;
@@ -31,10 +32,16 @@ point g_sfeSpawnWest;
 // Temporizadores de oleada
 timer g_sfeWaveTimer;
 timer g_sfeWaveTickTimer;
+timer g_sfeEntropyTimer;
+
+// Bonificaciones acumulativas de entropía enemiga (T_up)
+fixed g_sfeHostileArmorBonus;
+fixed g_sfeHostileLifeBonusPct;
 
 // Declaraciones de funciones
 void SFE_SpawnWave (int waveNum);
 void SFE_CheckOutpostStatus ();
+void SFE_OrderHostilesToCore (unitgroup ug);
 void SFE_TriggerBossMaarSpawn ();
 void SFE_TriggerBossDestroyerSpawn ();
 void SFE_TriggerBossDiabloSpawn ();
@@ -43,6 +50,8 @@ void SFE_TriggerBossDiabloSpawn ();
 // Inicializar Puntos Cardinales y Nidos de Asedio
 //--------------------------------------------------------------------------------------------------
 void SFE_InitWaveSpawner () {
+    trigger tEntropy;
+
     g_sfeSpawnNorth = Point(100.0, 185.0);
     g_sfeSpawnSouth = Point(100.0, 15.0);
     g_sfeSpawnEast  = Point(185.0, 100.0);
@@ -51,7 +60,10 @@ void SFE_InitWaveSpawner () {
     g_sfeCurrentWaveNumber = 1;
     g_sfeWaveTimeRemaining = FixedToInt(g_sfeDiffWaveIntervalSeconds[g_sfeCurrentDifficulty]);
 
-    // Crear los 3 reductos/nidos hostiles (Jugador 8)
+    g_sfeHostileArmorBonus = 0.0;
+    g_sfeHostileLifeBonusPct = 0.0;
+
+    // Crear los 3 reductos/nidos hostiles (Jugador 15)
     // 1. Colmena Zerg Norte
     UnitCreate(1, "Hive", 0, c_SFE_PLAYER_HOSTILE, Point(100.0, 160.0), 270.0);
     g_sfeOutpostNorth = UnitLastCreated();
@@ -76,6 +88,12 @@ void SFE_InitWaveSpawner () {
     UnitSetPropertyFixed(g_sfeOutpostWest, c_unitPropLifeMax, 4000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
     UnitSetPropertyFixed(g_sfeOutpostWest, c_unitPropLifePercent, 100.0);
     g_sfeOutpostWestAlive = true;
+
+    // Inicializar temporizador de evolución de entropía (T_up)
+    g_sfeEntropyTimer = TimerCreate();
+    TimerStart(g_sfeEntropyTimer, g_sfeDiffUpgradeIntervalSeconds[g_sfeCurrentDifficulty], true, c_timeGame);
+    tEntropy = TriggerCreate("gt_SFE_EntropyUpgrade_Timer_Func");
+    TriggerAddEventTimer(tEntropy, g_sfeEntropyTimer);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -114,13 +132,13 @@ void SFE_SpawnWave (int waveNum) {
     unit u;
 
     ug = UnitGroupEmpty();
-    statMult = g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty];
+    statMult = g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty] * (1.0 + (g_sfeHostileLifeBonusPct / 100.0));
     countNorth = 4 + (waveNum * 2);
     countSouth = 4 + (waveNum * 2);
     countEast  = 4 + (waveNum * 2);
     countWest  = 4 + (waveNum * 2);
 
-    // Seleccion escalonada de unidades segun el numero de oleada
+    // Selección escalonada de unidades según el número de oleada
     if (waveNum <= 5) {
         uType1 = "Zergling";
         uType2 = "Roach";
@@ -240,6 +258,23 @@ void SFE_CheckOutpostStatus () {
 }
 
 //--------------------------------------------------------------------------------------------------
+// Bucle de Entropía: Mejoras Periódicas de la IA Hostil (T_up)
+//--------------------------------------------------------------------------------------------------
+bool gt_SFE_EntropyUpgrade_Timer_Func (bool testConds, bool runActions) {
+    if (!runActions) {
+        return true;
+    }
+
+    g_sfeHostileArmorBonus = g_sfeHostileArmorBonus + 1.0;
+    g_sfeHostileLifeBonusPct = g_sfeHostileLifeBonusPct + 10.0;
+
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, 
+        StringToText("<c val=\"FF4444\">[Evolución Hostil T_up] +1 Blindaje / +10% Vitalidad enemiga acumulada</c>"));
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
 // Bucle del Temporizador de Oleadas (Tick cada 1 segundo)
 //--------------------------------------------------------------------------------------------------
 bool gt_SFE_WaveLoop_Timer_Func (bool testConds, bool runActions) {
@@ -249,8 +284,9 @@ bool gt_SFE_WaveLoop_Timer_Func (bool testConds, bool runActions) {
 
     g_sfeWaveTimeRemaining = g_sfeWaveTimeRemaining - 1;
 
-    // Actualizar estado de salud de la base y HUD
+    // Actualizar estado de salud de la base, curación y HUD
     SFE_UpdateBaseHealthStatus();
+    SFE_BaseHealHeroesTick();
     SFE_CheckOutpostStatus();
     SFE_UpdateTopBarHUD();
 
@@ -263,7 +299,7 @@ bool gt_SFE_WaveLoop_Timer_Func (bool testConds, bool runActions) {
             g_sfeCurrentWaveNumber = c_TOTAL_WAVES;
         }
 
-        // Reiniciar tiempo segun dificultad
+        // Reiniciar tiempo según dificultad
         g_sfeWaveTimeRemaining = FixedToInt(g_sfeDiffWaveIntervalSeconds[g_sfeCurrentDifficulty]);
     }
 
@@ -271,11 +307,11 @@ bool gt_SFE_WaveLoop_Timer_Func (bool testConds, bool runActions) {
 }
 
 //--------------------------------------------------------------------------------------------------
-// Recompensa de Minerales y XP por Enemigo Eliminado
+// Recompensa de Minerales y XP por Enemigo Eliminado (Last Hit)
 //--------------------------------------------------------------------------------------------------
 bool gt_SFE_UnitDied_Reward_Func (bool testConds, bool runActions) {
-    unit dyingU = EventUnit();
-    unit killerU = EventUnitDamageSourceUnit();
+    unit dyingU;
+    unit killerU;
     int killerPlayer;
     int bounty;
 
@@ -283,13 +319,16 @@ bool gt_SFE_UnitDied_Reward_Func (bool testConds, bool runActions) {
         return true;
     }
 
+    dyingU = EventUnit();
+    killerU = EventUnitDamageSourceUnit();
+
     if (UnitGetOwner(dyingU) != c_SFE_PLAYER_HOSTILE) {
         return true;
     }
 
     killerPlayer = UnitGetOwner(killerU);
     if (killerPlayer >= 1 && killerPlayer <= c_SFE_MAX_PLAYERS) {
-        // Recompensa en minerales escalada por la dificultad
+        // Recompensa en minerales escalada por la dificultad (M_inc)
         bounty = FixedToInt(15.0 * g_sfeDiffIncomeMultiplier[g_sfeCurrentDifficulty]);
         if (bounty < 5) {
             bounty = 5;

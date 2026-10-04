@@ -34,8 +34,11 @@ SFE_PlayerProfile[c_SFE_MAX_PLAYERS + 1] g_sfeProfiles;
 // Algoritmo de Suma de Verificacion (Checksum)
 //--------------------------------------------------------------------------------------------------
 int SFE_CalculateChecksum (int player) {
-    int sum = c_SECURITY_SALT;
-    int d = 0;
+    int sum;
+    int d;
+
+    sum = c_SECURITY_SALT;
+    d = 0;
     sum = sum + (g_sfeProfiles[player].accountLevel * 179);
     sum = sum + (g_sfeProfiles[player].accountXP * 31);
     sum = sum + (g_sfeProfiles[player].totalWins * 719);

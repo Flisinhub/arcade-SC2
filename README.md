@@ -1,84 +1,113 @@
 # Special Forces Elite 5 (SFE5) — StarCraft II Arcade
 
-Recreación fiel y modernizada del legendario mapa personalizado **Special Forces Elite 5 (SFE5)** para el Arcade de **StarCraft II**, implementado directamente en Galaxy Script nativo y arquitectura modular de componentes.
+Implementación técnica, fiel y modernizada del legendario mapa personalizado **Special Forces Elite 5 (SFE5)** para el Arcade de **StarCraft II**, desarrollado directamente en Galaxy Script nativo con arquitectura modular y validación de compilación ANSI C89.
 
 ---
 
 ## 🌟 Características Principales
 
-### 🦸 16 Héroes Canónicos (+1 Héroe Secreto)
-- **Tanques / Fuerza**: Firebat Pesado, Merodeador Acorazado, Zealot Centurión, Thor Titán.
-- **Tiradores / Destreza**: Marine de Élite, Ghost Francotirador, Segador de Asalto, Espectro de Asedio.
-- **Soporte / Utilidad**: Médico de Campaña, Cuervo Táctico, Centinela de Escudos.
-- **Especialistas / Psiónicos**: Templario Tétrico, Alto Templario, Arconte de Vacío, Acechador Cibernético, Inmortal Prototipo.
-- **Héroe Oculto (1% Probabilidad en Selección Aleatoria)**: *Tauren Space Marine Legendario*.
-
-### 📊 Sistema de Atributos Determinista (F / D / I)
-- **Fuerza (F)**: Aumenta la vida máxima (`+25 HP`), armadura pasiva y regeneración.
-- **Destreza (D)**: Incrementa la velocidad de ataque, probabilidad de impacto crítico y cadencia.
-- **Inteligencia (I)**: Incrementa la reserva de energía (`+15 Energía`), regeneración de maná y daño de habilidades.
-- Interfaz en pantalla (HUD) interactiva con asignación de puntos mediante botones `[+ F]`, `[+ D]`, `[+ I]`.
-
-### ⚔️ 7 Niveles de Dificultad
-1. **Casual**: Recursos iniciales altos, enemigos relajados.
-2. **Normal**: La experiencia táctica estándar.
-3. **Difícil**: Mayor densidad de invasión y daño hostil aumentado (+25%).
-4. **Brutal**: Estadísticas enemigas (+60%), recompensas de minerales ajustadas.
-5. **Pro**: Para veteranos coordinados (+100% atributos hostiles).
-6. **Imposible**: Presión implacable (+160% atributos hostiles, 50 minerales base).
-7. **TORMENT**: Dificultad máxima para escuadrones de élite (+250% daño/salud, sin minerales iniciales).
-
-### 🛡️ Asedio Perimetral y Puestos Avanzados
-- **25 Oleadas Escalonadas**: Zerg, Terran y Protoss con composición y atributos que escalan según la dificultad seleccionada.
-- **3 Puestos Avanzados Destructibles**: Puestos Norte, Este y Oeste con bonificación masiva de minerales al ser defendidos.
-- **Núcleo Aliado (Fortaleza Planetaria)**: Con defensas perimetrales y sistema de alertas de integridad.
-
-### 💀 3 Encuentros de Jefes por Fases
-1. **Híbrido Maar**: Invoca clones y desata ondas de choque gravitacionales.
-2. **Destructor de Mundos**: Coloso abisal con descargas de plasma zonal.
-3. **Diablo**: El enfrentamiento final con fases múltiples de esbirros de élite.
-
-### 💾 Persistencia Segura (Bancos de SC2)
-- Cifrado con checksum y verificación de firma para prevenir manipulación.
-- Registro de partidas jugadas, victorias, muertes y nivel histórico del jugador.
+### 🦸 12 Héroes Canónicos (+ 3 Héroes Secretos Satíricos del 1%)
+- **Jim Raynor / Marine Élite (Terran)**: DPS Balístico Sostenido, disparo continuo monobjetivo.
+- **Gui Montag / Firebat (Terran)**: Supresor Frontal de Área, mitigación física biológica y daño cónico.
+- **Sarah Kerrigan / Nova (Terran)**: Asesino Táctico / Élite, camuflaje, disparo de precisión y eliminación prioritaria.
+- **Edmund Duke / Siege Tank (Terran)**: Artillería de Choque, bombardeo estático con daño de dispersión masivo.
+- **T-280 SCV / Swann (Terran)**: Constructor e Ingeniero, despliegue de torretas defensivas y reparación.
+- **Blackhammer / Goliath (Terran)**: Antiaéreo y Asalto Mecánico, ráfagas duales terrestres y misiles pesados.
+- **Tassadar / Alto Templario (Protoss)**: Caster Psiónico de Choque, manipulación de tormentas y dispersión masiva.
+- **Shadow Walker / Aniquilador (Protoss)**: Perforador Anti-Blindaje, haces colimados y durabilidad por escudo plasmático.
+- **Revenant / Arconte Oscuro (Protoss)**: Control de Masas y Disrupción, manipulación energética y confusión.
+- **Torrasque / Ultralisco (Zerg)**: Tanque Colosal de Ruptura, absorción de impactos frontales e hendidura masiva.
+- **Nyami / Hidralisco (Zerg)**: Artillero Versátil Rápido, espinas corrosivas continuas aire/tierra.
+- **Alexei Stukov / Infestado (Mixta)**: Generador de Presión Biológica, despliegue continuo de carne de cañón.
+- **Héroes Secretos Satíricos (1% Random Pick)**:
+  - **Dr. Evil**: Cerebro Maligno Supremo (Tauren Space Marine Legendario con láser orbital).
+  - **Donald Trump**: Magnate Constructor de Muros (Thor Titán Dorado con cañones de máximo impacto).
+  - **Alex Jones**: Megáfono de Combate Sónico (Marauder de proyectiles sónicos).
 
 ---
 
-## 📁 Estructura del Proyecto
+### 📊 Sistema Tripartito de Atributos Determinista
+$$\Delta \text{HP} = \text{Fuerza} \times 25$$
+$$\Delta \text{AD} = \text{Fuerza} \times 1.5$$
+$$\Delta \text{AS} = \text{Destreza} \times 0.02$$
+$$\Delta \text{Energy} = \text{Inteligencia} \times 10$$
+
+- **Fuerza (F)**: Incrementa simultáneamente la vida máxima (HP) y el daño base (AD).
+- **Destreza (D)**: Incrementa la cadencia/velocidad de ataque y la regeneración de vida y escudos plasmáticos.
+- **Inteligencia (I)**: Incrementa la capacidad energética máxima, la regeneración de maná y el cono de visión.
+- **HUD Interactivo**: Asignación de puntos en pantalla con botones `[+]` y acceso a la **Tienda Tecnológica**.
+
+---
+
+### ⚔️ 6 Niveles Canónicos de Dificultad
+| Dificultad | Multiplicador de Ingreso ($M_{inc}$) | Escalado de Stats Hostiles ($M_{stat}$) | Intervalo de Upgrades Enemigos ($T_{up}$) | Intervalo de Oleadas |
+|---|---|---|---|---|
+| **Casual** | $\times 1.50$ | $\times 0.50$ | Cada 120 segundos | 35s |
+| **Normal** | $\times 1.00$ | $\times 1.00$ | Cada 60 segundos | 30s |
+| **Hard** | $\times 0.75$ | $\times 2.00$ | Cada 40 segundos | 25s |
+| **Brutal** | $\times 0.50$ | $\times 3.00$ | Cada 30 segundos | 22s |
+| **Pro** | $\times 0.25$ | $\times 4.00$ | Cada 20 segundos | 18s |
+| **TORMENT** | $\times 0.10$ | $\ge \times 5.00$ | Cada 15 segundos | 15s |
+
+---
+
+### 🛡️ Asedio Perimetral y Fortaleza Central Aliada
+- **25 Oleadas Escalonadas**: Invasores Zerg, Protoss y Terran que marchan hacia el núcleo.
+- **Aura Médica y Médicos de Campaña**: La Fortaleza Planetaria dispone de médicos asignados y aura sanadora activa (+35 HP/s) para restaurar a los héroes.
+- **3 Reductos Hostiles Destructibles**: Colmena Zerg Norte, Fortaleza Protoss Este y Complejo Infestado Oeste. Al destruirlos otorgan +1000 minerales al equipo y activan contraataques de jefes.
+
+---
+
+### 🔮 5 Jefes Secretos y Eventos Territoriales de Invocación
+1. **Destroyer of Worlds**: Cuadrante NW (restos de Nave Nodriza). Mantener exactamente 1 unidad terrestre durante 120s continuos.
+2. **Híbridos Ancestrales**: Cuadrante SE (Artefacto Xel'Naga). Mantener exactamente 1 unidad de infantería terrestre durante 120s.
+3. **ChainDog**: Centro del mapa (Monumento Estatua). Mantener 1 unidad terrestre aislada durante 120s continuos.
+4. **Hell Gate**: Sector NE (Gran Nydus fortificado). Concentrar simultáneamente a todos los héroes vivos del equipo durante 10s.
+5. **Diablo Megaboss**: Sector SW en dificultad **Torment**. Derrotarlo otorga el desbloqueo permanente del héroe Diablo en partidas futuras.
+
+---
+
+### 💾 Persistencia Cifrada (.SC2Bank)
+- Protección anti-trampas mediante checksum con sal criptográfica interna (`c_SECURITY_SALT`).
+- Guarda nivel de cuenta, partidas ganadas por dificultad, jefes eliminados y logros desbloqueados.
+
+---
+
+## 📁 Estructura del Repositorio
 
 ```
 ARCADE SC2/
-├── SpecialForcesElite.SC2Map/       # Directorio de componentes SC2
-│   ├── ComponentList.SC2Components  # Definición de activos y módulos del mapa
-│   ├── DocumentInfo                 # Dependencias (Campaign Mods: Liberty, Swarm, Void)
-│   ├── MapScript.galaxy             # Script principal compilado por el motor
-│   ├── Scripts/                     # Código modular en Galaxy Script
-│   │   ├── AlliedBase.galaxy        # Lógica de la Fortaleza Planetaria y victoria/derrota
-│   │   ├── Attributes.galaxy        # Fórmulas matemáticas F/D/I y hooks de daño
-│   │   ├── BossAI.galaxy            # IA multifase de Maar, Destructor y Diablo
-│   │   ├── Constants.galaxy         # Tablas de datos, héroes y multiplicadores
-│   │   ├── GameLoop.galaxy          # Inicialización, selección de dificultad y diplomacia
-│   │   ├── HeroSelection.galaxy     # Diálogo de selección de héroes (16 + Secreto)
-│   │   ├── HUD.galaxy               # Tarjeta de estadísticas, barra superior y tienda
-│   │   ├── Persistence.galaxy       # Carga y guardado cifrado en SC2 Bank
-│   │   └── WaveSpawner.galaxy       # 25 oleadas de invasión y puestos avanzados
+├── SpecialForcesElite.SC2Map/       # Carpeta de componentes del mapa SC2
+│   ├── ComponentList.SC2Components  # Componentes del mapa
+│   ├── DocumentInfo                 # Dependencias oficiales de campaña
+│   ├── MapScript.galaxy             # Script maestro consolidado y verificado (3000+ líneas)
+│   ├── Scripts/                     # Arquitectura modular
+│   │   ├── AlliedBase.galaxy        # Fortaleza Planetaria, médicos y condiciones de fin
+│   │   ├── Attributes.galaxy        # Fórmulas matemáticas deterministas F/D/I
+│   │   ├── BossAI.galaxy            # IA de jefes y 5 rituales territoriales de 120s
+│   │   ├── Constants.galaxy         # Catálogo de héroes, dificultades y constantes
+│   │   ├── GameLoop.galaxy          # Diplomacia, selector de dificultad y orquestación
+│   │   ├── HeroSelection.galaxy     # Diálogo de selección 3x4 + 1% héroe satírico
+│   │   ├── HUD.galaxy               # Panel de atributos [+], barra superior y tienda
+│   │   ├── Persistence.galaxy       # Banco protegido con suma de verificación
+│   │   └── WaveSpawner.galaxy       # 25 oleadas, nidos y curva de entropía (T_up)
 │   ├── enUS.SC2Data/                # Localización en inglés
 │   └── esES.SC2Data/                # Localización en español
-├── SpecialForcesElite5.SC2Map       # Archivo empaquetado del mapa
-└── Recreación Special Forces Elite 5.pdf # Documento de especificación de diseño
+├── DOCUMENTO_DE_DISENO_SFE5.md      # Especificación maestra de diseño
+└── README.md
 ```
 
 ---
 
-## 🚀 Cómo Abrir y Probar en el Editor de StarCraft II
+## 🚀 Cómo Probar en StarCraft II
 
 1. Abre el **Editor de StarCraft II** (`SC2Editor.exe`).
 2. Ve a **Archivo > Abrir Documento...** (`Ctrl + O`).
-3. Selecciona la carpeta de componentes `SpecialForcesElite.SC2Map` o el archivo `SpecialForcesElite5.SC2Map`.
-4. Pulsa **Probar Documento** (`Ctrl + F9`) para compilar y ejecutar directamente en el cliente de StarCraft II.
+3. Selecciona la carpeta `SpecialForcesElite.SC2Map`.
+4. Pulsa **Probar Documento** (`Ctrl + F9`) para compilar e iniciar directamente la partida.
 
 ---
 
-## 📜 Créditos y Licencia
-- Basado en el concepto original de *Special Forces Elite 5*.
-- Adaptado y modernizado para StarCraft II por [Flisinhub](https://github.com/Flisinhub).
+## 📜 Créditos y Autoría
+- Basado en el legendario mapa UMS *Special Forces Elite 5*.
+- Implementación y arquitectura completa por [Flisinhub](https://github.com/Flisinhub).

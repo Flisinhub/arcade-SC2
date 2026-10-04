@@ -10,3 +10,5 @@ MapInfo/Player05/Name=Special Force 5
 MapInfo/Player06/Name=Special Force 6
 MapInfo/Player07/Name=Allied Core Base
 MapInfo/Player08/Name=Hostile Swarm & Bosses
+MapInfo/Player14/Name=Allied Core Base
+MapInfo/Player15/Name=Hostile Swarm & Bosses
