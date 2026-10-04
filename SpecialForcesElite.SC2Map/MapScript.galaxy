@@ -11,6 +11,8 @@ const int c_SFE_PLAYER_HOSTILE     = 15;
 // Variables Globales de Estado
 unit  g_sfeHeroUnit;
 unit  g_sfeCoreUnit;
+unit  g_sfeMedic1;
+unit  g_sfeMedic2;
 point g_sfeBasePoint;
 point g_sfeHeroSpawnPoint;
 point g_sfeSpawnNorth;
@@ -74,17 +76,17 @@ void SFE_SpawnBaseAndDefenses () {
     UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(112.0, 100.0), 180.0);
     UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(88.0, 100.0), 0.0);
 
-    // Médicos de Campaña Aliados para curar al héroe automáticamente
-    UnitCreate(1, "Medic", 0, c_SFE_PLAYER_ALLIED_BASE, Point(96.0, 96.0), 45.0);
-    uMedic = UnitLastCreated();
-    if (uMedic != null) {
-        UnitSetPropertyFixed(uMedic, c_unitPropEnergyPercent, 100.0);
+    // Médicos de Campaña Aliados para curar al héroe
+    UnitCreate(1, "Medic", 0, c_SFE_PLAYER_ALLIED_BASE, Point(97.0, 95.0), 45.0);
+    g_sfeMedic1 = UnitLastCreated();
+    if (g_sfeMedic1 != null) {
+        UnitSetPropertyFixed(g_sfeMedic1, c_unitPropEnergyPercent, 100.0);
     }
 
-    UnitCreate(1, "Medic", 0, c_SFE_PLAYER_ALLIED_BASE, Point(104.0, 96.0), 135.0);
-    uMedic = UnitLastCreated();
-    if (uMedic != null) {
-        UnitSetPropertyFixed(uMedic, c_unitPropEnergyPercent, 100.0);
+    UnitCreate(1, "Medic", 0, c_SFE_PLAYER_ALLIED_BASE, Point(103.0, 95.0), 135.0);
+    g_sfeMedic2 = UnitLastCreated();
+    if (g_sfeMedic2 != null) {
+        UnitSetPropertyFixed(g_sfeMedic2, c_unitPropEnergyPercent, 100.0);
     }
 }
 
@@ -108,28 +110,51 @@ void SFE_SpawnHeroMarine () {
 }
 
 //--------------------------------------------------------------------------------------------------
-// Aura de Curación de la Base: Regenera vida al héroe si está cerca del núcleo
+// Aura de Curación de la Base: Regenera vida y comanda a los médicos hacia el héroe
 //--------------------------------------------------------------------------------------------------
 bool gt_SFE_BaseHealTimer_Func (bool testConds, bool runActions) {
     fixed dist;
     fixed curLife;
     fixed maxLife;
     fixed newLife;
+    order ordHeal;
 
     if (!runActions || !g_sfeCoreAlive || g_sfeHeroUnit == null || !UnitIsAlive(g_sfeHeroUnit)) {
         return true;
     }
 
+    curLife = UnitGetPropertyFixed(g_sfeHeroUnit, c_unitPropLife, true);
+    maxLife = UnitGetPropertyFixed(g_sfeHeroUnit, c_unitPropLifeMax, true);
     dist = DistanceBetweenPoints(UnitGetPosition(g_sfeHeroUnit), g_sfeBasePoint);
-    if (dist <= 16.0) {
-        curLife = UnitGetPropertyFixed(g_sfeHeroUnit, c_unitPropLife, true);
-        maxLife = UnitGetPropertyFixed(g_sfeHeroUnit, c_unitPropLifeMax, true);
+
+    // Si el héroe está en la base (a menos de 18 unidades)
+    if (dist <= 18.0) {
         if (curLife < maxLife) {
-            newLife = curLife + 25.0;
+            // Curación de la base (+35 HP por segundo)
+            newLife = curLife + 35.0;
             if (newLife > maxLife) {
                 newLife = maxLife;
             }
             UnitSetPropertyFixed(g_sfeHeroUnit, c_unitPropLife, newLife);
+
+            // Ordenar activamente a los dos médicos que canalicen su rayo hacia el Marine
+            ordHeal = OrderTargetingUnit(AbilityCommand("MedicHeal", 0), g_sfeHeroUnit);
+            if (g_sfeMedic1 != null && UnitIsAlive(g_sfeMedic1)) {
+                UnitSetPropertyFixed(g_sfeMedic1, c_unitPropEnergyPercent, 100.0);
+                UnitIssueOrder(g_sfeMedic1, ordHeal, c_orderQueueReplace);
+            }
+            if (g_sfeMedic2 != null && UnitIsAlive(g_sfeMedic2)) {
+                UnitSetPropertyFixed(g_sfeMedic2, c_unitPropEnergyPercent, 100.0);
+                UnitIssueOrder(g_sfeMedic2, ordHeal, c_orderQueueReplace);
+            }
+        }
+    } else {
+        // Si el héroe sale a luchar, los médicos vuelven a su puesto de guardia en la base
+        if (g_sfeMedic1 != null && UnitIsAlive(g_sfeMedic1)) {
+            UnitIssueOrder(g_sfeMedic1, OrderTargetingPoint(AbilityCommand("move", 0), Point(97.0, 95.0)), c_orderQueueReplace);
+        }
+        if (g_sfeMedic2 != null && UnitIsAlive(g_sfeMedic2)) {
+            UnitIssueOrder(g_sfeMedic2, OrderTargetingPoint(AbilityCommand("move", 0), Point(103.0, 95.0)), c_orderQueueReplace);
         }
     }
 
