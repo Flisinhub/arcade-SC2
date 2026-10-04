@@ -23,34 +23,6 @@ bool g_sfeDifficultyChosen;
 // Declaraciones
 void SFE_StartGameAfterDifficulty (int chosenDiff);
 
-//--------------------------------------------------------------------------------------------------
-// Trigger Callback: Daño de Héroes con Escalado de Fuerza
-//--------------------------------------------------------------------------------------------------
-bool gt_SFE_DamageHook_Func (bool testConds, bool runActions) {
-    unit attacker;
-    unit victim;
-    int attackerPlayer;
-    fixed strBonus;
-
-    if (!runActions) {
-        return true;
-    }
-
-    attacker = EventUnitDamageSourceUnit();
-    victim = EventUnit();
-    attackerPlayer = UnitGetOwner(attacker);
-
-    if (attackerPlayer >= 1 && attackerPlayer <= c_SFE_MAX_PLAYERS && g_sfeHeroStates[attackerPlayer].isActive) {
-        if (attacker == g_sfeHeroStates[attackerPlayer].heroUnit && UnitGetOwner(victim) == c_SFE_PLAYER_HOSTILE) {
-            strBonus = g_sfeHeroStates[attackerPlayer].strength * c_FACTOR_ALPHA_STRENGTH_DAMAGE;
-            if (strBonus > 0.0) {
-                UnitDamage(attacker, "WeaponNull", victim, strBonus);
-            }
-        }
-    }
-
-    return true;
-}
 
 //--------------------------------------------------------------------------------------------------
 // Trigger Callback: Selección de Dificultad por el Anfitrión
@@ -87,7 +59,6 @@ void SFE_StartGameAfterDifficulty (int chosenDiff) {
     int startingMinerals;
     trigger tWaveTick;
     trigger tReward;
-    trigger tDamage;
     text diffNotice;
 
     g_sfeCurrentDifficulty = chosenDiff;
@@ -142,10 +113,6 @@ void SFE_StartGameAfterDifficulty (int chosenDiff) {
     // Disparador de recompensas de eliminación
     tReward = TriggerCreate("gt_SFE_UnitDied_Reward_Func");
     TriggerAddEventUnitDied(tReward, null);
-
-    // Disparador de escalado de daño de Fuerza
-    tDamage = TriggerCreate("gt_SFE_DamageHook_Func");
-    TriggerAddEventUnitDamaged(tDamage, null);
 }
 
 //--------------------------------------------------------------------------------------------------
