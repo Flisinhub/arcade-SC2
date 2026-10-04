@@ -237,9 +237,9 @@ bool gt_SFE_HUD_Click_Func (bool testConds, bool runActions) {
         return true;
     }
 
-    // Botón de Abrir Tienda
+    // Botón de Abrir Consola de Jugador
     if (clickedCtrl == g_sfeHudBtnOpenShop[player]) {
-        SFE_OpenShop(player);
+        SFE_TogglePlayerConsole(player);
         return true;
     }
 
@@ -347,7 +347,7 @@ void SFE_InitHUD () {
         g_sfeHudBtnOpenShop[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
         DialogControlSetSize(g_sfeHudBtnOpenShop[p], pg, 130, 35);
         DialogControlSetPosition(g_sfeHudBtnOpenShop[p], pg, c_anchorTopLeft, 235, 145);
-        DialogControlSetPropertyAsText(g_sfeHudBtnOpenShop[p], c_triggerControlPropertyText, pg, StringToText("<c val=\"FFE400\">TIENDA</c>"));
+        DialogControlSetPropertyAsText(g_sfeHudBtnOpenShop[p], c_triggerControlPropertyText, pg, StringToText("<c val=\"FFE400\">CONSOLA [Alt+C]</c>"));
 
         DialogSetVisible(g_sfeHudDialog[p], pg, true);
 

@@ -9,9 +9,13 @@
 include "Scripts/Constants.galaxy"
 include "Scripts/Persistence.galaxy"
 include "Scripts/Attributes.galaxy"
+include "Scripts/BuffsEngine.galaxy"
+include "Scripts/UpgradesEngine.galaxy"
+include "Scripts/PlayerConsole.galaxy"
 include "Scripts/HUD.galaxy"
 include "Scripts/HeroSelection.galaxy"
 include "Scripts/AlliedBase.galaxy"
+include "Scripts/TripartiteAssault.galaxy"
 include "Scripts/WaveSpawner.galaxy"
 include "Scripts/BossAI.galaxy"
 
@@ -89,14 +93,28 @@ void SFE_StartGameAfterDifficulty (int chosenDiff) {
         p = p + 1;
     }
 
+    // Inicializar Catálogo de Buffs y Motor de Mejoras 500
+    SFE_InitBuffCatalog();
+    SFE_InitUpgradesEngine();
+
     // Inicializar Base Aliada
     SFE_InitAlliedBase();
 
     // Inicializar HUD de Jugadores y Barra Superior
     SFE_InitHUD();
 
-    // Inicializar Sistema de Oleadas
+    // Inicializar Consola del Jugador (Alt+C) para cada jugador humano
+    p = 1;
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (PlayerType(p) == c_playerTypeUser) {
+            SFE_InitPlayerConsoleUI(p);
+        }
+        p = p + 1;
+    }
+
+    // Inicializar Sistema de Oleadas y Amenaza Tripartita
     SFE_InitWaveSpawner();
+    SFE_InitTripartiteSystem();
 
     // Inicializar Sistema de Jefes
     SFE_InitBossSystem();

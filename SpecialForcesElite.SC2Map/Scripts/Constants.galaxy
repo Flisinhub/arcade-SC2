@@ -38,6 +38,144 @@ int g_sfeCurrentWaveNumber;
 int g_sfeWaveTimeRemaining;
 fixed g_sfeBaseCoreHpPercent;
 
+// Factores de conversión matemáticos según especificación oficial
+const fixed c_FACTOR_ALPHA_STRENGTH_DAMAGE = 1.5;
+const fixed c_FACTOR_ALPHA_STRENGTH_HP     = 25.0;
+const fixed c_FACTOR_BETA_DEXTERITY_SPEED  = 0.02;
+const fixed c_FACTOR_GAMMA_DEXTERITY_REGEN = 0.25;
+const fixed c_FACTOR_LAMBDA_INTEL_ENERGY   = 10.0;
+const fixed c_FACTOR_LAMBDA_INTEL_REGEN    = 0.20;
+const fixed c_FACTOR_LAMBDA_INTEL_SIGHT    = 0.05;
+
+// Estructura de Estado de Heroe
+struct SFE_HeroState {
+    unit heroUnit;
+    int heroId;
+    bool isActive;
+
+    int level;
+    int currentXp;
+    int requiredXp;
+    int unspentAttributePoints;
+
+    int strength;
+    int dexterity;
+    int intelligence;
+    int stamina;
+    int neutronArmor;
+
+    fixed currentMaxHp;
+    fixed currentMaxShields;
+    fixed currentMaxEnergy;
+    fixed currentDamage;
+    fixed currentAttackInterval;
+    fixed currentLifeRegen;
+    fixed currentEnergyRegen;
+    fixed currentSightRadius;
+    fixed currentMovementSpeed;
+    fixed currentArmor;
+};
+
+SFE_HeroState[c_SFE_MAX_PLAYERS + 1] g_sfeHeroStates;
+
+// Identificadores de Buffs
+const int c_BUFF_NONE = 0;
+const int c_BUFF_T1_EXOSKELETON    = 1;
+const int c_BUFF_T1_HYPERACTIVITY  = 2;
+const int c_BUFF_T1_KEVLAR         = 3;
+const int c_BUFF_T1_OPTICAL_LENS   = 4;
+
+const int c_BUFF_T2_ADV_ARMOR      = 5;
+const int c_BUFF_T2_ANCIENT_VALOR  = 6;
+const int c_BUFF_T2_IMPACT         = 7;
+const int c_BUFF_T2_TRANSIENT      = 8;
+
+const int c_BUFF_T3_MOMENTUM       = 9;
+const int c_BUFF_T3_HARDENED_AMMO  = 10;
+const int c_BUFF_T3_PREDATOR       = 11;
+const int c_BUFF_T3_RESISTANCE     = 12;
+
+const int c_BUFF_T4_ENHANCED_REGEN = 13;
+const int c_BUFF_T4_MENTAL_POWER   = 14;
+const int c_BUFF_T4_QUANTUM_FIELD  = 15;
+const int c_BUFF_T4_STATIC_CHARGE  = 16;
+
+const int c_BUFF_T5_SHARPSHOOTER   = 17;
+const int c_BUFF_T5_TIME_LORD      = 18;
+const int c_BUFF_T5_WARRIOR        = 19;
+const int c_BUFF_T5_WIZARD         = 20;
+
+const int c_BUFF_T6_BULWARK        = 21;
+const int c_BUFF_T6_DEFIANCE       = 22;
+const int c_BUFF_T6_HOLY_SHELL     = 23;
+const int c_BUFF_T6_MIGHT          = 24;
+
+const int c_BUFF_T7_MARKSMAN       = 25;
+const int c_BUFF_T7_SPELLBOUND     = 26;
+const int c_BUFF_T7_SPIRITED       = 27;
+const int c_BUFF_T7_VIGOR          = 28;
+
+const int c_BUFF_ULT_ACE           = 29;
+const int c_BUFF_ULT_DEMIURGE      = 30;
+const int c_BUFF_ULT_VETERANCY     = 31;
+const int c_BUFF_ULT_MAX_EXP       = 32;
+
+const int c_TOTAL_BUFFS_COUNT      = 33;
+
+struct SFE_BuffInfo {
+    int id;
+    int tier;
+    string name;
+    int cost;
+    string description;
+};
+
+SFE_BuffInfo[c_TOTAL_BUFFS_COUNT] g_sfeBuffCatalog;
+int[c_SFE_MAX_PLAYERS + 1][8] g_sfePlayerBuffTiers;
+bool[c_SFE_MAX_PLAYERS + 1] g_sfePlayerAce;
+bool[c_SFE_MAX_PLAYERS + 1] g_sfePlayerDemiurge;
+bool[c_SFE_MAX_PLAYERS + 1] g_sfePlayerVeterancy;
+int[c_SFE_MAX_PLAYERS + 1]  g_sfePlayerVeterancyKills;
+fixed[c_SFE_MAX_PLAYERS + 1] g_sfePlayerDemiurgeCooldown;
+int[c_SFE_MAX_PLAYERS + 1]  g_sfeMomentumStacks;
+int[c_SFE_MAX_PLAYERS + 1]  g_sfeBulwarkStacks;
+fixed[c_SFE_MAX_PLAYERS + 1] g_sfeLastDamageTime;
+point[c_SFE_MAX_PLAYERS + 1] g_sfeLastHeroPos;
+
+// 500 Upgrades
+const int c_UPGRADE_MAX_LEVEL   = 500;
+const int c_UPGRADE_COUNT       = 5;
+
+const int c_UPG_WEAPON_DAMAGE   = 0;
+const int c_UPG_ARMOR           = 1;
+const int c_UPG_LIFE            = 2;
+const int c_UPG_ENERGY          = 3;
+const int c_UPG_ATTACK_SPEED    = 4;
+
+int[c_SFE_MAX_PLAYERS + 1] g_sfeUpgradeWeaponDamage;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeUpgradeArmor;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeUpgradeLife;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeUpgradeEnergy;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeUpgradeAttackSpeed;
+bool[c_SFE_MAX_PLAYERS + 1] g_sfeUpgradeAutocastActive;
+
+// Consola de Jugador
+int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleDialog;
+bool[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleOpen;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleActiveTab;
+bool[c_SFE_MAX_PLAYERS + 1] g_sfeShiftHeld;
+bool[c_SFE_MAX_PLAYERS + 1] g_sfeShowIncomeText;
+
+// Amenaza Tripartita (Tripartite Threat Assault Globals)
+int g_sfeGameElapsedSeconds;
+int g_sfeNextDropPodSeconds;
+int g_sfeNextTimedAssaultSeconds;
+int g_sfeCurrentTimedBossIndex;
+int g_sfeNextNydusSeconds;
+unit g_sfeCurrentNydusWorm;
+bool g_sfeNydusAlive;
+point[4] g_sfeNydusCraterPoints;
+
 void SFE_InitDifficultyTables () {
     // M_inc: Multiplicador de ingreso por baja
     g_sfeDiffIncomeMultiplier[c_DIFF_CASUAL]  = 1.50;

@@ -9,7 +9,10 @@
 
 include "Scripts/Constants.galaxy"
 include "Scripts/Attributes.galaxy"
+include "Scripts/BuffsEngine.galaxy"
+include "Scripts/UpgradesEngine.galaxy"
 include "Scripts/AlliedBase.galaxy"
+include "Scripts/TripartiteAssault.galaxy"
 include "Scripts/HUD.galaxy"
 
 const int c_TOTAL_WAVES = 25;
@@ -278,6 +281,8 @@ bool gt_SFE_EntropyUpgrade_Timer_Func (bool testConds, bool runActions) {
 // Bucle del Temporizador de Oleadas (Tick cada 1 segundo)
 //--------------------------------------------------------------------------------------------------
 bool gt_SFE_WaveLoop_Timer_Func (bool testConds, bool runActions) {
+    int p;
+
     if (!runActions) {
         return true;
     }
@@ -289,6 +294,19 @@ bool gt_SFE_WaveLoop_Timer_Func (bool testConds, bool runActions) {
     SFE_BaseHealHeroesTick();
     SFE_CheckOutpostStatus();
     SFE_UpdateTopBarHUD();
+
+    // Actualizar bucles de Buffs y Autocast de mejoras
+    SFE_PeriodicBuffTick();
+    p = 1;
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (PlayerType(p) == c_playerTypeUser) {
+            SFE_RunUpgradeAutocast(p);
+        }
+        p = p + 1;
+    }
+
+    // Actualizar bucle por segundo de la Amenaza Tripartita
+    SFE_TripartiteTickSecond();
 
     if (g_sfeWaveTimeRemaining <= 0) {
         // Desplegar oleada
@@ -313,6 +331,7 @@ bool gt_SFE_UnitDied_Reward_Func (bool testConds, bool runActions) {
     unit dyingU;
     unit killerU;
     int killerPlayer;
+    int dyingPlayer;
     int bounty;
 
     if (!runActions) {
@@ -321,8 +340,17 @@ bool gt_SFE_UnitDied_Reward_Func (bool testConds, bool runActions) {
 
     dyingU = EventUnit();
     killerU = EventUnitDamageSourceUnit();
+    dyingPlayer = UnitGetOwner(dyingU);
 
-    if (UnitGetOwner(dyingU) != c_SFE_PLAYER_HOSTILE) {
+    // Muerte de Héroe Aliado: reembolso y pérdida de buffs
+    if (dyingPlayer >= 1 && dyingPlayer <= c_SFE_MAX_PLAYERS) {
+        if (g_sfeHeroStates[dyingPlayer].isActive && dyingU == g_sfeHeroStates[dyingPlayer].heroUnit) {
+            SFE_OnHeroDeathRefundBuffs(dyingPlayer);
+            SFE_UpdatePlayerHUD(dyingPlayer);
+        }
+    }
+
+    if (dyingPlayer != c_SFE_PLAYER_HOSTILE) {
         return true;
     }
 
@@ -336,6 +364,13 @@ bool gt_SFE_UnitDied_Reward_Func (bool testConds, bool runActions) {
 
         PlayerModifyPropertyInt(killerPlayer, c_playerPropMinerals, c_playerPropOperAdd, bounty);
         SFE_HeroAddExperience(killerPlayer, 25);
+
+        // Veterancy: contador de bajas para unidades veteranas
+        if (g_sfePlayerVeterancy[killerPlayer]) {
+            g_sfePlayerVeterancyKills[killerPlayer] = g_sfePlayerVeterancyKills[killerPlayer] + 1;
+            SFE_RecalculateStats(killerPlayer);
+        }
+
         SFE_UpdatePlayerHUD(killerPlayer);
     }
 

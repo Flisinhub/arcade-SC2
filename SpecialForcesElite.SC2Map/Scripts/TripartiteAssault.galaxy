@@ -1,0 +1,334 @@
+//==================================================================================================
+// Special Forces Elite 5 - Tripartite Threat Assault Systems
+// 1. Vainas de Desembarco (Drop Pods cada 45s tras 120s)
+// 2. Asaltos Cronometrados de la Colmena (Cada 5 min con 7 Jefes de Oleada)
+// 3. Red de Gusanos Nydus en Cráteres (Emergen cada 90s vomitando refuerzos)
+//==================================================================================================
+
+#ifndef SFE_TRIPARTITE_INCLUDED
+#define SFE_TRIPARTITE_INCLUDED
+
+include "Scripts/Constants.galaxy"
+include "Scripts/Attributes.galaxy"
+include "Scripts/AlliedBase.galaxy"
+include "Scripts/HUD.galaxy"
+
+// Declaraciones de funciones
+void SFE_InitTripartiteSystem ();
+void SFE_TripartiteTickSecond ();
+void SFE_CheckDropPods ();
+void SFE_CheckTimedHiveAssault ();
+void SFE_CheckNydusNetwork ();
+void SFE_SpawnTimedHiveBoss (int bossIndex);
+
+//--------------------------------------------------------------------------------------------------
+// Inicialización del Sistema de Amenaza Tripartita
+//--------------------------------------------------------------------------------------------------
+void SFE_InitTripartiteSystem () {
+    g_sfeGameElapsedSeconds = 0;
+    g_sfeNextDropPodSeconds = 120; // Primer drop pod al minuto 2:00
+    g_sfeNextTimedAssaultSeconds = 300; // Primer asalto de colmena al minuto 5:00
+    g_sfeCurrentTimedBossIndex = 0;
+    g_sfeNextNydusSeconds = 180; // Primer gusano nydus al minuto 3:00
+    g_sfeCurrentNydusWorm = null;
+    g_sfeNydusAlive = false;
+
+    // Coordenadas fijas de los 4 cráteres del terreno
+    g_sfeNydusCraterPoints[0] = Point(55.0, 145.0); // Noroeste
+    g_sfeNydusCraterPoints[1] = Point(145.0, 145.0); // Noreste
+    g_sfeNydusCraterPoints[2] = Point(55.0, 55.0);   // Suroeste
+    g_sfeNydusCraterPoints[3] = Point(145.0, 55.0);  // Sureste
+}
+
+//--------------------------------------------------------------------------------------------------
+// Bucle Por Segundo de la Amenaza Tripartita
+//--------------------------------------------------------------------------------------------------
+void SFE_TripartiteTickSecond () {
+    g_sfeGameElapsedSeconds = g_sfeGameElapsedSeconds + 1;
+
+    SFE_CheckDropPods();
+    SFE_CheckTimedHiveAssault();
+    SFE_CheckNydusNetwork();
+}
+
+//--------------------------------------------------------------------------------------------------
+// 1. Vainas de Desembarco: Caen cada 45s sobre jugadores fuera de base
+//--------------------------------------------------------------------------------------------------
+void SFE_CheckDropPods () {
+    int p;
+    unit uHero;
+    point hPos;
+    point dropPos;
+    fixed dist;
+    unitgroup ugPod;
+    unit spawned;
+    order ordAtk;
+    int i;
+    int squadSize;
+    string unitType;
+
+    if (g_sfeGameElapsedSeconds < g_sfeNextDropPodSeconds) {
+        return;
+    }
+
+    g_sfeNextDropPodSeconds = g_sfeGameElapsedSeconds + 45;
+
+    p = 1;
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (g_sfeHeroStates[p].isActive) {
+            uHero = g_sfeHeroStates[p].heroUnit;
+            if (uHero != null && UnitIsAlive(uHero)) {
+                hPos = UnitGetPosition(uHero);
+                dist = DistanceBetweenPoints(hPos, g_sfeBaseCenterPoint);
+
+                // Si el héroe está fuera del perímetro de la base (> 25 unidades)
+                if (dist > 25.0) {
+                    dropPos = Point(PointGetX(hPos) + RandomFixed(-3.0, 3.0), PointGetY(hPos) + RandomFixed(-3.0, 3.0));
+
+                    // Notificación táctica
+                    UIDisplayMessage(PlayerGroupSingle(p), c_messageAreaSubtitle,
+                        StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF4444\">[ALERTA DE DESEMBARCO] ¡Vaina hostil ha impactado en tus inmediaciones!</c></s>"));
+
+                    // Desplegar tropas de asalto según dificultad
+                    squadSize = 4;
+                    if (g_sfeCurrentDifficulty >= c_DIFF_HARD) {
+                        squadSize = 6;
+                    }
+
+                    i = 0;
+                    while (i < squadSize) {
+                        if (i % 2 == 0) {
+                            unitType = "InfestedCivilian";
+                        } else {
+                            unitType = "Roach";
+                        }
+                        UnitCreate(1, unitType, 0, c_SFE_PLAYER_HOSTILE, dropPos, 270.0);
+                        spawned = UnitLastCreated();
+                        if (spawned == null) {
+                            UnitCreate(1, "Zergling", 0, c_SFE_PLAYER_HOSTILE, dropPos, 270.0);
+                            spawned = UnitLastCreated();
+                        }
+
+                        if (spawned != null) {
+                            UnitSetPropertyFixed(spawned, c_unitPropLifeMax, 
+                                UnitGetPropertyFixed(spawned, c_unitPropLifeMax, true) * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
+                            UnitSetPropertyFixed(spawned, c_unitPropLifePercent, 100.0);
+                            ordAtk = OrderTargetingUnit(AbilityCommand("attack", 0), uHero);
+                            UnitIssueOrder(spawned, ordAtk, c_orderQueueReplace);
+                        }
+                        i = i + 1;
+                    }
+                }
+            }
+        }
+        p = p + 1;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// 2. Asaltos Cronometrados de la Colmena: Cada 5 minutos con los 7 Jefes Canónicos
+//--------------------------------------------------------------------------------------------------
+void SFE_CheckTimedHiveAssault () {
+    if (g_sfeGameElapsedSeconds < g_sfeNextTimedAssaultSeconds) {
+        return;
+    }
+
+    // Programar el siguiente en 300 segundos (5 minutos)
+    g_sfeNextTimedAssaultSeconds = g_sfeGameElapsedSeconds + 300;
+
+    SFE_SpawnTimedHiveBoss(g_sfeCurrentTimedBossIndex);
+
+    g_sfeCurrentTimedBossIndex = g_sfeCurrentTimedBossIndex + 1;
+    if (g_sfeCurrentTimedBossIndex > 6) {
+        g_sfeCurrentTimedBossIndex = 6; // Queda en Ferocious Brutes para el juego tardío
+    }
+}
+
+void SFE_SpawnTimedHiveBoss (int bossIndex) {
+    point pSpawn;
+    unit uBoss;
+    unit uEscort;
+    string bossType;
+    string bossName;
+    fixed bossHp;
+    int escortCount;
+    string escortType;
+    int i;
+    order ordMarch;
+
+    pSpawn = Point(100.0, 165.0); // Colmena Zerg Norte
+    ordMarch = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint);
+
+    if (bossIndex == 0) {
+        // Minuto 5: Infested General
+        bossName = "Infested General";
+        bossType = "InfestedColonist";
+        bossHp = 4500.0;
+        escortType = "Marine";
+        escortCount = 8;
+    } else if (bossIndex == 1) {
+        // Minuto 10: Rageling (Zergling colosal de ultra-velocidad)
+        bossName = "Rageling";
+        bossType = "Zergling";
+        bossHp = 8000.0;
+        escortType = "Zergling";
+        escortCount = 16;
+    } else if (bossIndex == 2) {
+        // Minuto 15: Hellbringer (Ultralisco titánico con pisada sísmica)
+        bossName = "Hellbringer";
+        bossType = "Ultralisk";
+        bossHp = 16000.0;
+        escortType = "Roach";
+        escortCount = 6;
+    } else if (bossIndex == 3) {
+        // Minuto 20: Brood Emperor (Señor de la prole masivo)
+        bossName = "Brood Emperor";
+        bossType = "BroodLord";
+        bossHp = 20000.0;
+        escortType = "Mutalisk";
+        escortCount = 8;
+    } else if (bossIndex == 4) {
+        // Minuto 25: Hybrid Viper (Viper mutada con drenaje)
+        bossName = "Hybrid Viper";
+        bossType = "Viper";
+        bossHp = 25000.0;
+        escortType = "Hydralisk";
+        escortCount = 8;
+    } else if (bossIndex == 5) {
+        // Minuto 30: Hybrid Lenkus (Gigante psiónico de plasma)
+        bossName = "Hybrid Lenkus";
+        bossType = "HybridBehemoth";
+        bossHp = 35000.0;
+        escortType = "Ultralisk";
+        escortCount = 4;
+    } else {
+        // Minuto 35+: Ferocious Brutes (Legión de asalto final)
+        bossName = "Ferocious Brutes";
+        bossType = "Ultralisk";
+        bossHp = 45000.0;
+        escortType = "Aberration";
+        escortCount = 6;
+    }
+
+    // Crear Jefe
+    UnitCreate(1, bossType, 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+    uBoss = UnitLastCreated();
+    if (uBoss == null) {
+        UnitCreate(1, "Archon", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+        uBoss = UnitLastCreated();
+    }
+
+    bossHp = bossHp * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty];
+    UnitSetPropertyFixed(uBoss, c_unitPropLifeMax, bossHp);
+    UnitSetPropertyFixed(uBoss, c_unitPropLifePercent, 100.0);
+    UnitSetPropertyFixed(uBoss, c_unitPropLifeRegen, 10.0);
+    UnitIssueOrder(uBoss, ordMarch, c_orderQueueReplace);
+
+    // Crear escolta vanguardia
+    i = 0;
+    while (i < escortCount) {
+        UnitCreate(1, escortType, 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+        uEscort = UnitLastCreated();
+        if (uEscort != null) {
+            UnitSetPropertyFixed(uEscort, c_unitPropLifeMax, 
+                UnitGetPropertyFixed(uEscort, c_unitPropLifeMax, true) * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
+            UnitSetPropertyFixed(uEscort, c_unitPropLifePercent, 100.0);
+            UnitIssueOrder(uEscort, ordMarch, c_orderQueueReplace);
+        }
+        i = i + 1;
+    }
+
+    // Notificación en pantalla
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat,
+        StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"FF0044\">[AMENAZA TRIPARTITA] ¡Asalto Cronometrado de la Colmena!</c>\n<c val=\"FFFF00\">Comandante hostil al frente: " + bossName + "</c></s>"));
+}
+
+//--------------------------------------------------------------------------------------------------
+// 3. Red de Gusanos Nydus en Cráteres: Emergen periódicamente vomitando hordas
+//--------------------------------------------------------------------------------------------------
+void SFE_CheckNydusNetwork () {
+    int craterIdx;
+    point cPos;
+    unit u;
+    fixed nydusHp;
+    order ordMarch;
+    int p;
+    int i;
+    unit spawned;
+
+    // Si hay un Nydus vivo, verificar si sigue con vida
+    if (g_sfeNydusAlive) {
+        if (!UnitIsAlive(g_sfeCurrentNydusWorm)) {
+            g_sfeNydusAlive = false;
+            g_sfeCurrentNydusWorm = null;
+            g_sfeNextNydusSeconds = g_sfeGameElapsedSeconds + 90;
+
+            // Recompensa a los jugadores por destruir el Gusano Nydus
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat,
+                StringToText("<s val=\"ModCenterSize18Bold\"><c val=\"00FF7F\">[RED NYDUS] ¡Gusano Nydus destruido! (+350 Min / +150 XP para el escuadrón)</c></s>"));
+
+            p = 1;
+            while (p <= c_SFE_MAX_PLAYERS) {
+                if (PlayerType(p) == c_playerTypeUser) {
+                    PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 350);
+                    SFE_HeroAddExperience(p, 150);
+                    SFE_UpdatePlayerHUD(p);
+                }
+                p = p + 1;
+            }
+            return;
+        }
+
+        // Si está vivo, vomitar refuerzos cada 15 segundos
+        if (g_sfeGameElapsedSeconds % 15 == 0) {
+            cPos = UnitGetPosition(g_sfeCurrentNydusWorm);
+            ordMarch = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint);
+
+            i = 0;
+            while (i < 4) {
+                UnitCreate(1, "Zergling", 0, c_SFE_PLAYER_HOSTILE, cPos, 270.0);
+                spawned = UnitLastCreated();
+                if (spawned != null) {
+                    UnitIssueOrder(spawned, ordMarch, c_orderQueueReplace);
+                }
+                i = i + 1;
+            }
+            UnitCreate(1, "Roach", 0, c_SFE_PLAYER_HOSTILE, cPos, 270.0);
+            spawned = UnitLastCreated();
+            if (spawned != null) {
+                UnitIssueOrder(spawned, ordMarch, c_orderQueueReplace);
+            }
+        }
+        return;
+    }
+
+    // Si no hay Nydus vivo, comprobar si es hora de generar uno nuevo
+    if (g_sfeGameElapsedSeconds >= g_sfeNextNydusSeconds) {
+        craterIdx = RandomInt(0, 3);
+        cPos = g_sfeNydusCraterPoints[craterIdx];
+
+        UnitCreate(1, "NydusCanal", 0, c_SFE_PLAYER_HOSTILE, cPos, 270.0);
+        u = UnitLastCreated();
+        if (u == null) {
+            UnitCreate(1, "NydusWorm", 0, c_SFE_PLAYER_HOSTILE, cPos, 270.0);
+            u = UnitLastCreated();
+        }
+        if (u == null) {
+            UnitCreate(1, "SpineCrawler", 0, c_SFE_PLAYER_HOSTILE, cPos, 270.0);
+            u = UnitLastCreated();
+        }
+
+        g_sfeCurrentNydusWorm = u;
+        g_sfeNydusAlive = true;
+
+        nydusHp = 3500.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty];
+        UnitSetPropertyFixed(g_sfeCurrentNydusWorm, c_unitPropLifeMax, nydusHp);
+        UnitSetPropertyFixed(g_sfeCurrentNydusWorm, c_unitPropLifePercent, 100.0);
+        UnitSetPropertyFixed(g_sfeCurrentNydusWorm, c_unitPropLifeRegen, 5.0);
+
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle,
+            StringToText("<s val=\"ModCenterSize22Bold\"><c val=\"FF8800\">[RED NYDUS] ¡Un Gusano Nydus ha emergido en el cráter territorial! ¡Destrúyelo!</c></s>"));
+    }
+}
+
+#endif

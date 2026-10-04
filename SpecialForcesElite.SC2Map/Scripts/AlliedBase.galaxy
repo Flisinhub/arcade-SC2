@@ -21,6 +21,26 @@ bool g_sfeGameOverTriggered;
 void SFE_TriggerDefeat ();
 void SFE_TriggerVictory ();
 void SFE_BaseHealHeroesTick ();
+void SFE_PlanetaryFortressDefendTick ();
+bool gt_SFE_BaseClicked_Func (bool testConds, bool runActions);
+
+//--------------------------------------------------------------------------------------------------
+// Trigger Callback: Selección/Clic en la Fortaleza Planetaria (Abre Consola de Mando)
+//--------------------------------------------------------------------------------------------------
+bool gt_SFE_BaseClicked_Func (bool testConds, bool runActions) {
+    int p;
+
+    if (!runActions) {
+        return true;
+    }
+
+    p = EventPlayer();
+    if (p >= 1 && p <= c_SFE_MAX_PLAYERS) {
+        SFE_TogglePlayerConsole(p);
+    }
+
+    return true;
+}
 
 //--------------------------------------------------------------------------------------------------
 // Inicializar la Base Aliada y Estructuras Defensivas
@@ -29,6 +49,7 @@ void SFE_InitAlliedBase () {
     point pCore;
     point pDefense;
     unit u;
+    trigger tClickBase;
 
     g_sfeBaseCenterPoint = Point(100.0, 100.0);
     g_sfeGameOverTriggered = false;
@@ -42,9 +63,13 @@ void SFE_InitAlliedBase () {
         u = UnitLastCreated();
     }
     g_sfeBaseCoreUnit = u;
-    UnitSetPropertyFixed(g_sfeBaseCoreUnit, c_unitPropLifeMax, 8000.0);
+    UnitSetPropertyFixed(g_sfeBaseCoreUnit, c_unitPropLifeMax, 15000.0);
     UnitSetPropertyFixed(g_sfeBaseCoreUnit, c_unitPropLifePercent, 100.0);
-    UnitSetPropertyFixed(g_sfeBaseCoreUnit, c_unitPropLifeRegen, 5.0);
+    UnitSetPropertyFixed(g_sfeBaseCoreUnit, c_unitPropLifeRegen, 8.0);
+
+    // Conectar evento de clic en la base para abrir consola
+    tClickBase = TriggerCreate("gt_SFE_BaseClicked_Func");
+    TriggerAddEventUnitClick(tClickBase, UnitRefFromUnit(g_sfeBaseCoreUnit), c_playerAny);
 
     // Torretas y Bunkers en los 4 accesos cardinales
     // Norte
@@ -86,6 +111,54 @@ void SFE_InitAlliedBase () {
 }
 
 //--------------------------------------------------------------------------------------------------
+// Cañón Ibiks de la Fortaleza Planetaria: Fuego de Artillería Defensivo con Daño de Salpicadura
+//--------------------------------------------------------------------------------------------------
+void SFE_PlanetaryFortressDefendTick () {
+    unitgroup ugEnemies;
+    unit target;
+    point targetPos;
+    int count;
+    int i;
+    unit splashVictim;
+    fixed dist;
+
+    if (g_sfeBaseCoreUnit == null || !UnitIsAlive(g_sfeBaseCoreUnit)) {
+        return;
+    }
+
+    // Buscar enemigos hostiles a menos de 14.0 unidades de la base
+    ugEnemies = UnitGroup(null, c_SFE_PLAYER_HOSTILE, RegionCircle(g_sfeBaseCenterPoint, 14.0), null, 0);
+    count = UnitGroupCount(ugEnemies, c_unitCountAlive);
+    if (count <= 0) {
+        return;
+    }
+
+    // Seleccionar objetivo principal
+    target = UnitGroupUnit(ugEnemies, 1);
+    if (target == null || !UnitIsAlive(target)) {
+        return;
+    }
+
+    targetPos = UnitGetPosition(target);
+
+    // Daño de impacto directo de cañón Ibiks (150.0)
+    UnitDamage(g_sfeBaseCoreUnit, "WeaponNull", target, 150.0);
+
+    // Daño de salpicadura (Splash) a enemigos adyacentes dentro de radio 3.5
+    i = 2;
+    while (i <= count) {
+        splashVictim = UnitGroupUnit(ugEnemies, i);
+        if (splashVictim != null && UnitIsAlive(splashVictim)) {
+            dist = DistanceBetweenPoints(UnitGetPosition(splashVictim), targetPos);
+            if (dist <= 3.5) {
+                UnitDamage(g_sfeBaseCoreUnit, "WeaponNull", splashVictim, 75.0);
+            }
+        }
+        i = i + 1;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
 // Aura de Curación de la Base: Regenera héroes cercanos y ordena a los médicos
 //--------------------------------------------------------------------------------------------------
 void SFE_BaseHealHeroesTick () {
@@ -94,6 +167,9 @@ void SFE_BaseHealHeroesTick () {
     fixed curLife;
     fixed maxLife;
     fixed newLife;
+    fixed curEnergy;
+    fixed maxEnergy;
+    fixed newEnergy;
     fixed dist;
     order ordHeal;
     bool healedAny;
@@ -101,16 +177,20 @@ void SFE_BaseHealHeroesTick () {
     p = 1;
     healedAny = false;
 
+    // Disparar cañón defensivo Ibiks contra intrusos
+    SFE_PlanetaryFortressDefendTick();
+
     while (p <= c_SFE_MAX_PLAYERS) {
         if (g_sfeHeroStates[p].isActive) {
             uHero = g_sfeHeroStates[p].heroUnit;
             if (uHero != null && UnitIsAlive(uHero)) {
                 dist = DistanceBetweenPoints(UnitGetPosition(uHero), g_sfeBaseCenterPoint);
-                if (dist <= 18.0) {
+                if (dist <= 16.0) {
+                    // Regeneración pasiva de vida (+3.5% por segundo)
                     curLife = UnitGetPropertyFixed(uHero, c_unitPropLife, true);
                     maxLife = UnitGetPropertyFixed(uHero, c_unitPropLifeMax, true);
                     if (curLife < maxLife) {
-                        newLife = curLife + 35.0;
+                        newLife = curLife + (maxLife * 0.035) + 35.0;
                         if (newLife > maxLife) {
                             newLife = maxLife;
                         }
@@ -126,6 +206,17 @@ void SFE_BaseHealHeroesTick () {
                             UnitIssueOrder(g_sfeMedic2, ordHeal, c_orderQueueReplace);
                         }
                         healedAny = true;
+                    }
+
+                    // Regeneración pasiva de energía (+5.0% por segundo)
+                    curEnergy = UnitGetPropertyFixed(uHero, c_unitPropEnergy, true);
+                    maxEnergy = UnitGetPropertyFixed(uHero, c_unitPropEnergyMax, true);
+                    if (curEnergy < maxEnergy) {
+                        newEnergy = curEnergy + (maxEnergy * 0.05);
+                        if (newEnergy > maxEnergy) {
+                            newEnergy = maxEnergy;
+                        }
+                        UnitSetPropertyFixed(uHero, c_unitPropEnergy, newEnergy);
                     }
                 }
             }
