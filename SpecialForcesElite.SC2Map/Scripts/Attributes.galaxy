@@ -1,0 +1,235 @@
+//==================================================================================================
+// Special Forces Elite 5 - Attribute Engine (Fuerza, Destreza, Inteligencia)
+// Implementacion matemática determinista de combate y escalado táctico
+//==================================================================================================
+
+#ifndef SFE_ATTRIBUTES_INCLUDED
+#define SFE_ATTRIBUTES_INCLUDED
+
+include "Scripts/Constants.galaxy"
+include "Scripts/Persistence.galaxy"
+
+// Factores de conversion matematicos segun especificacion
+const fixed c_FACTOR_ALPHA_STRENGTH_DAMAGE = 2.0;
+const fixed c_FACTOR_ALPHA_STRENGTH_HP     = 25.0;
+const fixed c_FACTOR_BETA_DEXTERITY_SPEED  = 0.025;
+const fixed c_FACTOR_GAMMA_DEXTERITY_REGEN = 0.25;
+const fixed c_FACTOR_LAMBDA_INTEL_ENERGY   = 15.0;
+const fixed c_FACTOR_LAMBDA_INTEL_REGEN    = 0.20;
+const fixed c_FACTOR_LAMBDA_INTEL_SIGHT    = 0.05;
+
+struct SFE_HeroState {
+    unit heroUnit;
+    int heroId;
+    bool isActive;
+
+    int level;
+    int currentXp;
+    int requiredXp;
+    int unspentAttributePoints;
+
+    int strength;
+    int dexterity;
+    int intelligence;
+
+    fixed currentMaxHp;
+    fixed currentMaxShields;
+    fixed currentMaxEnergy;
+    fixed currentDamage;
+    fixed currentAttackInterval;
+    fixed currentLifeRegen;
+    fixed currentEnergyRegen;
+    fixed currentSightRadius;
+};
+
+SFE_HeroState[c_SFE_MAX_PLAYERS + 1] g_sfeHeroStates;
+
+// Declaraciones adelantadas
+void SFE_RecalculateStats (int player);
+void SFE_HeroLevelUp (int player);
+
+//--------------------------------------------------------------------------------------------------
+// Inicializar Atributos de un Heroe
+//--------------------------------------------------------------------------------------------------
+void SFE_InitHeroAttributes (int player, unit u, int heroId) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    g_sfeHeroStates[player].heroUnit = u;
+    g_sfeHeroStates[player].heroId = heroId;
+    g_sfeHeroStates[player].isActive = true;
+
+    g_sfeHeroStates[player].level = 1;
+    g_sfeHeroStates[player].currentXp = 0;
+    g_sfeHeroStates[player].requiredXp = 100;
+    g_sfeHeroStates[player].unspentAttributePoints = 5; // Puntos iniciales de cortesia
+
+    // Atributos base segun arquetipo
+    if (g_sfeHeroes[heroId].primaryAttribute == c_ATTR_STRENGTH) {
+        g_sfeHeroStates[player].strength = 15;
+        g_sfeHeroStates[player].dexterity = 8;
+        g_sfeHeroStates[player].intelligence = 5;
+    } else if (g_sfeHeroes[heroId].primaryAttribute == c_ATTR_DEXTERITY) {
+        g_sfeHeroStates[player].strength = 8;
+        g_sfeHeroStates[player].dexterity = 15;
+        g_sfeHeroStates[player].intelligence = 5;
+    } else {
+        g_sfeHeroStates[player].strength = 5;
+        g_sfeHeroStates[player].dexterity = 8;
+        g_sfeHeroStates[player].intelligence = 15;
+    }
+
+    SFE_RecalculateStats(player);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Recalcular Estadisticas Matematicas Deterministas
+//--------------------------------------------------------------------------------------------------
+void SFE_RecalculateStats (int player) {
+    unit u;
+    int hid;
+    fixed hp;
+    fixed shields;
+    fixed energy;
+    fixed lRegen;
+    fixed eRegen;
+    fixed sight;
+
+    if (!g_sfeHeroStates[player].isActive) {
+        return;
+    }
+
+    u = g_sfeHeroStates[player].heroUnit;
+    hid = g_sfeHeroStates[player].heroId;
+
+    if (!UnitIsAlive(u)) {
+        return;
+    }
+
+    // 1. Fuerza: Escala HP maximo y Dano base
+    hp = g_sfeHeroes[hid].baseHp + (g_sfeHeroStates[player].strength * c_FACTOR_ALPHA_STRENGTH_HP);
+    g_sfeHeroStates[player].currentMaxHp = hp;
+    g_sfeHeroStates[player].currentDamage = g_sfeHeroes[hid].baseDamage + (g_sfeHeroStates[player].strength * c_FACTOR_ALPHA_STRENGTH_DAMAGE);
+
+    // 2. Destreza: Escala Cadencia e Incrementa Regeneracion de Vida y Escudos
+    g_sfeHeroStates[player].currentAttackInterval = g_sfeHeroes[hid].baseAttackInterval / (1.0 + (g_sfeHeroStates[player].dexterity * c_FACTOR_BETA_DEXTERITY_SPEED));
+    lRegen = 0.5 + (g_sfeHeroStates[player].dexterity * c_FACTOR_GAMMA_DEXTERITY_REGEN);
+    g_sfeHeroStates[player].currentLifeRegen = lRegen;
+
+    // 3. Inteligencia: Escala Mana maximo, Regeneracion de Mana y Radio de Vision
+    energy = g_sfeHeroes[hid].baseEnergy + (g_sfeHeroStates[player].intelligence * c_FACTOR_LAMBDA_INTEL_ENERGY);
+    g_sfeHeroStates[player].currentMaxEnergy = energy;
+    eRegen = 0.75 + (g_sfeHeroStates[player].intelligence * c_FACTOR_LAMBDA_INTEL_REGEN);
+    g_sfeHeroStates[player].currentEnergyRegen = eRegen;
+    sight = 9.0 + (g_sfeHeroStates[player].intelligence * c_FACTOR_LAMBDA_INTEL_SIGHT);
+    g_sfeHeroStates[player].currentSightRadius = sight;
+
+    shields = g_sfeHeroes[hid].baseShields;
+    if (shields > 0.0) {
+        shields = shields + (g_sfeHeroStates[player].strength * 10.0);
+        g_sfeHeroStates[player].currentMaxShields = shields;
+        UnitSetPropertyFixed(u, c_unitPropShieldsMax, shields);
+        UnitSetPropertyFixed(u, c_unitPropShieldsRegen, lRegen);
+    }
+
+    // Aplicar al motor de la unidad en StarCraft II
+    UnitSetPropertyFixed(u, c_unitPropLifeMax, hp);
+    UnitSetPropertyFixed(u, c_unitPropLifeRegen, lRegen);
+    UnitSetPropertyFixed(u, c_unitPropEnergyMax, energy);
+    UnitSetPropertyFixed(u, c_unitPropEnergyRegen, eRegen);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Asignacion de Puntos de Atributo
+//--------------------------------------------------------------------------------------------------
+bool SFE_AllocateAttribute (int player, int attributeType) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return false;
+    }
+
+    if (g_sfeHeroStates[player].unspentAttributePoints <= 0) {
+        return false;
+    }
+
+    if (attributeType == c_ATTR_STRENGTH) {
+        g_sfeHeroStates[player].strength = g_sfeHeroStates[player].strength + 1;
+    } else if (attributeType == c_ATTR_DEXTERITY) {
+        g_sfeHeroStates[player].dexterity = g_sfeHeroStates[player].dexterity + 1;
+    } else if (attributeType == c_ATTR_INTELLIGENCE) {
+        g_sfeHeroStates[player].intelligence = g_sfeHeroStates[player].intelligence + 1;
+    } else {
+        return false;
+    }
+
+    g_sfeHeroStates[player].unspentAttributePoints = g_sfeHeroStates[player].unspentAttributePoints - 1;
+    SFE_RecalculateStats(player);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Concesion de Experiencia y Subida de Nivel
+//--------------------------------------------------------------------------------------------------
+void SFE_HeroAddExperience (int player, int amount) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS || !g_sfeHeroStates[player].isActive) {
+        return;
+    }
+
+    g_sfeHeroStates[player].currentXp = g_sfeHeroStates[player].currentXp + amount;
+
+    while (g_sfeHeroStates[player].currentXp >= g_sfeHeroStates[player].requiredXp && g_sfeHeroStates[player].level < 50) {
+        g_sfeHeroStates[player].currentXp = g_sfeHeroStates[player].currentXp - g_sfeHeroStates[player].requiredXp;
+        SFE_HeroLevelUp(player);
+    }
+}
+
+void SFE_HeroLevelUp (int player) {
+    unit u;
+    text msg;
+
+    g_sfeHeroStates[player].level = g_sfeHeroStates[player].level + 1;
+    g_sfeHeroStates[player].requiredXp = 100 * g_sfeHeroStates[player].level * g_sfeHeroStates[player].level;
+    g_sfeHeroStates[player].unspentAttributePoints = g_sfeHeroStates[player].unspentAttributePoints + 3;
+
+    u = g_sfeHeroStates[player].heroUnit;
+
+    // Restaurar completamente vida y energia al subir de nivel
+    UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+    UnitSetPropertyFixed(u, c_unitPropEnergyPercent, 100.0);
+    if (g_sfeHeroes[g_sfeHeroStates[player].heroId].baseShields > 0.0) {
+        UnitSetPropertyFixed(u, c_unitPropShieldsPercent, 100.0);
+    }
+
+    SFE_RecalculateStats(player);
+
+    // Notificación de subida de nivel
+    msg = StringToText("<s val=\"ModCenterSize22Bold\"><c val=\"FFFF00\">¡NIVEL " + IntToString(g_sfeHeroStates[player].level) + "! (+3 Puntos Disponibles)</c></s>");
+    UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, msg);
+
+    // Conceder experiencia de cuenta al banco
+    SFE_BankAddExp(player, 100);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Modificador de Dano Efectivo (Formula de Blindaje y Corte Minimo a 0.5)
+// Dano_real = max(0.5, (Dano_base + F * alpha) - Armadura)
+//--------------------------------------------------------------------------------------------------
+fixed SFE_CalculateEffectiveDamage (int attackerPlayer, fixed baseDamage, fixed targetArmor) {
+    fixed rawDamage;
+    fixed effectiveDamage;
+
+    if (attackerPlayer >= 1 && attackerPlayer <= c_SFE_MAX_PLAYERS && g_sfeHeroStates[attackerPlayer].isActive) {
+        rawDamage = baseDamage + (g_sfeHeroStates[attackerPlayer].strength * c_FACTOR_ALPHA_STRENGTH_DAMAGE);
+    } else {
+        rawDamage = baseDamage;
+    }
+
+    effectiveDamage = rawDamage - targetArmor;
+    if (effectiveDamage < 0.5) {
+        effectiveDamage = 0.5;
+    }
+
+    return effectiveDamage;
+}
+
+#endif

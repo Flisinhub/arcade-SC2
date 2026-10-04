@@ -1,0 +1,246 @@
+//==================================================================================================
+// Special Forces Elite 5 - Game Loop & Orchestration Master
+// Orquestador principal del ciclo de vida, selector de dificultad, inicialización y eventos
+//==================================================================================================
+
+#ifndef SFE_GAMELOOP_INCLUDED
+#define SFE_GAMELOOP_INCLUDED
+
+include "Scripts/Constants.galaxy"
+include "Scripts/Persistence.galaxy"
+include "Scripts/Attributes.galaxy"
+include "Scripts/HUD.galaxy"
+include "Scripts/HeroSelection.galaxy"
+include "Scripts/AlliedBase.galaxy"
+include "Scripts/WaveSpawner.galaxy"
+include "Scripts/BossAI.galaxy"
+
+// Dialogo de Seleccion de Dificultad (para el anfitrion - Jugador 1)
+int g_sfeDiffDialog;
+int[c_DIFF_COUNT] g_sfeDiffButtons;
+bool g_sfeDifficultyChosen;
+
+// Declaraciones
+void SFE_StartGameAfterDifficulty (int chosenDiff);
+
+//--------------------------------------------------------------------------------------------------
+// Trigger Callback: Dano de Héroes con Escalado de Fuerza
+//--------------------------------------------------------------------------------------------------
+bool gt_SFE_DamageHook_Func (bool testConds, bool runActions) {
+    unit attacker = EventUnitDamageSourceUnit();
+    unit victim = EventUnit();
+    int attackerPlayer = UnitGetOwner(attacker);
+    fixed strBonus;
+
+    if (!runActions) {
+        return true;
+    }
+
+    if (attackerPlayer >= 1 && attackerPlayer <= c_SFE_MAX_PLAYERS && g_sfeHeroStates[attackerPlayer].isActive) {
+        if (attacker == g_sfeHeroStates[attackerPlayer].heroUnit && UnitGetOwner(victim) == c_SFE_PLAYER_HOSTILE) {
+            strBonus = g_sfeHeroStates[attackerPlayer].strength * c_FACTOR_ALPHA_STRENGTH_DAMAGE;
+            if (strBonus > 0.0) {
+                UnitDamage(attacker, "WeaponNull", victim, strBonus);
+            }
+        }
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger Callback: Seleccion de Dificultad por el Anfitrion
+//--------------------------------------------------------------------------------------------------
+bool gt_SFE_DiffSelect_Click_Func (bool testConds, bool runActions) {
+    int clicked = EventDialogControl();
+    int d = 0;
+
+    if (!runActions || g_sfeDifficultyChosen) {
+        return true;
+    }
+
+    while (d < c_DIFF_COUNT) {
+        if (clicked == g_sfeDiffButtons[d]) {
+            g_sfeDifficultyChosen = true;
+            DialogSetVisible(g_sfeDiffDialog, PlayerGroupAll(), false);
+            SFE_StartGameAfterDifficulty(d);
+            return true;
+        }
+        d = d + 1;
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Iniciar Todo el Ecosistema Tras Fijar Dificultad
+//--------------------------------------------------------------------------------------------------
+void SFE_StartGameAfterDifficulty (int chosenDiff) {
+    int p;
+    int startingMinerals;
+    trigger tWaveTick;
+    trigger tReward;
+    trigger tDamage;
+    text diffNotice;
+
+    g_sfeCurrentDifficulty = chosenDiff;
+
+    diffNotice = StringToText("<s val=\"ModCenterSize22Bold\"><c val=\"FFE400\">DIFICULTAD ESTABLECIDA EN: </c><c val=\"00FFEA\">" + g_sfeDiffNames[chosenDiff] + "</c></s>");
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, diffNotice);
+
+    // Calcular minerales iniciales segun dificultad
+    if (chosenDiff == c_DIFF_CASUAL) {
+        startingMinerals = 800;
+    } else if (chosenDiff == c_DIFF_NORMAL) {
+        startingMinerals = 500;
+    } else if (chosenDiff == c_DIFF_HARD) {
+        startingMinerals = 350;
+    } else if (chosenDiff == c_DIFF_BRUTAL) {
+        startingMinerals = 200;
+    } else if (chosenDiff == c_DIFF_PRO) {
+        startingMinerals = 100;
+    } else if (chosenDiff == c_DIFF_IMPOSSIBLE) {
+        startingMinerals = 50;
+    } else {
+        startingMinerals = 0; // Torment
+    }
+
+    p = 1;
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (PlayerType(p) == c_playerTypeUser) {
+            PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperSetTo, startingMinerals);
+        }
+        p = p + 1;
+    }
+
+    // Inicializar Base Aliada
+    SFE_InitAlliedBase();
+
+    // Inicializar HUD de Jugadores y Barra Superior
+    SFE_InitHUD();
+
+    // Inicializar Sistema de Oleadas
+    SFE_InitWaveSpawner();
+
+    // Inicializar Sistema de Jefes
+    SFE_InitBossSystem();
+
+    // Abrir Selector de Heroes
+    SFE_InitHeroSelectionUI();
+
+    // Disparador del bucle de oleadas cada 1 segundo
+    g_sfeWaveTickTimer = TimerCreate();
+    TimerStart(g_sfeWaveTickTimer, 1.0, true, c_timeGame);
+    tWaveTick = TriggerCreate("gt_SFE_WaveLoop_Timer_Func");
+    TriggerAddEventTimer(tWaveTick, g_sfeWaveTickTimer);
+
+    // Disparador de recompensas de eliminacion
+    tReward = TriggerCreate("gt_SFE_UnitDied_Reward_Func");
+    TriggerAddEventUnitDied(tReward, null);
+
+    // Disparador de escalado de dano de Fuerza
+    tDamage = TriggerCreate("gt_SFE_DamageHook_Func");
+    TriggerAddEventUnitDamaged(tDamage, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Crear Selector de Dificultad Inicial
+//--------------------------------------------------------------------------------------------------
+void SFE_InitDifficultySelection () {
+    trigger tClick;
+    int d;
+    int btnY;
+
+    g_sfeDifficultyChosen = false;
+
+    // Crear Dialogo de dificultad
+    g_sfeDiffDialog = DialogCreate(540, 520, c_anchorCenter, 0, 0, true);
+    DialogSetImage(g_sfeDiffDialog, "Assets\\Textures\\ui_glue_backgrounddialog.dds");
+
+    // Titulo
+    DialogControlCreate(g_sfeDiffDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(DialogControlLastCreated(), PlayerGroupAll(), 500, 35);
+    DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTop, 0, 20);
+    DialogControlSetPropertyAsText(DialogControlLastCreated(), c_triggerControlPropertyText, PlayerGroupAll(), 
+        StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"FFE400\">SELECCIONA LA DIFICULTAD</c></s>"));
+
+    tClick = TriggerCreate("gt_SFE_DiffSelect_Click_Func");
+
+    d = 0;
+    while (d < c_DIFF_COUNT) {
+        btnY = 70 + (d * 58);
+        g_sfeDiffButtons[d] = DialogControlCreate(g_sfeDiffDialog, c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeDiffButtons[d], PlayerGroupAll(), 460, 48);
+        DialogControlSetPosition(g_sfeDiffButtons[d], PlayerGroupAll(), c_anchorTop, 0, btnY);
+        
+        DialogControlSetPropertyAsText(g_sfeDiffButtons[d], c_triggerControlPropertyText, PlayerGroupAll(), 
+            StringToText("<s val=\"ModCenterSize16Bold\">" + g_sfeDiffNames[d] + "</s>"));
+
+        TriggerAddEventDialogControl(tClick, 1, g_sfeDiffButtons[d], c_triggerControlEventTypeClick);
+        d = d + 1;
+    }
+
+    // Visible para todos los jugadores
+    DialogSetVisible(g_sfeDiffDialog, PlayerGroupAll(), true);
+}
+
+void SFE_SetupDiplomacyAndAlliances () {
+    int p1 = 1;
+    int p2;
+
+    while (p1 <= c_SFE_MAX_PLAYERS) {
+        PlayerSetAlliance(p1, c_SFE_PLAYER_ALLIED_BASE, c_allianceIdPassive, true);
+        PlayerSetAlliance(p1, c_SFE_PLAYER_ALLIED_BASE, c_allianceIdVision, true);
+        PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, p1, c_allianceIdPassive, true);
+        PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, p1, c_allianceIdVision, true);
+
+        PlayerSetAlliance(p1, c_SFE_PLAYER_HOSTILE, c_allianceIdPassive, false);
+        PlayerSetAlliance(p1, c_SFE_PLAYER_HOSTILE, c_allianceIdVision, false);
+        PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, p1, c_allianceIdPassive, false);
+        PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, p1, c_allianceIdVision, false);
+
+        p2 = 1;
+        while (p2 <= c_SFE_MAX_PLAYERS) {
+            if (p1 != p2) {
+                PlayerSetAlliance(p1, p2, c_allianceIdPassive, true);
+                PlayerSetAlliance(p1, p2, c_allianceIdVision, true);
+                PlayerSetAlliance(p1, p2, c_allianceIdSeekHelp, true);
+            }
+            p2 = p2 + 1;
+        }
+        p1 = p1 + 1;
+    }
+
+    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_SFE_PLAYER_HOSTILE, c_allianceIdPassive, false);
+    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_SFE_PLAYER_HOSTILE, c_allianceIdVision, false);
+    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_SFE_PLAYER_ALLIED_BASE, c_allianceIdPassive, false);
+    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_SFE_PLAYER_ALLIED_BASE, c_allianceIdVision, false);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Punto de Entrada Principal del Juego
+//--------------------------------------------------------------------------------------------------
+void SFE_MainInit () {
+    int p;
+
+    // Configurar Diplomacia y Vision Compartida
+    SFE_SetupDiplomacyAndAlliances();
+
+    // Inicializar Tablas y Catalogo
+    SFE_InitDifficultyTables();
+    SFE_InitHeroCatalog();
+
+    // Inicializar Bancos Persistentes para cada jugador
+    p = 1;
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (PlayerType(p) == c_playerTypeUser) {
+            SFE_BankInit(p);
+        }
+        p = p + 1;
+    }
+
+    // Desplegar Selector de Dificultad
+    SFE_InitDifficultySelection();
+}
+
+#endif

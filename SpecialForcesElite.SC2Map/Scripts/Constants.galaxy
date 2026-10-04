@@ -1,0 +1,392 @@
+//==================================================================================================
+// Special Forces Elite 5 - Constants & Definitions
+// Arquitectura modular para StarCraft II Arcade
+//==================================================================================================
+
+#ifndef SFE_CONSTANTS_INCLUDED
+#define SFE_CONSTANTS_INCLUDED
+
+//--------------------------------------------------------------------------------------------------
+// Configuracion de Jugadores
+//--------------------------------------------------------------------------------------------------
+const int c_SFE_MAX_PLAYERS = 6;
+const int c_SFE_PLAYER_ALLIED_BASE = 7;
+const int c_SFE_PLAYER_HOSTILE = 8;
+const int c_SFE_PLAYER_NEUTRAL = 0;
+
+//--------------------------------------------------------------------------------------------------
+// Niveles de Dificultad (7 Dificultades Canonicas)
+//--------------------------------------------------------------------------------------------------
+const int c_DIFF_CASUAL = 0;
+const int c_DIFF_NORMAL = 1;
+const int c_DIFF_HARD = 2;
+const int c_DIFF_BRUTAL = 3;
+const int c_DIFF_PRO = 4;
+const int c_DIFF_IMPOSSIBLE = 5;
+const int c_DIFF_TORMENT = 6;
+const int c_DIFF_COUNT = 7;
+
+//--------------------------------------------------------------------------------------------------
+// Multiplicadores de Dificultad
+//--------------------------------------------------------------------------------------------------
+// Casual, Normal, Hard, Brutal, Pro, Impossible, Torment
+fixed[c_DIFF_COUNT] g_sfeDiffIncomeMultiplier;
+fixed[c_DIFF_COUNT] g_sfeDiffHostileStatMultiplier;
+fixed[c_DIFF_COUNT] g_sfeDiffWaveIntervalSeconds;
+string[c_DIFF_COUNT] g_sfeDiffNames;
+
+void SFE_InitDifficultyTables () {
+    g_sfeDiffIncomeMultiplier[c_DIFF_CASUAL] = 1.5;
+    g_sfeDiffIncomeMultiplier[c_DIFF_NORMAL] = 1.0;
+    g_sfeDiffIncomeMultiplier[c_DIFF_HARD] = 0.75;
+    g_sfeDiffIncomeMultiplier[c_DIFF_BRUTAL] = 0.50;
+    g_sfeDiffIncomeMultiplier[c_DIFF_PRO] = 0.25;
+    g_sfeDiffIncomeMultiplier[c_DIFF_IMPOSSIBLE] = 0.10;
+    g_sfeDiffIncomeMultiplier[c_DIFF_TORMENT] = 0.05;
+
+    g_sfeDiffHostileStatMultiplier[c_DIFF_CASUAL] = 0.5;
+    g_sfeDiffHostileStatMultiplier[c_DIFF_NORMAL] = 1.0;
+    g_sfeDiffHostileStatMultiplier[c_DIFF_HARD] = 2.0;
+    g_sfeDiffHostileStatMultiplier[c_DIFF_BRUTAL] = 3.0;
+    g_sfeDiffHostileStatMultiplier[c_DIFF_PRO] = 4.0;
+    g_sfeDiffHostileStatMultiplier[c_DIFF_IMPOSSIBLE] = 5.0;
+    g_sfeDiffHostileStatMultiplier[c_DIFF_TORMENT] = 7.0;
+
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_CASUAL] = 120.0;
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_NORMAL] = 60.0;
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_HARD] = 40.0;
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_BRUTAL] = 30.0;
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_PRO] = 20.0;
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_IMPOSSIBLE] = 15.0;
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_TORMENT] = 10.0;
+
+    g_sfeDiffNames[c_DIFF_CASUAL] = "Casual";
+    g_sfeDiffNames[c_DIFF_NORMAL] = "Normal";
+    g_sfeDiffNames[c_DIFF_HARD] = "Hard";
+    g_sfeDiffNames[c_DIFF_BRUTAL] = "Brutal";
+    g_sfeDiffNames[c_DIFF_PRO] = "Pro";
+    g_sfeDiffNames[c_DIFF_IMPOSSIBLE] = "Impossible";
+    g_sfeDiffNames[c_DIFF_TORMENT] = "TORMENT";
+}
+
+//--------------------------------------------------------------------------------------------------
+// Catalogo de Heroes (16 Canonicos + 1 Secreto de Probabilidad 1%)
+//--------------------------------------------------------------------------------------------------
+const int c_HERO_RAYNOR = 0;
+const int c_HERO_MONTAG = 1;
+const int c_HERO_KERRIGAN = 2;
+const int c_HERO_DUKE = 3;
+const int c_HERO_NYAMI = 4;
+const int c_HERO_REVENANT = 5;
+const int c_HERO_SCV_T280 = 6;
+const int c_HERO_BLACKHAMMER = 7;
+const int c_HERO_INFESTED_DURAN = 8;
+const int c_HERO_WARBRINGER = 9;
+const int c_HERO_TASSADAR = 10;
+const int c_HERO_NOVA = 11;
+const int c_HERO_TORRASQUE = 12;
+const int c_HERO_SWARMLING = 13;
+const int c_HERO_SHADOW_WALKER = 14;
+const int c_HERO_ZERATUL = 15;
+const int c_HERO_SECRET_TAUREN = 16;
+const int c_HERO_TOTAL_COUNT = 17;
+
+// Tipos de Atributos Primarios
+const int c_ATTR_STRENGTH = 0;     // Fuerza (HP, Daño primario)
+const int c_ATTR_DEXTERITY = 1;    // Destreza (Cadencia, Regeneracion)
+const int c_ATTR_INTELLIGENCE = 2; // Inteligencia (Mana, Vision, Regen Mana)
+
+struct SFE_HeroDefinition {
+    int id;
+    string unitType;
+    string fallbackUnitType;
+    string name;
+    string archetype;
+    string description;
+    int primaryAttribute;
+    fixed baseHp;
+    fixed baseShields;
+    fixed baseEnergy;
+    fixed baseArmor;
+    fixed baseDamage;
+    fixed baseAttackInterval;
+    string portraitIcon;
+};
+
+SFE_HeroDefinition[c_HERO_TOTAL_COUNT] g_sfeHeroes;
+
+void SFE_InitHeroCatalog () {
+    // 0: Jim Raynor
+    g_sfeHeroes[c_HERO_RAYNOR].id = c_HERO_RAYNOR;
+    g_sfeHeroes[c_HERO_RAYNOR].unitType = "Raynor";
+    g_sfeHeroes[c_HERO_RAYNOR].fallbackUnitType = "Marine";
+    g_sfeHeroes[c_HERO_RAYNOR].name = "Jim Raynor";
+    g_sfeHeroes[c_HERO_RAYNOR].archetype = "Marine de Elite";
+    g_sfeHeroes[c_HERO_RAYNOR].description = "DPS sostenido a distancia con penetracion balistica.";
+    g_sfeHeroes[c_HERO_RAYNOR].primaryAttribute = c_ATTR_DEXTERITY;
+    g_sfeHeroes[c_HERO_RAYNOR].baseHp = 450.0;
+    g_sfeHeroes[c_HERO_RAYNOR].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_RAYNOR].baseEnergy = 100.0;
+    g_sfeHeroes[c_HERO_RAYNOR].baseArmor = 2.0;
+    g_sfeHeroes[c_HERO_RAYNOR].baseDamage = 28.0;
+    g_sfeHeroes[c_HERO_RAYNOR].baseAttackInterval = 0.65;
+    g_sfeHeroes[c_HERO_RAYNOR].portraitIcon = "Assets\\Textures\\btn-unit-terran-raynormarine.dds";
+
+    // 1: Gui Montag
+    g_sfeHeroes[c_HERO_MONTAG].id = c_HERO_MONTAG;
+    g_sfeHeroes[c_HERO_MONTAG].unitType = "Firebat";
+    g_sfeHeroes[c_HERO_MONTAG].fallbackUnitType = "Firebat";
+    g_sfeHeroes[c_HERO_MONTAG].name = "Gui Montag";
+    g_sfeHeroes[c_HERO_MONTAG].archetype = "Firebat de Alta Presion";
+    g_sfeHeroes[c_HERO_MONTAG].description = "Tanque en vanguardia con absorcion y cono de fuego en area.";
+    g_sfeHeroes[c_HERO_MONTAG].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_MONTAG].baseHp = 850.0;
+    g_sfeHeroes[c_HERO_MONTAG].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_MONTAG].baseEnergy = 80.0;
+    g_sfeHeroes[c_HERO_MONTAG].baseArmor = 5.0;
+    g_sfeHeroes[c_HERO_MONTAG].baseDamage = 32.0;
+    g_sfeHeroes[c_HERO_MONTAG].baseAttackInterval = 1.0;
+    g_sfeHeroes[c_HERO_MONTAG].portraitIcon = "Assets\\Textures\\btn-unit-terran-firebat.dds";
+
+    // 2: Sarah Kerrigan
+    g_sfeHeroes[c_HERO_KERRIGAN].id = c_HERO_KERRIGAN;
+    g_sfeHeroes[c_HERO_KERRIGAN].unitType = "KerriganGhost";
+    g_sfeHeroes[c_HERO_KERRIGAN].fallbackUnitType = "Ghost";
+    g_sfeHeroes[c_HERO_KERRIGAN].name = "Sarah Kerrigan";
+    g_sfeHeroes[c_HERO_KERRIGAN].archetype = "Ghost / Psionica";
+    g_sfeHeroes[c_HERO_KERRIGAN].description = "Dano monobjetivo letal a gran distancia y control psionico.";
+    g_sfeHeroes[c_HERO_KERRIGAN].primaryAttribute = c_ATTR_INTELLIGENCE;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseHp = 380.0;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseEnergy = 200.0;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseArmor = 1.0;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseDamage = 65.0;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseAttackInterval = 1.2;
+    g_sfeHeroes[c_HERO_KERRIGAN].portraitIcon = "Assets\\Textures\\btn-unit-terran-ghost-kerrigan.dds";
+
+    // 3: Edmund Duke
+    g_sfeHeroes[c_HERO_DUKE].id = c_HERO_DUKE;
+    g_sfeHeroes[c_HERO_DUKE].unitType = "SiegeTank";
+    g_sfeHeroes[c_HERO_DUKE].fallbackUnitType = "SiegeTank";
+    g_sfeHeroes[c_HERO_DUKE].name = "General Duke";
+    g_sfeHeroes[c_HERO_DUKE].archetype = "Tanque de Asedio";
+    g_sfeHeroes[c_HERO_DUKE].description = "Artilleria de asedio estatica para supresion zonal masiva.";
+    g_sfeHeroes[c_HERO_DUKE].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_DUKE].baseHp = 600.0;
+    g_sfeHeroes[c_HERO_DUKE].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_DUKE].baseEnergy = 100.0;
+    g_sfeHeroes[c_HERO_DUKE].baseArmor = 3.0;
+    g_sfeHeroes[c_HERO_DUKE].baseDamage = 70.0;
+    g_sfeHeroes[c_HERO_DUKE].baseAttackInterval = 2.0;
+    g_sfeHeroes[c_HERO_DUKE].portraitIcon = "Assets\\Textures\\btn-unit-terran-siegetank.dds";
+
+    // 4: Nyami
+    g_sfeHeroes[c_HERO_NYAMI].id = c_HERO_NYAMI;
+    g_sfeHeroes[c_HERO_NYAMI].unitType = "Hydralisk";
+    g_sfeHeroes[c_HERO_NYAMI].fallbackUnitType = "Hydralisk";
+    g_sfeHeroes[c_HERO_NYAMI].name = "Nyami";
+    g_sfeHeroes[c_HERO_NYAMI].archetype = "Hydralisk de Dispersion";
+    g_sfeHeroes[c_HERO_NYAMI].description = "DPS hibrido antiaereo y terrestre con cadencia acelerada.";
+    g_sfeHeroes[c_HERO_NYAMI].primaryAttribute = c_ATTR_DEXTERITY;
+    g_sfeHeroes[c_HERO_NYAMI].baseHp = 420.0;
+    g_sfeHeroes[c_HERO_NYAMI].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_NYAMI].baseEnergy = 100.0;
+    g_sfeHeroes[c_HERO_NYAMI].baseArmor = 1.0;
+    g_sfeHeroes[c_HERO_NYAMI].baseDamage = 24.0;
+    g_sfeHeroes[c_HERO_NYAMI].baseAttackInterval = 0.55;
+    g_sfeHeroes[c_HERO_NYAMI].portraitIcon = "Assets\\Textures\\btn-unit-zerg-hydralisk.dds";
+
+    // 5: Revenant
+    g_sfeHeroes[c_HERO_REVENANT].id = c_HERO_REVENANT;
+    g_sfeHeroes[c_HERO_REVENANT].unitType = "DarkArchon";
+    g_sfeHeroes[c_HERO_REVENANT].fallbackUnitType = "Archon";
+    g_sfeHeroes[c_HERO_REVENANT].name = "Revenant";
+    g_sfeHeroes[c_HERO_REVENANT].archetype = "Dark Archon Psionico";
+    g_sfeHeroes[c_HERO_REVENANT].description = "Supresion psionica, drenaje de energia y aturdimiento masivo.";
+    g_sfeHeroes[c_HERO_REVENANT].primaryAttribute = c_ATTR_INTELLIGENCE;
+    g_sfeHeroes[c_HERO_REVENANT].baseHp = 100.0;
+    g_sfeHeroes[c_HERO_REVENANT].baseShields = 700.0;
+    g_sfeHeroes[c_HERO_REVENANT].baseEnergy = 250.0;
+    g_sfeHeroes[c_HERO_REVENANT].baseArmor = 2.0;
+    g_sfeHeroes[c_HERO_REVENANT].baseDamage = 35.0;
+    g_sfeHeroes[c_HERO_REVENANT].baseAttackInterval = 1.1;
+    g_sfeHeroes[c_HERO_REVENANT].portraitIcon = "Assets\\Textures\\btn-unit-protoss-darkarchon.dds";
+
+    // 6: T-280 SCV
+    g_sfeHeroes[c_HERO_SCV_T280].id = c_HERO_SCV_T280;
+    g_sfeHeroes[c_HERO_SCV_T280].unitType = "SCV";
+    g_sfeHeroes[c_HERO_SCV_T280].fallbackUnitType = "SCV";
+    g_sfeHeroes[c_HERO_SCV_T280].name = "T-280 SCV";
+    g_sfeHeroes[c_HERO_SCV_T280].archetype = "Constructor Mecanizado";
+    g_sfeHeroes[c_HERO_SCV_T280].description = "Fortificaciones estaticas, torretas automaticas y reparaciones.";
+    g_sfeHeroes[c_HERO_SCV_T280].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_SCV_T280].baseHp = 550.0;
+    g_sfeHeroes[c_HERO_SCV_T280].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_SCV_T280].baseEnergy = 150.0;
+    g_sfeHeroes[c_HERO_SCV_T280].baseArmor = 4.0;
+    g_sfeHeroes[c_HERO_SCV_T280].baseDamage = 20.0;
+    g_sfeHeroes[c_HERO_SCV_T280].baseAttackInterval = 0.9;
+    g_sfeHeroes[c_HERO_SCV_T280].portraitIcon = "Assets\\Textures\\btn-unit-terran-scv.dds";
+
+    // 7: Blackhammer
+    g_sfeHeroes[c_HERO_BLACKHAMMER].id = c_HERO_BLACKHAMMER;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].unitType = "Goliath";
+    g_sfeHeroes[c_HERO_BLACKHAMMER].fallbackUnitType = "Goliath";
+    g_sfeHeroes[c_HERO_BLACKHAMMER].name = "Blackhammer";
+    g_sfeHeroes[c_HERO_BLACKHAMMER].archetype = "Goliath Pesado";
+    g_sfeHeroes[c_HERO_BLACKHAMMER].description = "Plataforma mecanizada combinada de canones gemelos y misiles.";
+    g_sfeHeroes[c_HERO_BLACKHAMMER].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseHp = 700.0;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseEnergy = 80.0;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseArmor = 3.0;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseDamage = 36.0;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseAttackInterval = 0.8;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].portraitIcon = "Assets\\Textures\\btn-unit-terran-goliath.dds";
+
+    // 8: Infested Duran
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].id = c_HERO_INFESTED_DURAN;
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].unitType = "InfestedTerran";
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].fallbackUnitType = "Spectre";
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].name = "Infested Duran";
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].archetype = "Ghost Infestado";
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].description = "Sigilo continuo, debilitacion biologica y perforacion acida.";
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].primaryAttribute = c_ATTR_DEXTERITY;
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].baseHp = 420.0;
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].baseEnergy = 180.0;
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].baseArmor = 2.0;
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].baseDamage = 45.0;
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].baseAttackInterval = 0.85;
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].portraitIcon = "Assets\\Textures\\btn-unit-zerg-infestedterran.dds";
+
+    // 9: Warbringer
+    g_sfeHeroes[c_HERO_WARBRINGER].id = c_HERO_WARBRINGER;
+    g_sfeHeroes[c_HERO_WARBRINGER].unitType = "Reaver";
+    g_sfeHeroes[c_HERO_WARBRINGER].fallbackUnitType = "Colossus";
+    g_sfeHeroes[c_HERO_WARBRINGER].name = "Warbringer";
+    g_sfeHeroes[c_HERO_WARBRINGER].archetype = "Reaver Robotico";
+    g_sfeHeroes[c_HERO_WARBRINGER].description = "Artilleria cinematica de escarabajos con tremendo impacto zonal.";
+    g_sfeHeroes[c_HERO_WARBRINGER].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_WARBRINGER].baseHp = 350.0;
+    g_sfeHeroes[c_HERO_WARBRINGER].baseShields = 400.0;
+    g_sfeHeroes[c_HERO_WARBRINGER].baseEnergy = 100.0;
+    g_sfeHeroes[c_HERO_WARBRINGER].baseArmor = 3.0;
+    g_sfeHeroes[c_HERO_WARBRINGER].baseDamage = 110.0;
+    g_sfeHeroes[c_HERO_WARBRINGER].baseAttackInterval = 2.2;
+    g_sfeHeroes[c_HERO_WARBRINGER].portraitIcon = "Assets\\Textures\\btn-unit-protoss-reaver.dds";
+
+    // 10: Tassadar
+    g_sfeHeroes[c_HERO_TASSADAR].id = c_HERO_TASSADAR;
+    g_sfeHeroes[c_HERO_TASSADAR].unitType = "HighTemplar";
+    g_sfeHeroes[c_HERO_TASSADAR].fallbackUnitType = "HighTemplar";
+    g_sfeHeroes[c_HERO_TASSADAR].name = "Tassadar";
+    g_sfeHeroes[c_HERO_TASSADAR].archetype = "High Templar";
+    g_sfeHeroes[c_HERO_TASSADAR].description = "Devastacion masiva mediante tormentas psionicas e hiperescudos.";
+    g_sfeHeroes[c_HERO_TASSADAR].primaryAttribute = c_ATTR_INTELLIGENCE;
+    g_sfeHeroes[c_HERO_TASSADAR].baseHp = 120.0;
+    g_sfeHeroes[c_HERO_TASSADAR].baseShields = 350.0;
+    g_sfeHeroes[c_HERO_TASSADAR].baseEnergy = 280.0;
+    g_sfeHeroes[c_HERO_TASSADAR].baseArmor = 1.0;
+    g_sfeHeroes[c_HERO_TASSADAR].baseDamage = 25.0;
+    g_sfeHeroes[c_HERO_TASSADAR].baseAttackInterval = 1.5;
+    g_sfeHeroes[c_HERO_TASSADAR].portraitIcon = "Assets\\Textures\\btn-unit-protoss-hightemplar.dds";
+
+    // 11: Nova
+    g_sfeHeroes[c_HERO_NOVA].id = c_HERO_NOVA;
+    g_sfeHeroes[c_HERO_NOVA].unitType = "Medic";
+    g_sfeHeroes[c_HERO_NOVA].fallbackUnitType = "Medic";
+    g_sfeHeroes[c_HERO_NOVA].name = "Nova Terra";
+    g_sfeHeroes[c_HERO_NOVA].archetype = "Medico Tactico";
+    g_sfeHeroes[c_HERO_NOVA].description = "Regeneracion celular biologica intensiva y restauracion de escudos.";
+    g_sfeHeroes[c_HERO_NOVA].primaryAttribute = c_ATTR_INTELLIGENCE;
+    g_sfeHeroes[c_HERO_NOVA].baseHp = 400.0;
+    g_sfeHeroes[c_HERO_NOVA].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_NOVA].baseEnergy = 260.0;
+    g_sfeHeroes[c_HERO_NOVA].baseArmor = 2.0;
+    g_sfeHeroes[c_HERO_NOVA].baseDamage = 18.0;
+    g_sfeHeroes[c_HERO_NOVA].baseAttackInterval = 1.0;
+    g_sfeHeroes[c_HERO_NOVA].portraitIcon = "Assets\\Textures\\btn-unit-terran-medic.dds";
+
+    // 12: Torrasque
+    g_sfeHeroes[c_HERO_TORRASQUE].id = c_HERO_TORRASQUE;
+    g_sfeHeroes[c_HERO_TORRASQUE].unitType = "Torrasque";
+    g_sfeHeroes[c_HERO_TORRASQUE].fallbackUnitType = "Ultralisk";
+    g_sfeHeroes[c_HERO_TORRASQUE].name = "Torrasque";
+    g_sfeHeroes[c_HERO_TORRASQUE].archetype = "Ultralisk de Ruptura";
+    g_sfeHeroes[c_HERO_TORRASQUE].description = "Titan de choque masivo frontal con alta absorcion de fuego concentrado.";
+    g_sfeHeroes[c_HERO_TORRASQUE].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseHp = 1200.0;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseEnergy = 50.0;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseArmor = 6.0;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseDamage = 50.0;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseAttackInterval = 0.86;
+    g_sfeHeroes[c_HERO_TORRASQUE].portraitIcon = "Assets\\Textures\\btn-unit-zerg-torrasque.dds";
+
+    // 13: Swarmling
+    g_sfeHeroes[c_HERO_SWARMLING].id = c_HERO_SWARMLING;
+    g_sfeHeroes[c_HERO_SWARMLING].unitType = "Zergling";
+    g_sfeHeroes[c_HERO_SWARMLING].fallbackUnitType = "Zergling";
+    g_sfeHeroes[c_HERO_SWARMLING].name = "Swarmling";
+    g_sfeHeroes[c_HERO_SWARMLING].archetype = "Zergling Enjambre";
+    g_sfeHeroes[c_HERO_SWARMLING].description = "Velocidad de traslacion fulgurante y golpes criticos de flanqueo.";
+    g_sfeHeroes[c_HERO_SWARMLING].primaryAttribute = c_ATTR_DEXTERITY;
+    g_sfeHeroes[c_HERO_SWARMLING].baseHp = 320.0;
+    g_sfeHeroes[c_HERO_SWARMLING].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_SWARMLING].baseEnergy = 100.0;
+    g_sfeHeroes[c_HERO_SWARMLING].baseArmor = 1.0;
+    g_sfeHeroes[c_HERO_SWARMLING].baseDamage = 22.0;
+    g_sfeHeroes[c_HERO_SWARMLING].baseAttackInterval = 0.45;
+    g_sfeHeroes[c_HERO_SWARMLING].portraitIcon = "Assets\\Textures\\btn-unit-zerg-zergling.dds";
+
+    // 14: Shadow Walker
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].id = c_HERO_SHADOW_WALKER;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].unitType = "Dragoon";
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].fallbackUnitType = "Immortal";
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].name = "Shadow Walker";
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].archetype = "Dragoon Cibernetico";
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].description = "Nucleo de absorcion de plasma reforzado y hostigamiento de proyectiles.";
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].primaryAttribute = c_ATTR_DEXTERITY;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseHp = 350.0;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseShields = 450.0;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseEnergy = 100.0;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseArmor = 3.0;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseDamage = 38.0;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseAttackInterval = 1.0;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].portraitIcon = "Assets\\Textures\\btn-unit-protoss-dragoon.dds";
+
+    // 15: Zeratul
+    g_sfeHeroes[c_HERO_ZERATUL].id = c_HERO_ZERATUL;
+    g_sfeHeroes[c_HERO_ZERATUL].unitType = "Zeratul";
+    g_sfeHeroes[c_HERO_ZERATUL].fallbackUnitType = "DarkTemplar";
+    g_sfeHeroes[c_HERO_ZERATUL].name = "Zeratul";
+    g_sfeHeroes[c_HERO_ZERATUL].archetype = "Dark Templar Prelado";
+    g_sfeHeroes[c_HERO_ZERATUL].description = "Camuflaje permanente, rafagas criticas y teletransporte tactico.";
+    g_sfeHeroes[c_HERO_ZERATUL].primaryAttribute = c_ATTR_DEXTERITY;
+    g_sfeHeroes[c_HERO_ZERATUL].baseHp = 300.0;
+    g_sfeHeroes[c_HERO_ZERATUL].baseShields = 400.0;
+    g_sfeHeroes[c_HERO_ZERATUL].baseEnergy = 150.0;
+    g_sfeHeroes[c_HERO_ZERATUL].baseArmor = 2.0;
+    g_sfeHeroes[c_HERO_ZERATUL].baseDamage = 85.0;
+    g_sfeHeroes[c_HERO_ZERATUL].baseAttackInterval = 0.9;
+    g_sfeHeroes[c_HERO_ZERATUL].portraitIcon = "Assets\\Textures\\btn-unit-protoss-zeratul.dds";
+
+    // 16: Héroe Secreto / Easter Egg (1% de prob. en Random)
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].id = c_HERO_SECRET_TAUREN;
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].unitType = "TaurenSpaceMarine";
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].fallbackUnitType = "Thor";
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].name = "Tauren Space Marine";
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].archetype = "Leyenda Galactica";
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].description = "Variante experimental legendaria con atributos aumentados en todas las categorias.";
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].baseHp = 1500.0;
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].baseShields = 300.0;
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].baseEnergy = 200.0;
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].baseArmor = 5.0;
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].baseDamage = 60.0;
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].baseAttackInterval = 0.7;
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].portraitIcon = "Assets\\Textures\\btn-unit-terran-taurenspacemarine.dds";
+}
+
+#endif

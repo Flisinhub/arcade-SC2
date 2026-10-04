@@ -1,0 +1,2182 @@
+//==================================================================================================
+// Special Forces Elite 5 - StarCraft II Arcade Engine
+// Arquitectura Integral: 16 Héroes, 7 Dificultades, Atributos F/D/I, UI Custom, Oleadas y Jefes
+//==================================================================================================
+include "TriggerLibs/NativeLib"
+
+//--------------------------------------------------------------------------------------------------
+// SECCIÓN 1: CONSTANTES GLOBALES Y CONFIGURACIÓN
+//--------------------------------------------------------------------------------------------------
+const int c_SFE_MAX_PLAYERS = 6;
+const int c_SFE_PLAYER_ALLIED_BASE = 7;
+const int c_SFE_PLAYER_HOSTILE = 8;
+const int c_SFE_PLAYER_NEUTRAL = 0;
+
+const int c_DIFF_CASUAL = 0;
+const int c_DIFF_NORMAL = 1;
+const int c_DIFF_HARD = 2;
+const int c_DIFF_BRUTAL = 3;
+const int c_DIFF_PRO = 4;
+const int c_DIFF_IMPOSSIBLE = 5;
+const int c_DIFF_TORMENT = 6;
+const int c_DIFF_COUNT = 7;
+
+fixed[c_DIFF_COUNT] g_sfeDiffIncomeMultiplier;
+fixed[c_DIFF_COUNT] g_sfeDiffHostileStatMultiplier;
+fixed[c_DIFF_COUNT] g_sfeDiffWaveIntervalSeconds;
+string[c_DIFF_COUNT] g_sfeDiffNames;
+
+const int c_HERO_RAYNOR = 0;
+const int c_HERO_MONTAG = 1;
+const int c_HERO_KERRIGAN = 2;
+const int c_HERO_DUKE = 3;
+const int c_HERO_NYAMI = 4;
+const int c_HERO_REVENANT = 5;
+const int c_HERO_SCV_T280 = 6;
+const int c_HERO_BLACKHAMMER = 7;
+const int c_HERO_INFESTED_DURAN = 8;
+const int c_HERO_WARBRINGER = 9;
+const int c_HERO_TASSADAR = 10;
+const int c_HERO_NOVA = 11;
+const int c_HERO_TORRASQUE = 12;
+const int c_HERO_SWARMLING = 13;
+const int c_HERO_SHADOW_WALKER = 14;
+const int c_HERO_ZERATUL = 15;
+const int c_HERO_SECRET_TAUREN = 16;
+const int c_HERO_TOTAL_COUNT = 17;
+
+const int c_ATTR_STRENGTH = 0;
+const int c_ATTR_DEXTERITY = 1;
+const int c_ATTR_INTELLIGENCE = 2;
+
+const fixed c_FACTOR_ALPHA_STRENGTH_DAMAGE = 2.0;
+const fixed c_FACTOR_ALPHA_STRENGTH_HP     = 25.0;
+const fixed c_FACTOR_BETA_DEXTERITY_SPEED  = 0.025;
+const fixed c_FACTOR_GAMMA_DEXTERITY_REGEN = 0.25;
+const fixed c_FACTOR_LAMBDA_INTEL_ENERGY   = 15.0;
+const fixed c_FACTOR_LAMBDA_INTEL_REGEN    = 0.20;
+const fixed c_FACTOR_LAMBDA_INTEL_SIGHT    = 0.05;
+
+struct SFE_HeroDefinition {
+    int id;
+    string unitType;
+    string fallbackUnitType;
+    string name;
+    string archetype;
+    string description;
+    int primaryAttribute;
+    fixed baseHp;
+    fixed baseShields;
+    fixed baseEnergy;
+    fixed baseArmor;
+    fixed baseDamage;
+    fixed baseAttackInterval;
+    string portraitIcon;
+};
+
+SFE_HeroDefinition[c_HERO_TOTAL_COUNT] g_sfeHeroes;
+
+struct SFE_HeroState {
+    unit heroUnit;
+    int heroId;
+    bool isActive;
+    int level;
+    int currentXp;
+    int requiredXp;
+    int unspentAttributePoints;
+    int strength;
+    int dexterity;
+    int intelligence;
+    fixed currentMaxHp;
+    fixed currentMaxShields;
+    fixed currentMaxEnergy;
+    fixed currentDamage;
+    fixed currentAttackInterval;
+    fixed currentLifeRegen;
+    fixed currentEnergyRegen;
+    fixed currentSightRadius;
+};
+
+SFE_HeroState[c_SFE_MAX_PLAYERS + 1] g_sfeHeroStates;
+
+// Persistencia
+const string c_BANK_NAME = "SpecialForcesElite5_Profile";
+const string c_SEC_PROFILE = "Profile";
+const string c_SEC_WINS = "DifficultyWins";
+const string c_SEC_STATS = "Stats";
+const string c_SEC_SECURITY = "Security";
+const int c_SECURITY_SALT = 948271;
+
+struct SFE_PlayerProfile {
+    bank playerBank;
+    bool bankLoaded;
+    int accountLevel;
+    int accountXP;
+    int totalWins;
+    int[c_DIFF_COUNT] difficultyWins;
+    int bossesKilled;
+    bool tormentMaster;
+    bool secretUnlocked;
+};
+
+SFE_PlayerProfile[c_SFE_MAX_PLAYERS + 1] g_sfeProfiles;
+
+// Variables Globales de Juego
+int g_sfeCurrentDifficulty;
+int g_sfeCurrentWaveNumber;
+int g_sfeWaveTimeRemaining;
+fixed g_sfeBaseCoreHpPercent;
+point g_sfeBaseCenterPoint;
+point g_sfeSpawnPoint;
+unit g_sfeBaseCoreUnit;
+bool g_sfeGameOverTriggered;
+
+// Declaraciones Adelantadas (Prototypes)
+void SFE_RecalculateStats (int player);
+void SFE_HeroLevelUp (int player);
+void SFE_BankSave (int player);
+void SFE_BankAddExp (int player, int amount);
+void SFE_UpdatePlayerHUD (int player);
+void SFE_UpdateTopBarHUD ();
+void SFE_TriggerBossMaarSpawn ();
+void SFE_TriggerBossDestroyerSpawn ();
+void SFE_TriggerBossDiabloSpawn ();
+void SFE_TriggerDefeat ();
+void SFE_TriggerVictory ();
+void SFE_OrderHostilesToCore (unitgroup ug);
+
+//--------------------------------------------------------------------------------------------------
+// SECCIÓN 2: INICIALIZACIÓN DE TABLAS DE DATOS
+//--------------------------------------------------------------------------------------------------
+void SFE_InitDifficultyTables () {
+    g_sfeDiffIncomeMultiplier[c_DIFF_CASUAL] = 1.5;
+    g_sfeDiffIncomeMultiplier[c_DIFF_NORMAL] = 1.0;
+    g_sfeDiffIncomeMultiplier[c_DIFF_HARD] = 0.75;
+    g_sfeDiffIncomeMultiplier[c_DIFF_BRUTAL] = 0.50;
+    g_sfeDiffIncomeMultiplier[c_DIFF_PRO] = 0.25;
+    g_sfeDiffIncomeMultiplier[c_DIFF_IMPOSSIBLE] = 0.10;
+    g_sfeDiffIncomeMultiplier[c_DIFF_TORMENT] = 0.05;
+
+    g_sfeDiffHostileStatMultiplier[c_DIFF_CASUAL] = 0.5;
+    g_sfeDiffHostileStatMultiplier[c_DIFF_NORMAL] = 1.0;
+    g_sfeDiffHostileStatMultiplier[c_DIFF_HARD] = 2.0;
+    g_sfeDiffHostileStatMultiplier[c_DIFF_BRUTAL] = 3.0;
+    g_sfeDiffHostileStatMultiplier[c_DIFF_PRO] = 4.0;
+    g_sfeDiffHostileStatMultiplier[c_DIFF_IMPOSSIBLE] = 5.0;
+    g_sfeDiffHostileStatMultiplier[c_DIFF_TORMENT] = 7.0;
+
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_CASUAL] = 120.0;
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_NORMAL] = 60.0;
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_HARD] = 40.0;
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_BRUTAL] = 30.0;
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_PRO] = 20.0;
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_IMPOSSIBLE] = 15.0;
+    g_sfeDiffWaveIntervalSeconds[c_DIFF_TORMENT] = 10.0;
+
+    g_sfeDiffNames[c_DIFF_CASUAL] = "Casual";
+    g_sfeDiffNames[c_DIFF_NORMAL] = "Normal";
+    g_sfeDiffNames[c_DIFF_HARD] = "Hard";
+    g_sfeDiffNames[c_DIFF_BRUTAL] = "Brutal";
+    g_sfeDiffNames[c_DIFF_PRO] = "Pro";
+    g_sfeDiffNames[c_DIFF_IMPOSSIBLE] = "Impossible";
+    g_sfeDiffNames[c_DIFF_TORMENT] = "TORMENT";
+}
+
+void SFE_InitHeroCatalog () {
+    g_sfeHeroes[c_HERO_RAYNOR].id = c_HERO_RAYNOR;
+    g_sfeHeroes[c_HERO_RAYNOR].unitType = "Raynor";
+    g_sfeHeroes[c_HERO_RAYNOR].fallbackUnitType = "Marine";
+    g_sfeHeroes[c_HERO_RAYNOR].name = "Jim Raynor";
+    g_sfeHeroes[c_HERO_RAYNOR].archetype = "Marine de Elite";
+    g_sfeHeroes[c_HERO_RAYNOR].description = "DPS sostenido a distancia con penetracion balistica.";
+    g_sfeHeroes[c_HERO_RAYNOR].primaryAttribute = c_ATTR_DEXTERITY;
+    g_sfeHeroes[c_HERO_RAYNOR].baseHp = 450.0;
+    g_sfeHeroes[c_HERO_RAYNOR].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_RAYNOR].baseEnergy = 100.0;
+    g_sfeHeroes[c_HERO_RAYNOR].baseArmor = 2.0;
+    g_sfeHeroes[c_HERO_RAYNOR].baseDamage = 28.0;
+    g_sfeHeroes[c_HERO_RAYNOR].baseAttackInterval = 0.65;
+    g_sfeHeroes[c_HERO_RAYNOR].portraitIcon = "Assets\\Textures\\btn-unit-terran-raynormarine.dds";
+
+    g_sfeHeroes[c_HERO_MONTAG].id = c_HERO_MONTAG;
+    g_sfeHeroes[c_HERO_MONTAG].unitType = "Firebat";
+    g_sfeHeroes[c_HERO_MONTAG].fallbackUnitType = "Firebat";
+    g_sfeHeroes[c_HERO_MONTAG].name = "Gui Montag";
+    g_sfeHeroes[c_HERO_MONTAG].archetype = "Firebat de Alta Presion";
+    g_sfeHeroes[c_HERO_MONTAG].description = "Tanque en vanguardia con absorcion y cono de fuego en area.";
+    g_sfeHeroes[c_HERO_MONTAG].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_MONTAG].baseHp = 850.0;
+    g_sfeHeroes[c_HERO_MONTAG].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_MONTAG].baseEnergy = 80.0;
+    g_sfeHeroes[c_HERO_MONTAG].baseArmor = 5.0;
+    g_sfeHeroes[c_HERO_MONTAG].baseDamage = 32.0;
+    g_sfeHeroes[c_HERO_MONTAG].baseAttackInterval = 1.0;
+    g_sfeHeroes[c_HERO_MONTAG].portraitIcon = "Assets\\Textures\\btn-unit-terran-firebat.dds";
+
+    g_sfeHeroes[c_HERO_KERRIGAN].id = c_HERO_KERRIGAN;
+    g_sfeHeroes[c_HERO_KERRIGAN].unitType = "KerriganGhost";
+    g_sfeHeroes[c_HERO_KERRIGAN].fallbackUnitType = "Ghost";
+    g_sfeHeroes[c_HERO_KERRIGAN].name = "Sarah Kerrigan";
+    g_sfeHeroes[c_HERO_KERRIGAN].archetype = "Ghost / Psionica";
+    g_sfeHeroes[c_HERO_KERRIGAN].description = "Dano monobjetivo letal a gran distancia y control psionico.";
+    g_sfeHeroes[c_HERO_KERRIGAN].primaryAttribute = c_ATTR_INTELLIGENCE;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseHp = 380.0;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseEnergy = 200.0;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseArmor = 1.0;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseDamage = 65.0;
+    g_sfeHeroes[c_HERO_KERRIGAN].baseAttackInterval = 1.2;
+    g_sfeHeroes[c_HERO_KERRIGAN].portraitIcon = "Assets\\Textures\\btn-unit-terran-ghost-kerrigan.dds";
+
+    g_sfeHeroes[c_HERO_DUKE].id = c_HERO_DUKE;
+    g_sfeHeroes[c_HERO_DUKE].unitType = "SiegeTank";
+    g_sfeHeroes[c_HERO_DUKE].fallbackUnitType = "SiegeTank";
+    g_sfeHeroes[c_HERO_DUKE].name = "General Duke";
+    g_sfeHeroes[c_HERO_DUKE].archetype = "Tanque de Asedio";
+    g_sfeHeroes[c_HERO_DUKE].description = "Artilleria de asedio estatica para supresion zonal masiva.";
+    g_sfeHeroes[c_HERO_DUKE].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_DUKE].baseHp = 600.0;
+    g_sfeHeroes[c_HERO_DUKE].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_DUKE].baseEnergy = 100.0;
+    g_sfeHeroes[c_HERO_DUKE].baseArmor = 3.0;
+    g_sfeHeroes[c_HERO_DUKE].baseDamage = 70.0;
+    g_sfeHeroes[c_HERO_DUKE].baseAttackInterval = 2.0;
+    g_sfeHeroes[c_HERO_DUKE].portraitIcon = "Assets\\Textures\\btn-unit-terran-siegetank.dds";
+
+    g_sfeHeroes[c_HERO_NYAMI].id = c_HERO_NYAMI;
+    g_sfeHeroes[c_HERO_NYAMI].unitType = "Hydralisk";
+    g_sfeHeroes[c_HERO_NYAMI].fallbackUnitType = "Hydralisk";
+    g_sfeHeroes[c_HERO_NYAMI].name = "Nyami";
+    g_sfeHeroes[c_HERO_NYAMI].archetype = "Hydralisk de Dispersion";
+    g_sfeHeroes[c_HERO_NYAMI].description = "DPS hibrido antiaereo y terrestre con cadencia acelerada.";
+    g_sfeHeroes[c_HERO_NYAMI].primaryAttribute = c_ATTR_DEXTERITY;
+    g_sfeHeroes[c_HERO_NYAMI].baseHp = 420.0;
+    g_sfeHeroes[c_HERO_NYAMI].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_NYAMI].baseEnergy = 100.0;
+    g_sfeHeroes[c_HERO_NYAMI].baseArmor = 1.0;
+    g_sfeHeroes[c_HERO_NYAMI].baseDamage = 24.0;
+    g_sfeHeroes[c_HERO_NYAMI].baseAttackInterval = 0.55;
+    g_sfeHeroes[c_HERO_NYAMI].portraitIcon = "Assets\\Textures\\btn-unit-zerg-hydralisk.dds";
+
+    g_sfeHeroes[c_HERO_REVENANT].id = c_HERO_REVENANT;
+    g_sfeHeroes[c_HERO_REVENANT].unitType = "DarkArchon";
+    g_sfeHeroes[c_HERO_REVENANT].fallbackUnitType = "Archon";
+    g_sfeHeroes[c_HERO_REVENANT].name = "Revenant";
+    g_sfeHeroes[c_HERO_REVENANT].archetype = "Dark Archon Psionico";
+    g_sfeHeroes[c_HERO_REVENANT].description = "Supresion psionica, drenaje de energia y aturdimiento masivo.";
+    g_sfeHeroes[c_HERO_REVENANT].primaryAttribute = c_ATTR_INTELLIGENCE;
+    g_sfeHeroes[c_HERO_REVENANT].baseHp = 100.0;
+    g_sfeHeroes[c_HERO_REVENANT].baseShields = 700.0;
+    g_sfeHeroes[c_HERO_REVENANT].baseEnergy = 250.0;
+    g_sfeHeroes[c_HERO_REVENANT].baseArmor = 2.0;
+    g_sfeHeroes[c_HERO_REVENANT].baseDamage = 35.0;
+    g_sfeHeroes[c_HERO_REVENANT].baseAttackInterval = 1.1;
+    g_sfeHeroes[c_HERO_REVENANT].portraitIcon = "Assets\\Textures\\btn-unit-protoss-darkarchon.dds";
+
+    g_sfeHeroes[c_HERO_SCV_T280].id = c_HERO_SCV_T280;
+    g_sfeHeroes[c_HERO_SCV_T280].unitType = "SCV";
+    g_sfeHeroes[c_HERO_SCV_T280].fallbackUnitType = "SCV";
+    g_sfeHeroes[c_HERO_SCV_T280].name = "T-280 SCV";
+    g_sfeHeroes[c_HERO_SCV_T280].archetype = "Constructor Mecanizado";
+    g_sfeHeroes[c_HERO_SCV_T280].description = "Fortificaciones estaticas, torretas automaticas y reparaciones.";
+    g_sfeHeroes[c_HERO_SCV_T280].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_SCV_T280].baseHp = 550.0;
+    g_sfeHeroes[c_HERO_SCV_T280].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_SCV_T280].baseEnergy = 150.0;
+    g_sfeHeroes[c_HERO_SCV_T280].baseArmor = 4.0;
+    g_sfeHeroes[c_HERO_SCV_T280].baseDamage = 20.0;
+    g_sfeHeroes[c_HERO_SCV_T280].baseAttackInterval = 0.9;
+    g_sfeHeroes[c_HERO_SCV_T280].portraitIcon = "Assets\\Textures\\btn-unit-terran-scv.dds";
+
+    g_sfeHeroes[c_HERO_BLACKHAMMER].id = c_HERO_BLACKHAMMER;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].unitType = "Goliath";
+    g_sfeHeroes[c_HERO_BLACKHAMMER].fallbackUnitType = "Goliath";
+    g_sfeHeroes[c_HERO_BLACKHAMMER].name = "Blackhammer";
+    g_sfeHeroes[c_HERO_BLACKHAMMER].archetype = "Goliath Pesado";
+    g_sfeHeroes[c_HERO_BLACKHAMMER].description = "Plataforma mecanizada combinada de canones gemelos y misiles.";
+    g_sfeHeroes[c_HERO_BLACKHAMMER].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseHp = 700.0;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseEnergy = 80.0;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseArmor = 3.0;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseDamage = 36.0;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].baseAttackInterval = 0.8;
+    g_sfeHeroes[c_HERO_BLACKHAMMER].portraitIcon = "Assets\\Textures\\btn-unit-terran-goliath.dds";
+
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].id = c_HERO_INFESTED_DURAN;
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].unitType = "InfestedTerran";
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].fallbackUnitType = "Spectre";
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].name = "Infested Duran";
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].archetype = "Ghost Infestado";
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].description = "Sigilo continuo, debilitacion biologica y perforacion acida.";
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].primaryAttribute = c_ATTR_DEXTERITY;
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].baseHp = 420.0;
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].baseEnergy = 180.0;
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].baseArmor = 2.0;
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].baseDamage = 45.0;
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].baseAttackInterval = 0.85;
+    g_sfeHeroes[c_HERO_INFESTED_DURAN].portraitIcon = "Assets\\Textures\\btn-unit-zerg-infestedterran.dds";
+
+    g_sfeHeroes[c_HERO_WARBRINGER].id = c_HERO_WARBRINGER;
+    g_sfeHeroes[c_HERO_WARBRINGER].unitType = "Reaver";
+    g_sfeHeroes[c_HERO_WARBRINGER].fallbackUnitType = "Colossus";
+    g_sfeHeroes[c_HERO_WARBRINGER].name = "Warbringer";
+    g_sfeHeroes[c_HERO_WARBRINGER].archetype = "Reaver Robotico";
+    g_sfeHeroes[c_HERO_WARBRINGER].description = "Artilleria cinematica de escarabajos con tremendo impacto zonal.";
+    g_sfeHeroes[c_HERO_WARBRINGER].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_WARBRINGER].baseHp = 350.0;
+    g_sfeHeroes[c_HERO_WARBRINGER].baseShields = 400.0;
+    g_sfeHeroes[c_HERO_WARBRINGER].baseEnergy = 100.0;
+    g_sfeHeroes[c_HERO_WARBRINGER].baseArmor = 3.0;
+    g_sfeHeroes[c_HERO_WARBRINGER].baseDamage = 110.0;
+    g_sfeHeroes[c_HERO_WARBRINGER].baseAttackInterval = 2.2;
+    g_sfeHeroes[c_HERO_WARBRINGER].portraitIcon = "Assets\\Textures\\btn-unit-protoss-reaver.dds";
+
+    g_sfeHeroes[c_HERO_TASSADAR].id = c_HERO_TASSADAR;
+    g_sfeHeroes[c_HERO_TASSADAR].unitType = "HighTemplar";
+    g_sfeHeroes[c_HERO_TASSADAR].fallbackUnitType = "HighTemplar";
+    g_sfeHeroes[c_HERO_TASSADAR].name = "Tassadar";
+    g_sfeHeroes[c_HERO_TASSADAR].archetype = "High Templar";
+    g_sfeHeroes[c_HERO_TASSADAR].description = "Devastacion masiva mediante tormentas psionicas e hiperescudos.";
+    g_sfeHeroes[c_HERO_TASSADAR].primaryAttribute = c_ATTR_INTELLIGENCE;
+    g_sfeHeroes[c_HERO_TASSADAR].baseHp = 120.0;
+    g_sfeHeroes[c_HERO_TASSADAR].baseShields = 350.0;
+    g_sfeHeroes[c_HERO_TASSADAR].baseEnergy = 280.0;
+    g_sfeHeroes[c_HERO_TASSADAR].baseArmor = 1.0;
+    g_sfeHeroes[c_HERO_TASSADAR].baseDamage = 25.0;
+    g_sfeHeroes[c_HERO_TASSADAR].baseAttackInterval = 1.5;
+    g_sfeHeroes[c_HERO_TASSADAR].portraitIcon = "Assets\\Textures\\btn-unit-protoss-hightemplar.dds";
+
+    g_sfeHeroes[c_HERO_NOVA].id = c_HERO_NOVA;
+    g_sfeHeroes[c_HERO_NOVA].unitType = "Medic";
+    g_sfeHeroes[c_HERO_NOVA].fallbackUnitType = "Medic";
+    g_sfeHeroes[c_HERO_NOVA].name = "Nova Terra";
+    g_sfeHeroes[c_HERO_NOVA].archetype = "Medico Tactico";
+    g_sfeHeroes[c_HERO_NOVA].description = "Regeneracion celular biologica intensiva y restauracion de escudos.";
+    g_sfeHeroes[c_HERO_NOVA].primaryAttribute = c_ATTR_INTELLIGENCE;
+    g_sfeHeroes[c_HERO_NOVA].baseHp = 400.0;
+    g_sfeHeroes[c_HERO_NOVA].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_NOVA].baseEnergy = 260.0;
+    g_sfeHeroes[c_HERO_NOVA].baseArmor = 2.0;
+    g_sfeHeroes[c_HERO_NOVA].baseDamage = 18.0;
+    g_sfeHeroes[c_HERO_NOVA].baseAttackInterval = 1.0;
+    g_sfeHeroes[c_HERO_NOVA].portraitIcon = "Assets\\Textures\\btn-unit-terran-medic.dds";
+
+    g_sfeHeroes[c_HERO_TORRASQUE].id = c_HERO_TORRASQUE;
+    g_sfeHeroes[c_HERO_TORRASQUE].unitType = "Torrasque";
+    g_sfeHeroes[c_HERO_TORRASQUE].fallbackUnitType = "Ultralisk";
+    g_sfeHeroes[c_HERO_TORRASQUE].name = "Torrasque";
+    g_sfeHeroes[c_HERO_TORRASQUE].archetype = "Ultralisk de Ruptura";
+    g_sfeHeroes[c_HERO_TORRASQUE].description = "Titan de choque masivo frontal con alta absorcion de fuego concentrado.";
+    g_sfeHeroes[c_HERO_TORRASQUE].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseHp = 1200.0;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseEnergy = 50.0;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseArmor = 6.0;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseDamage = 50.0;
+    g_sfeHeroes[c_HERO_TORRASQUE].baseAttackInterval = 0.86;
+    g_sfeHeroes[c_HERO_TORRASQUE].portraitIcon = "Assets\\Textures\\btn-unit-zerg-torrasque.dds";
+
+    g_sfeHeroes[c_HERO_SWARMLING].id = c_HERO_SWARMLING;
+    g_sfeHeroes[c_HERO_SWARMLING].unitType = "Zergling";
+    g_sfeHeroes[c_HERO_SWARMLING].fallbackUnitType = "Zergling";
+    g_sfeHeroes[c_HERO_SWARMLING].name = "Swarmling";
+    g_sfeHeroes[c_HERO_SWARMLING].archetype = "Zergling Enjambre";
+    g_sfeHeroes[c_HERO_SWARMLING].description = "Velocidad de traslacion fulgurante y golpes criticos de flanqueo.";
+    g_sfeHeroes[c_HERO_SWARMLING].primaryAttribute = c_ATTR_DEXTERITY;
+    g_sfeHeroes[c_HERO_SWARMLING].baseHp = 320.0;
+    g_sfeHeroes[c_HERO_SWARMLING].baseShields = 0.0;
+    g_sfeHeroes[c_HERO_SWARMLING].baseEnergy = 100.0;
+    g_sfeHeroes[c_HERO_SWARMLING].baseArmor = 1.0;
+    g_sfeHeroes[c_HERO_SWARMLING].baseDamage = 22.0;
+    g_sfeHeroes[c_HERO_SWARMLING].baseAttackInterval = 0.45;
+    g_sfeHeroes[c_HERO_SWARMLING].portraitIcon = "Assets\\Textures\\btn-unit-zerg-zergling.dds";
+
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].id = c_HERO_SHADOW_WALKER;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].unitType = "Dragoon";
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].fallbackUnitType = "Immortal";
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].name = "Shadow Walker";
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].archetype = "Dragoon Cibernetico";
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].description = "Nucleo de absorcion de plasma reforzado y hostigamiento de proyectiles.";
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].primaryAttribute = c_ATTR_DEXTERITY;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseHp = 350.0;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseShields = 450.0;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseEnergy = 100.0;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseArmor = 3.0;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseDamage = 38.0;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].baseAttackInterval = 1.0;
+    g_sfeHeroes[c_HERO_SHADOW_WALKER].portraitIcon = "Assets\\Textures\\btn-unit-protoss-dragoon.dds";
+
+    g_sfeHeroes[c_HERO_ZERATUL].id = c_HERO_ZERATUL;
+    g_sfeHeroes[c_HERO_ZERATUL].unitType = "Zeratul";
+    g_sfeHeroes[c_HERO_ZERATUL].fallbackUnitType = "DarkTemplar";
+    g_sfeHeroes[c_HERO_ZERATUL].name = "Zeratul";
+    g_sfeHeroes[c_HERO_ZERATUL].archetype = "Dark Templar Prelado";
+    g_sfeHeroes[c_HERO_ZERATUL].description = "Camuflaje permanente, rafagas criticas y teletransporte tactico.";
+    g_sfeHeroes[c_HERO_ZERATUL].primaryAttribute = c_ATTR_DEXTERITY;
+    g_sfeHeroes[c_HERO_ZERATUL].baseHp = 300.0;
+    g_sfeHeroes[c_HERO_ZERATUL].baseShields = 400.0;
+    g_sfeHeroes[c_HERO_ZERATUL].baseEnergy = 150.0;
+    g_sfeHeroes[c_HERO_ZERATUL].baseArmor = 2.0;
+    g_sfeHeroes[c_HERO_ZERATUL].baseDamage = 85.0;
+    g_sfeHeroes[c_HERO_ZERATUL].baseAttackInterval = 0.9;
+    g_sfeHeroes[c_HERO_ZERATUL].portraitIcon = "Assets\\Textures\\btn-unit-protoss-zeratul.dds";
+
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].id = c_HERO_SECRET_TAUREN;
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].unitType = "TaurenSpaceMarine";
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].fallbackUnitType = "Thor";
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].name = "Tauren Space Marine";
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].archetype = "Leyenda Galactica";
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].description = "Variante experimental legendaria con atributos aumentados en todas las categorias.";
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].primaryAttribute = c_ATTR_STRENGTH;
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].baseHp = 1500.0;
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].baseShields = 300.0;
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].baseEnergy = 200.0;
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].baseArmor = 5.0;
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].baseDamage = 60.0;
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].baseAttackInterval = 0.7;
+    g_sfeHeroes[c_HERO_SECRET_TAUREN].portraitIcon = "Assets\\Textures\\btn-unit-terran-taurenspacemarine.dds";
+}
+
+//--------------------------------------------------------------------------------------------------
+// SECCIÓN 3: PERSISTENCIA Y BANCOS SC2
+//--------------------------------------------------------------------------------------------------
+int SFE_CalculateChecksum (int player) {
+    int sum = c_SECURITY_SALT;
+    int d = 0;
+    sum = sum + (g_sfeProfiles[player].accountLevel * 179);
+    sum = sum + (g_sfeProfiles[player].accountXP * 31);
+    sum = sum + (g_sfeProfiles[player].totalWins * 719);
+    sum = sum + (g_sfeProfiles[player].bossesKilled * 1031);
+    while (d < c_DIFF_COUNT) {
+        sum = sum + (g_sfeProfiles[player].difficultyWins[d] * (211 + (d * 37)));
+        d = d + 1;
+    }
+    return sum;
+}
+
+void SFE_BankInit (int player) {
+    bank b;
+    int storedChecksum;
+    int calculatedChecksum;
+    int d;
+    string keyName;
+
+    if (PlayerType(player) != c_playerTypeUser) {
+        return;
+    }
+
+    BankLoad(c_BANK_NAME, player);
+    b = BankLastCreated();
+    g_sfeProfiles[player].playerBank = b;
+
+    if (BankKeyExists(b, c_SEC_PROFILE, "Level")) {
+        g_sfeProfiles[player].accountLevel = BankValueGetAsInt(b, c_SEC_PROFILE, "Level");
+        g_sfeProfiles[player].accountXP = BankValueGetAsInt(b, c_SEC_PROFILE, "XP");
+        g_sfeProfiles[player].totalWins = BankValueGetAsInt(b, c_SEC_PROFILE, "Wins");
+        g_sfeProfiles[player].bossesKilled = BankValueGetAsInt(b, c_SEC_STATS, "Bosses");
+
+        d = 0;
+        while (d < c_DIFF_COUNT) {
+            keyName = "Diff_" + IntToString(d);
+            if (BankKeyExists(b, c_SEC_WINS, keyName)) {
+                g_sfeProfiles[player].difficultyWins[d] = BankValueGetAsInt(b, c_SEC_WINS, keyName);
+            } else {
+                g_sfeProfiles[player].difficultyWins[d] = 0;
+            }
+            d = d + 1;
+        }
+
+        storedChecksum = BankValueGetAsInt(b, c_SEC_SECURITY, "Checksum");
+        calculatedChecksum = SFE_CalculateChecksum(player);
+
+        if (storedChecksum != calculatedChecksum) {
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("[SFE5 Guardado] Suma de verificacion no coincidente. Reiniciando perfil seguro."));
+            g_sfeProfiles[player].accountLevel = 1;
+            g_sfeProfiles[player].accountXP = 0;
+            g_sfeProfiles[player].totalWins = 0;
+            g_sfeProfiles[player].bossesKilled = 0;
+            d = 0;
+            while (d < c_DIFF_COUNT) {
+                g_sfeProfiles[player].difficultyWins[d] = 0;
+                d = d + 1;
+            }
+        }
+    } else {
+        g_sfeProfiles[player].accountLevel = 1;
+        g_sfeProfiles[player].accountXP = 0;
+        g_sfeProfiles[player].totalWins = 0;
+        g_sfeProfiles[player].bossesKilled = 0;
+        d = 0;
+        while (d < c_DIFF_COUNT) {
+            g_sfeProfiles[player].difficultyWins[d] = 0;
+            d = d + 1;
+        }
+    }
+
+    if (g_sfeProfiles[player].difficultyWins[c_DIFF_TORMENT] > 0) {
+        g_sfeProfiles[player].tormentMaster = true;
+    }
+
+    g_sfeProfiles[player].bankLoaded = true;
+}
+
+void SFE_BankSave (int player) {
+    bank b;
+    int d;
+
+    if (!g_sfeProfiles[player].bankLoaded || PlayerType(player) != c_playerTypeUser) {
+        return;
+    }
+
+    b = g_sfeProfiles[player].playerBank;
+
+    BankValueSetFromInt(b, c_SEC_PROFILE, "Level", g_sfeProfiles[player].accountLevel);
+    BankValueSetFromInt(b, c_SEC_PROFILE, "XP", g_sfeProfiles[player].accountXP);
+    BankValueSetFromInt(b, c_SEC_PROFILE, "Wins", g_sfeProfiles[player].totalWins);
+    BankValueSetFromInt(b, c_SEC_STATS, "Bosses", g_sfeProfiles[player].bossesKilled);
+
+    d = 0;
+    while (d < c_DIFF_COUNT) {
+        BankValueSetFromInt(b, c_SEC_WINS, "Diff_" + IntToString(d), g_sfeProfiles[player].difficultyWins[d]);
+        d = d + 1;
+    }
+
+    BankValueSetFromInt(b, c_SEC_SECURITY, "Checksum", SFE_CalculateChecksum(player));
+    BankSave(b);
+}
+
+void SFE_BankAddExp (int player, int amount) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    g_sfeProfiles[player].accountXP = g_sfeProfiles[player].accountXP + amount;
+    g_sfeProfiles[player].accountLevel = 1 + (g_sfeProfiles[player].accountXP / 2500);
+    SFE_BankSave(player);
+}
+
+void SFE_BankRecordVictory (int player, int difficulty) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    g_sfeProfiles[player].totalWins = g_sfeProfiles[player].totalWins + 1;
+    g_sfeProfiles[player].difficultyWins[difficulty] = g_sfeProfiles[player].difficultyWins[difficulty] + 1;
+    g_sfeProfiles[player].accountXP = g_sfeProfiles[player].accountXP + (500 * (difficulty + 1));
+    g_sfeProfiles[player].accountLevel = 1 + (g_sfeProfiles[player].accountXP / 2500);
+
+    if (difficulty == c_DIFF_TORMENT) {
+        g_sfeProfiles[player].tormentMaster = true;
+    }
+
+    SFE_BankSave(player);
+}
+
+void SFE_BankRecordBossKill (int player) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    g_sfeProfiles[player].bossesKilled = g_sfeProfiles[player].bossesKilled + 1;
+    g_sfeProfiles[player].accountXP = g_sfeProfiles[player].accountXP + 250;
+    g_sfeProfiles[player].accountLevel = 1 + (g_sfeProfiles[player].accountXP / 2500);
+
+    SFE_BankSave(player);
+}
+
+//--------------------------------------------------------------------------------------------------
+// SECCIÓN 4: MOTOR MATEMÁTICO DE ATRIBUTOS
+//--------------------------------------------------------------------------------------------------
+void SFE_InitHeroAttributes (int player, unit u, int heroId) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    g_sfeHeroStates[player].heroUnit = u;
+    g_sfeHeroStates[player].heroId = heroId;
+    g_sfeHeroStates[player].isActive = true;
+
+    g_sfeHeroStates[player].level = 1;
+    g_sfeHeroStates[player].currentXp = 0;
+    g_sfeHeroStates[player].requiredXp = 100;
+    g_sfeHeroStates[player].unspentAttributePoints = 5;
+
+    if (g_sfeHeroes[heroId].primaryAttribute == c_ATTR_STRENGTH) {
+        g_sfeHeroStates[player].strength = 15;
+        g_sfeHeroStates[player].dexterity = 8;
+        g_sfeHeroStates[player].intelligence = 5;
+    } else if (g_sfeHeroes[heroId].primaryAttribute == c_ATTR_DEXTERITY) {
+        g_sfeHeroStates[player].strength = 8;
+        g_sfeHeroStates[player].dexterity = 15;
+        g_sfeHeroStates[player].intelligence = 5;
+    } else {
+        g_sfeHeroStates[player].strength = 5;
+        g_sfeHeroStates[player].dexterity = 8;
+        g_sfeHeroStates[player].intelligence = 15;
+    }
+
+    SFE_RecalculateStats(player);
+}
+
+void SFE_RecalculateStats (int player) {
+    unit u;
+    int hid;
+    fixed hp;
+    fixed shields;
+    fixed energy;
+    fixed lRegen;
+    fixed eRegen;
+    fixed sight;
+
+    if (!g_sfeHeroStates[player].isActive) {
+        return;
+    }
+
+    u = g_sfeHeroStates[player].heroUnit;
+    hid = g_sfeHeroStates[player].heroId;
+
+    if (!UnitIsAlive(u)) {
+        return;
+    }
+
+    hp = g_sfeHeroes[hid].baseHp + (g_sfeHeroStates[player].strength * c_FACTOR_ALPHA_STRENGTH_HP);
+    g_sfeHeroStates[player].currentMaxHp = hp;
+    g_sfeHeroStates[player].currentDamage = g_sfeHeroes[hid].baseDamage + (g_sfeHeroStates[player].strength * c_FACTOR_ALPHA_STRENGTH_DAMAGE);
+
+    g_sfeHeroStates[player].currentAttackInterval = g_sfeHeroes[hid].baseAttackInterval / (1.0 + (g_sfeHeroStates[player].dexterity * c_FACTOR_BETA_DEXTERITY_SPEED));
+    lRegen = 0.5 + (g_sfeHeroStates[player].dexterity * c_FACTOR_GAMMA_DEXTERITY_REGEN);
+    g_sfeHeroStates[player].currentLifeRegen = lRegen;
+
+    energy = g_sfeHeroes[hid].baseEnergy + (g_sfeHeroStates[player].intelligence * c_FACTOR_LAMBDA_INTEL_ENERGY);
+    g_sfeHeroStates[player].currentMaxEnergy = energy;
+    eRegen = 0.75 + (g_sfeHeroStates[player].intelligence * c_FACTOR_LAMBDA_INTEL_REGEN);
+    g_sfeHeroStates[player].currentEnergyRegen = eRegen;
+    sight = 9.0 + (g_sfeHeroStates[player].intelligence * c_FACTOR_LAMBDA_INTEL_SIGHT);
+    g_sfeHeroStates[player].currentSightRadius = sight;
+
+    shields = g_sfeHeroes[hid].baseShields;
+    if (shields > 0.0) {
+        shields = shields + (g_sfeHeroStates[player].strength * 10.0);
+        g_sfeHeroStates[player].currentMaxShields = shields;
+        UnitSetPropertyFixed(u, c_unitPropShieldsMax, shields);
+        UnitSetPropertyFixed(u, c_unitPropShieldsRegen, lRegen);
+    }
+
+    UnitSetPropertyFixed(u, c_unitPropLifeMax, hp);
+    UnitSetPropertyFixed(u, c_unitPropLifeRegen, lRegen);
+    UnitSetPropertyFixed(u, c_unitPropEnergyMax, energy);
+    UnitSetPropertyFixed(u, c_unitPropEnergyRegen, eRegen);
+}
+
+bool SFE_AllocateAttribute (int player, int attributeType) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return false;
+    }
+
+    if (g_sfeHeroStates[player].unspentAttributePoints <= 0) {
+        return false;
+    }
+
+    if (attributeType == c_ATTR_STRENGTH) {
+        g_sfeHeroStates[player].strength = g_sfeHeroStates[player].strength + 1;
+    } else if (attributeType == c_ATTR_DEXTERITY) {
+        g_sfeHeroStates[player].dexterity = g_sfeHeroStates[player].dexterity + 1;
+    } else if (attributeType == c_ATTR_INTELLIGENCE) {
+        g_sfeHeroStates[player].intelligence = g_sfeHeroStates[player].intelligence + 1;
+    } else {
+        return false;
+    }
+
+    g_sfeHeroStates[player].unspentAttributePoints = g_sfeHeroStates[player].unspentAttributePoints - 1;
+    SFE_RecalculateStats(player);
+    return true;
+}
+
+void SFE_HeroAddExperience (int player, int amount) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS || !g_sfeHeroStates[player].isActive) {
+        return;
+    }
+
+    g_sfeHeroStates[player].currentXp = g_sfeHeroStates[player].currentXp + amount;
+
+    while (g_sfeHeroStates[player].currentXp >= g_sfeHeroStates[player].requiredXp && g_sfeHeroStates[player].level < 50) {
+        g_sfeHeroStates[player].currentXp = g_sfeHeroStates[player].currentXp - g_sfeHeroStates[player].requiredXp;
+        SFE_HeroLevelUp(player);
+    }
+}
+
+void SFE_HeroLevelUp (int player) {
+    unit u;
+    text msg;
+
+    g_sfeHeroStates[player].level = g_sfeHeroStates[player].level + 1;
+    g_sfeHeroStates[player].requiredXp = 100 * g_sfeHeroStates[player].level * g_sfeHeroStates[player].level;
+    g_sfeHeroStates[player].unspentAttributePoints = g_sfeHeroStates[player].unspentAttributePoints + 3;
+
+    u = g_sfeHeroStates[player].heroUnit;
+
+    UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+    UnitSetPropertyFixed(u, c_unitPropEnergyPercent, 100.0);
+    if (g_sfeHeroes[g_sfeHeroStates[player].heroId].baseShields > 0.0) {
+        UnitSetPropertyFixed(u, c_unitPropShieldsPercent, 100.0);
+    }
+
+    SFE_RecalculateStats(player);
+
+    msg = StringToText("<s val=\"ModCenterSize22Bold\"><c val=\"FFFF00\">¡NIVEL " + IntToString(g_sfeHeroStates[player].level) + "! (+3 Puntos Disponibles)</c></s>");
+    UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, msg);
+
+    SFE_BankAddExp(player, 100);
+}
+
+//--------------------------------------------------------------------------------------------------
+// SECCIÓN 5: INTERFAZ EN PANTALLA (HUD) Y TIENDA
+//--------------------------------------------------------------------------------------------------
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudDialog;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudLblHeroInfo;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudLblStrength;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudLblDexterity;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudLblIntel;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudLblPoints;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnAddStr;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnAddDex;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnAddInt;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnOpenShop;
+
+int g_sfeTopBarDialog;
+int g_sfeTopBarLblWave;
+int g_sfeTopBarLblBaseHp;
+int g_sfeTopBarLblDiff;
+
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopDialog;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnWeapons;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnArmor;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnShields;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnMedkit;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnBaseRepair;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnClose;
+
+void SFE_UpdatePlayerHUD (int player) {
+    playergroup pg = PlayerGroupSingle(player);
+    text txtInfo;
+    text txtStr;
+    text txtDex;
+    text txtInt;
+    text txtPts;
+    int hid;
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS || !g_sfeHeroStates[player].isActive) {
+        return;
+    }
+
+    hid = g_sfeHeroStates[player].heroId;
+
+    txtInfo = StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"FFE400\">" + g_sfeHeroes[hid].name + 
+        "</c> | Nvl " + IntToString(g_sfeHeroStates[player].level) + 
+        " <c val=\"AAAAAA\">(" + IntToString(g_sfeHeroStates[player].currentXp) + "/" + IntToString(g_sfeHeroStates[player].requiredXp) + " XP)</c></s>");
+
+    txtStr = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"FF4444\">Fuerza: " + IntToString(g_sfeHeroStates[player].strength) + 
+        "</c> <c val=\"AAAAAA\">(+" + FixedToString(g_sfeHeroStates[player].strength * c_FACTOR_ALPHA_STRENGTH_DAMAGE, 0) + " Dmg)</c></s>");
+
+    txtDex = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"55FF55\">Destreza: " + IntToString(g_sfeHeroStates[player].dexterity) + 
+        "</c> <c val=\"AAAAAA\">(Cadencia " + FixedToString(g_sfeHeroStates[player].currentAttackInterval, 2) + "s)</c></s>");
+
+    txtInt = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"00CCFF\">Inteligencia: " + IntToString(g_sfeHeroStates[player].intelligence) + 
+        "</c> <c val=\"AAAAAA\">(+" + FixedToString(g_sfeHeroStates[player].intelligence * c_FACTOR_LAMBDA_INTEL_ENERGY, 0) + " Maná)</c></s>");
+
+    if (g_sfeHeroStates[player].unspentAttributePoints > 0) {
+        txtPts = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"FFFF00\">¡Puntos Disponibles: " + IntToString(g_sfeHeroStates[player].unspentAttributePoints) + "!</c></s>");
+    } else {
+        txtPts = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"888888\">Puntos Disponibles: 0</c></s>");
+    }
+
+    DialogControlSetPropertyAsText(g_sfeHudLblHeroInfo[player], c_triggerControlPropertyText, pg, txtInfo);
+    DialogControlSetPropertyAsText(g_sfeHudLblStrength[player], c_triggerControlPropertyText, pg, txtStr);
+    DialogControlSetPropertyAsText(g_sfeHudLblDexterity[player], c_triggerControlPropertyText, pg, txtDex);
+    DialogControlSetPropertyAsText(g_sfeHudLblIntel[player], c_triggerControlPropertyText, pg, txtInt);
+    DialogControlSetPropertyAsText(g_sfeHudLblPoints[player], c_triggerControlPropertyText, pg, txtPts);
+}
+
+void SFE_UpdateTopBarHUD () {
+    text txtWave;
+    text txtBase;
+    text txtDiff;
+    string diffColor;
+
+    if (g_sfeCurrentDifficulty == c_DIFF_TORMENT) {
+        diffColor = "FF0044";
+    } else if (g_sfeCurrentDifficulty >= c_DIFF_BRUTAL) {
+        diffColor = "FF8800";
+    } else {
+        diffColor = "00FFEA";
+    }
+
+    txtDiff = StringToText("<s val=\"ModCenterSize18Bold\"><c val=\"" + diffColor + "\">[" + g_sfeDiffNames[g_sfeCurrentDifficulty] + "]</c></s>");
+    txtWave = StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"FFFFFF\">Oleada " + IntToString(g_sfeCurrentWaveNumber) + " / 25</c>  |  <c val=\"FFAA00\">Próxima: " + IntToString(g_sfeWaveTimeRemaining) + "s</c></s>");
+
+    if (g_sfeBaseCoreHpPercent < 35.0) {
+        txtBase = StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"FF0000\">¡ALERTA BASE!: " + FixedToString(g_sfeBaseCoreHpPercent, 0) + "%</c></s>");
+    } else {
+        txtBase = StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"55FF55\">Núcleo Base: " + FixedToString(g_sfeBaseCoreHpPercent, 0) + "%</c></s>");
+    }
+
+    DialogControlSetPropertyAsText(g_sfeTopBarLblDiff, c_triggerControlPropertyText, PlayerGroupAll(), txtDiff);
+    DialogControlSetPropertyAsText(g_sfeTopBarLblWave, c_triggerControlPropertyText, PlayerGroupAll(), txtWave);
+    DialogControlSetPropertyAsText(g_sfeTopBarLblBaseHp, c_triggerControlPropertyText, PlayerGroupAll(), txtBase);
+}
+
+void SFE_OpenShop (int player) {
+    if (player >= 1 && player <= c_SFE_MAX_PLAYERS) {
+        DialogSetVisible(g_sfeShopDialog[player], PlayerGroupSingle(player), true);
+    }
+}
+
+void SFE_CloseShop (int player) {
+    if (player >= 1 && player <= c_SFE_MAX_PLAYERS) {
+        DialogSetVisible(g_sfeShopDialog[player], PlayerGroupSingle(player), false);
+    }
+}
+
+void SFE_ProcessShopPurchase (int player, int itemType) {
+    int cost;
+    int minerals;
+    unit u;
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS || !g_sfeHeroStates[player].isActive) {
+        return;
+    }
+
+    minerals = PlayerGetPropertyInt(player, c_playerPropMinerals);
+    u = g_sfeHeroStates[player].heroUnit;
+
+    if (itemType == 1) {
+        cost = 350;
+        if (minerals >= cost) {
+            PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
+            g_sfeHeroStates[player].strength = g_sfeHeroStates[player].strength + 3;
+            SFE_RecalculateStats(player);
+            SFE_UpdatePlayerHUD(player);
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"55FF55\">Mejora de Armamento adquirida (+6 Dmg permanente).</c>"));
+        } else {
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"FF4444\">Minerales insuficientes (Requiere 350 min).</c>"));
+        }
+    } else if (itemType == 2) {
+        cost = 300;
+        if (minerals >= cost) {
+            PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
+            g_sfeHeroStates[player].strength = g_sfeHeroStates[player].strength + 4;
+            SFE_RecalculateStats(player);
+            SFE_UpdatePlayerHUD(player);
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"55FF55\">Blindaje reforzado adquirido (+100 HP max).</c>"));
+        } else {
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"FF4444\">Minerales insuficientes (Requiere 300 min).</c>"));
+        }
+    } else if (itemType == 3) {
+        cost = 150;
+        if (minerals >= cost) {
+            PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
+            UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"55FF55\">¡Botiquín Nanomédico aplicado! Salud restaurada al 100%.</c>"));
+        } else {
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"FF4444\">Minerales insuficientes (Requiere 150 min).</c>"));
+        }
+    } else if (itemType == 4) {
+        cost = 500;
+        if (minerals >= cost) {
+            PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
+            g_sfeBaseCoreHpPercent = g_sfeBaseCoreHpPercent + 25.0;
+            if (g_sfeBaseCoreHpPercent > 100.0) {
+                g_sfeBaseCoreHpPercent = 100.0;
+            }
+            SFE_UpdateTopBarHUD();
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"00FFEA\">¡Jugador " + IntToString(player) + " ha reparado el Núcleo Aliado (+25% Vida)!</c>"));
+        } else {
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"FF4444\">Minerales insuficientes (Requiere 500 min).</c>"));
+        }
+    }
+}
+
+bool gt_SFE_HUD_Click_Func (bool testConds, bool runActions) {
+    int clickedCtrl = EventDialogControl();
+    int player = EventPlayer();
+
+    if (!runActions || player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return true;
+    }
+
+    if (clickedCtrl == g_sfeHudBtnAddStr[player]) {
+        if (SFE_AllocateAttribute(player, c_ATTR_STRENGTH)) {
+            SFE_UpdatePlayerHUD(player);
+        }
+        return true;
+    }
+    if (clickedCtrl == g_sfeHudBtnAddDex[player]) {
+        if (SFE_AllocateAttribute(player, c_ATTR_DEXTERITY)) {
+            SFE_UpdatePlayerHUD(player);
+        }
+        return true;
+    }
+    if (clickedCtrl == g_sfeHudBtnAddInt[player]) {
+        if (SFE_AllocateAttribute(player, c_ATTR_INTELLIGENCE)) {
+            SFE_UpdatePlayerHUD(player);
+        }
+        return true;
+    }
+    if (clickedCtrl == g_sfeHudBtnOpenShop[player]) {
+        SFE_OpenShop(player);
+        return true;
+    }
+    if (clickedCtrl == g_sfeShopBtnWeapons[player]) {
+        SFE_ProcessShopPurchase(player, 1);
+        return true;
+    }
+    if (clickedCtrl == g_sfeShopBtnArmor[player]) {
+        SFE_ProcessShopPurchase(player, 2);
+        return true;
+    }
+    if (clickedCtrl == g_sfeShopBtnMedkit[player]) {
+        SFE_ProcessShopPurchase(player, 3);
+        return true;
+    }
+    if (clickedCtrl == g_sfeShopBtnBaseRepair[player]) {
+        SFE_ProcessShopPurchase(player, 4);
+        return true;
+    }
+    if (clickedCtrl == g_sfeShopBtnClose[player]) {
+        SFE_CloseShop(player);
+        return true;
+    }
+
+    return true;
+}
+
+void SFE_InitHUD () {
+    trigger tClick;
+    int p = 1;
+    playergroup pg;
+
+    tClick = TriggerCreate("gt_SFE_HUD_Click_Func");
+
+    g_sfeTopBarDialog = DialogCreate(700, 75, c_anchorTop, 0, 10, false);
+    DialogSetImage(g_sfeTopBarDialog, "Assets\\Textures\\ui_glue_backgrounddialog.dds");
+
+    g_sfeTopBarLblDiff = DialogControlCreate(g_sfeTopBarDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfeTopBarLblDiff, PlayerGroupAll(), 660, 25);
+    DialogControlSetPosition(g_sfeTopBarLblDiff, PlayerGroupAll(), c_anchorTop, 0, 5);
+
+    g_sfeTopBarLblWave = DialogControlCreate(g_sfeTopBarDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfeTopBarLblWave, PlayerGroupAll(), 350, 25);
+    DialogControlSetPosition(g_sfeTopBarLblWave, PlayerGroupAll(), c_anchorBottomLeft, 20, 10);
+
+    g_sfeTopBarLblBaseHp = DialogControlCreate(g_sfeTopBarDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfeTopBarLblBaseHp, PlayerGroupAll(), 280, 25);
+    DialogControlSetPosition(g_sfeTopBarLblBaseHp, PlayerGroupAll(), c_anchorBottomRight, 20, 10);
+
+    DialogSetVisible(g_sfeTopBarDialog, PlayerGroupAll(), true);
+
+    while (p <= c_SFE_MAX_PLAYERS) {
+        pg = PlayerGroupSingle(p);
+
+        g_sfeHudDialog[p] = DialogCreate(380, 230, c_anchorTopLeft, 20, 90, false);
+        DialogSetImage(g_sfeHudDialog[p], "Assets\\Textures\\ui_glue_backgrounddialog.dds");
+
+        g_sfeHudLblHeroInfo[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(g_sfeHudLblHeroInfo[p], pg, 360, 25);
+        DialogControlSetPosition(g_sfeHudLblHeroInfo[p], pg, c_anchorTopLeft, 10, 10);
+
+        g_sfeHudLblStrength[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(g_sfeHudLblStrength[p], pg, 280, 25);
+        DialogControlSetPosition(g_sfeHudLblStrength[p], pg, c_anchorTopLeft, 10, 42);
+
+        g_sfeHudBtnAddStr[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeHudBtnAddStr[p], pg, 65, 26);
+        DialogControlSetPosition(g_sfeHudBtnAddStr[p], pg, c_anchorTopLeft, 300, 42);
+        DialogControlSetPropertyAsText(g_sfeHudBtnAddStr[p], c_triggerControlPropertyText, pg, StringToText("+ F"));
+
+        g_sfeHudLblDexterity[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(g_sfeHudLblDexterity[p], pg, 280, 25);
+        DialogControlSetPosition(g_sfeHudLblDexterity[p], pg, c_anchorTopLeft, 10, 75);
+
+        g_sfeHudBtnAddDex[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeHudBtnAddDex[p], pg, 65, 26);
+        DialogControlSetPosition(g_sfeHudBtnAddDex[p], pg, c_anchorTopLeft, 300, 75);
+        DialogControlSetPropertyAsText(g_sfeHudBtnAddDex[p], c_triggerControlPropertyText, pg, StringToText("+ D"));
+
+        g_sfeHudLblIntel[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(g_sfeHudLblIntel[p], pg, 280, 25);
+        DialogControlSetPosition(g_sfeHudLblIntel[p], pg, c_anchorTopLeft, 10, 108);
+
+        g_sfeHudBtnAddInt[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeHudBtnAddInt[p], pg, 65, 26);
+        DialogControlSetPosition(g_sfeHudBtnAddInt[p], pg, c_anchorTopLeft, 300, 108);
+        DialogControlSetPropertyAsText(g_sfeHudBtnAddInt[p], c_triggerControlPropertyText, pg, StringToText("+ I"));
+
+        g_sfeHudLblPoints[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(g_sfeHudLblPoints[p], pg, 230, 30);
+        DialogControlSetPosition(g_sfeHudLblPoints[p], pg, c_anchorTopLeft, 10, 145);
+
+        g_sfeHudBtnOpenShop[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeHudBtnOpenShop[p], pg, 130, 35);
+        DialogControlSetPosition(g_sfeHudBtnOpenShop[p], pg, c_anchorTopLeft, 235, 145);
+        DialogControlSetPropertyAsText(g_sfeHudBtnOpenShop[p], c_triggerControlPropertyText, pg, StringToText("<c val=\"FFE400\">TIENDA</c>"));
+
+        DialogSetVisible(g_sfeHudDialog[p], pg, true);
+
+        g_sfeShopDialog[p] = DialogCreate(500, 380, c_anchorCenter, 0, 0, false);
+        DialogSetImage(g_sfeShopDialog[p], "Assets\\Textures\\ui_glue_backgrounddialog.dds");
+
+        DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(DialogControlLastCreated(), pg, 460, 35);
+        DialogControlSetPosition(DialogControlLastCreated(), pg, c_anchorTop, 0, 15);
+        DialogControlSetPropertyAsText(DialogControlLastCreated(), c_triggerControlPropertyText, pg, 
+            StringToText("<s val=\"ModCenterSize22Bold\"><c val=\"FFE400\">ARSENAL Y MEJORAS TÁCTICAS</c></s>"));
+
+        g_sfeShopBtnWeapons[p] = DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeShopBtnWeapons[p], pg, 440, 45);
+        DialogControlSetPosition(g_sfeShopBtnWeapons[p], pg, c_anchorTop, 0, 65);
+        DialogControlSetPropertyAsText(g_sfeShopBtnWeapons[p], c_triggerControlPropertyText, pg, 
+            StringToText("Calibre Pesado (+6 Daño permanente) — <c val=\"55FF55\">350 Min</c>"));
+
+        g_sfeShopBtnArmor[p] = DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeShopBtnArmor[p], pg, 440, 45);
+        DialogControlSetPosition(g_sfeShopBtnArmor[p], pg, c_anchorTop, 0, 120);
+        DialogControlSetPropertyAsText(g_sfeShopBtnArmor[p], c_triggerControlPropertyText, pg, 
+            StringToText("Placas de Blindaje (+100 HP permanente) — <c val=\"55FF55\">300 Min</c>"));
+
+        g_sfeShopBtnMedkit[p] = DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeShopBtnMedkit[p], pg, 440, 45);
+        DialogControlSetPosition(g_sfeShopBtnMedkit[p], pg, c_anchorTop, 0, 175);
+        DialogControlSetPropertyAsText(g_sfeShopBtnMedkit[p], c_triggerControlPropertyText, pg, 
+            StringToText("Botiquín Nanomédico (Cura 100% Vida) — <c val=\"55FF55\">150 Min</c>"));
+
+        g_sfeShopBtnBaseRepair[p] = DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeShopBtnBaseRepair[p], pg, 440, 45);
+        DialogControlSetPosition(g_sfeShopBtnBaseRepair[p], pg, c_anchorTop, 0, 230);
+        DialogControlSetPropertyAsText(g_sfeShopBtnBaseRepair[p], c_triggerControlPropertyText, pg, 
+            StringToText("Reparación del Núcleo Aliado (+25% HP Base) — <c val=\"55FF55\">500 Min</c>"));
+
+        g_sfeShopBtnClose[p] = DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeShopBtnClose[p], pg, 180, 40);
+        DialogControlSetPosition(g_sfeShopBtnClose[p], pg, c_anchorBottom, 0, 15);
+        DialogControlSetPropertyAsText(g_sfeShopBtnClose[p], c_triggerControlPropertyText, pg, StringToText("CERRAR"));
+
+        DialogSetVisible(g_sfeShopDialog[p], pg, false);
+
+        TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnAddStr[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnAddDex[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnAddInt[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnOpenShop[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnWeapons[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnArmor[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnMedkit[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnBaseRepair[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnClose[p], c_triggerControlEventTypeClick);
+
+        p = p + 1;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// SECCIÓN 6: INTERFAZ DE SELECCIÓN DE HÉROE
+//--------------------------------------------------------------------------------------------------
+int g_sfeSelectDialog;
+int g_sfeSelectTimerLabel;
+int[c_HERO_TOTAL_COUNT] g_sfeHeroButtons;
+int g_sfeBtnConfirm;
+int g_sfeBtnRandom;
+int g_sfePreviewName;
+int g_sfePreviewArchetype;
+int g_sfePreviewDesc;
+int g_sfePreviewStats;
+
+int[c_SFE_MAX_PLAYERS + 1] g_sfePlayerSelectedHeroId;
+bool[c_SFE_MAX_PLAYERS + 1] g_sfePlayerHasConfirmed;
+timer g_sfeSelectCountdownTimer;
+int g_sfeSelectSecondsRemaining;
+
+void SFE_UpdateHeroPreview (int player, int heroId) {
+    playergroup pg = PlayerGroupSingle(player);
+    text txtName;
+    text txtArchetype;
+    text txtDesc;
+    text txtStats;
+    string attrName;
+
+    if (heroId < 0 || heroId >= c_HERO_TOTAL_COUNT) {
+        return;
+    }
+
+    g_sfePlayerSelectedHeroId[player] = heroId;
+
+    if (g_sfeHeroes[heroId].primaryAttribute == c_ATTR_STRENGTH) {
+        attrName = "FUERZA";
+    } else if (g_sfeHeroes[heroId].primaryAttribute == c_ATTR_DEXTERITY) {
+        attrName = "DESTREZA";
+    } else {
+        attrName = "INTELIGENCIA";
+    }
+
+    txtName = StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"FFE400\">" + g_sfeHeroes[heroId].name + "</c></s>");
+    txtArchetype = StringToText("<s val=\"ModLeftSize18\"><c val=\"00FFEA\">Arquetipo:</c> " + g_sfeHeroes[heroId].archetype + "  |  <c val=\"FFB700\">Atributo Clave:</c> " + attrName + "</s>");
+    txtDesc = StringToText("<s val=\"ModLeftSize16\">" + g_sfeHeroes[heroId].description + "</s>");
+    
+    txtStats = StringToText("<s val=\"ModLeftSize16\"><c val=\"55FF55\">Vida Base:</c> " + FixedToString(g_sfeHeroes[heroId].baseHp, 0) + 
+        "   |   <c val=\"00CCFF\">Escudos:</c> " + FixedToString(g_sfeHeroes[heroId].baseShields, 0) + 
+        "   |   <c val=\"CC88FF\">Energía:</c> " + FixedToString(g_sfeHeroes[heroId].baseEnergy, 0) + 
+        "\n<c val=\"FF4444\">Daño Base:</c> " + FixedToString(g_sfeHeroes[heroId].baseDamage, 0) + 
+        "   |   <c val=\"FFFF44\">Intervalo Ataque:</c> " + FixedToString(g_sfeHeroes[heroId].baseAttackInterval, 2) + "s" + 
+        "   |   <c val=\"AAAAAA\">Blindaje:</c> " + FixedToString(g_sfeHeroes[heroId].baseArmor, 0) + "</s>");
+
+    DialogControlSetPropertyAsText(g_sfePreviewName, c_triggerControlPropertyText, pg, txtName);
+    DialogControlSetPropertyAsText(g_sfePreviewArchetype, c_triggerControlPropertyText, pg, txtArchetype);
+    DialogControlSetPropertyAsText(g_sfePreviewDesc, c_triggerControlPropertyText, pg, txtDesc);
+    DialogControlSetPropertyAsText(g_sfePreviewStats, c_triggerControlPropertyText, pg, txtStats);
+}
+
+void SFE_ConfirmHeroSelection (int player, int heroId) {
+    unit u;
+    string unitType;
+    text announce;
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS || g_sfePlayerHasConfirmed[player]) {
+        return;
+    }
+
+    g_sfePlayerHasConfirmed[player] = true;
+    unitType = g_sfeHeroes[heroId].unitType;
+
+    UnitCreate(1, unitType, 0, player, g_sfeSpawnPoint, 90.0);
+    u = UnitLastCreated();
+    if (u == null) {
+        UnitCreate(1, g_sfeHeroes[heroId].fallbackUnitType, 0, player, g_sfeSpawnPoint, 90.0);
+        u = UnitLastCreated();
+    }
+
+    SFE_InitHeroAttributes(player, u, heroId);
+    CameraPan(player, g_sfeSpawnPoint, 0.4, -1, 10.0, false);
+    UnitSelect(u, player, true);
+
+    DialogSetVisible(g_sfeSelectDialog, PlayerGroupSingle(player), false);
+
+    announce = StringToText("<c val=\"00FF7F\">Jugador " + IntToString(player) + " ha seleccionado a </c><c val=\"FFE400\">" + g_sfeHeroes[heroId].name + "</c> <c val=\"AAAAAA\">(" + g_sfeHeroes[heroId].archetype + ")</c>");
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, announce);
+}
+
+void SFE_HeroSelectionRandom (int player) {
+    int roll;
+    int pickedHero;
+
+    if (g_sfePlayerHasConfirmed[player]) {
+        return;
+    }
+
+    roll = RandomInt(1, 100);
+    if (roll == 100) {
+        pickedHero = c_HERO_SECRET_TAUREN;
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, StringToText("<c val=\"FF00FF\">¡¡EVENTO ESPECIAL!! ¡Jugador " + IntToString(player) + " ha obtenido al TAUREN SPACE MARINE LEGENDARIO (1% Probabilidad)!</c>"));
+    } else {
+        pickedHero = RandomInt(0, 15);
+    }
+
+    SFE_ConfirmHeroSelection(player, pickedHero);
+}
+
+bool gt_SFE_HeroSelection_Click_Func (bool testConds, bool runActions) {
+    int clickedCtrl = EventDialogControl();
+    int player = EventPlayer();
+    int i = 0;
+
+    if (!runActions || player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return true;
+    }
+
+    if (g_sfePlayerHasConfirmed[player]) {
+        return true;
+    }
+
+    while (i < 16) {
+        if (clickedCtrl == g_sfeHeroButtons[i]) {
+            SFE_UpdateHeroPreview(player, i);
+            return true;
+        }
+        i = i + 1;
+    }
+
+    if (clickedCtrl == g_sfeBtnConfirm) {
+        SFE_ConfirmHeroSelection(player, g_sfePlayerSelectedHeroId[player]);
+        return true;
+    }
+
+    if (clickedCtrl == g_sfeBtnRandom) {
+        SFE_HeroSelectionRandom(player);
+        return true;
+    }
+
+    return true;
+}
+
+bool gt_SFE_HeroSelection_Timer_Func (bool testConds, bool runActions) {
+    int p = 1;
+    text timerText;
+
+    if (!runActions) {
+        return true;
+    }
+
+    g_sfeSelectSecondsRemaining = g_sfeSelectSecondsRemaining - 1;
+    timerText = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF5555\">Tiempo restante para elegir:</c> " + IntToString(g_sfeSelectSecondsRemaining) + "s</s>");
+    DialogControlSetPropertyAsText(g_sfeSelectTimerLabel, c_triggerControlPropertyText, PlayerGroupAll(), timerText);
+
+    if (g_sfeSelectSecondsRemaining <= 0) {
+        while (p <= c_SFE_MAX_PLAYERS) {
+            if (PlayerType(p) == c_playerTypeUser && !g_sfePlayerHasConfirmed[p]) {
+                SFE_HeroSelectionRandom(p);
+            }
+            p = p + 1;
+        }
+        DialogSetVisible(g_sfeSelectDialog, PlayerGroupAll(), false);
+    }
+
+    return true;
+}
+
+void SFE_InitHeroSelectionUI () {
+    trigger tClick;
+    trigger tTimer;
+    int row;
+    int col;
+    int i;
+    int btnX;
+    int btnY;
+    int p;
+
+    g_sfeSpawnPoint = Point(100.0, 95.0);
+    g_sfeSelectSecondsRemaining = 45;
+
+    g_sfeSelectDialog = DialogCreate(1140, 740, c_anchorCenter, 0, 0, true);
+    DialogSetImage(g_sfeSelectDialog, "Assets\\Textures\\ui_glue_backgrounddialog.dds");
+
+    DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(DialogControlLastCreated(), PlayerGroupAll(), 1100, 45);
+    DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTop, 0, 20);
+    DialogControlSetPropertyAsText(DialogControlLastCreated(), c_triggerControlPropertyText, PlayerGroupAll(), 
+        StringToText("<s val=\"ModCenterSize28Bold\"><c val=\"00FFEA\">SPECIAL FORCES ELITE 5</c> — <c val=\"FFFFFF\">SELECCIÓN DE HÉROE</c></s>"));
+
+    g_sfeSelectTimerLabel = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfeSelectTimerLabel, PlayerGroupAll(), 600, 35);
+    DialogControlSetPosition(g_sfeSelectTimerLabel, PlayerGroupAll(), c_anchorTop, 0, 68);
+    DialogControlSetPropertyAsText(g_sfeSelectTimerLabel, c_triggerControlPropertyText, PlayerGroupAll(), 
+        StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF5555\">Tiempo restante para elegir:</c> 45s</s>"));
+
+    i = 0;
+    while (i < 16) {
+        col = i % 4;
+        row = i / 4;
+        btnX = 40 + (col * 140);
+        btnY = 120 + (row * 125);
+
+        g_sfeHeroButtons[i] = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeHeroButtons[i], PlayerGroupAll(), 130, 115);
+        DialogControlSetPosition(g_sfeHeroButtons[i], PlayerGroupAll(), c_anchorTopLeft, btnX, btnY);
+        DialogControlSetPropertyAsText(g_sfeHeroButtons[i], c_triggerControlPropertyText, PlayerGroupAll(), 
+            StringToText("<s val=\"ModCenterSize14Bold\">" + g_sfeHeroes[i].name + "</s>"));
+
+        i = i + 1;
+    }
+
+    g_sfePreviewName = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfePreviewName, PlayerGroupAll(), 480, 40);
+    DialogControlSetPosition(g_sfePreviewName, PlayerGroupAll(), c_anchorTopLeft, 630, 120);
+
+    g_sfePreviewArchetype = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfePreviewArchetype, PlayerGroupAll(), 480, 35);
+    DialogControlSetPosition(g_sfePreviewArchetype, PlayerGroupAll(), c_anchorTopLeft, 630, 165);
+
+    g_sfePreviewDesc = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfePreviewDesc, PlayerGroupAll(), 480, 80);
+    DialogControlSetPosition(g_sfePreviewDesc, PlayerGroupAll(), c_anchorTopLeft, 630, 205);
+
+    g_sfePreviewStats = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfePreviewStats, PlayerGroupAll(), 480, 120);
+    DialogControlSetPosition(g_sfePreviewStats, PlayerGroupAll(), c_anchorTopLeft, 630, 300);
+
+    g_sfeBtnConfirm = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeButton);
+    DialogControlSetSize(g_sfeBtnConfirm, PlayerGroupAll(), 230, 55);
+    DialogControlSetPosition(g_sfeBtnConfirm, PlayerGroupAll(), c_anchorTopLeft, 630, 460);
+    DialogControlSetPropertyAsText(g_sfeBtnConfirm, c_triggerControlPropertyText, PlayerGroupAll(), 
+        StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"55FF55\">CONFIRMAR</c></s>"));
+
+    g_sfeBtnRandom = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeButton);
+    DialogControlSetSize(g_sfeBtnRandom, PlayerGroupAll(), 230, 55);
+    DialogControlSetPosition(g_sfeBtnRandom, PlayerGroupAll(), c_anchorTopLeft, 880, 460);
+    DialogControlSetPropertyAsText(g_sfeBtnRandom, c_triggerControlPropertyText, PlayerGroupAll(), 
+        StringToText("<s val=\"ModCenterSize18Bold\"><c val=\"FFAA00\">ALEATORIO (1%)</c></s>"));
+
+    tClick = TriggerCreate("gt_SFE_HeroSelection_Click_Func");
+    i = 0;
+    while (i < 16) {
+        TriggerAddEventDialogControl(tClick, c_playerAny, g_sfeHeroButtons[i], c_triggerControlEventTypeClick);
+        i = i + 1;
+    }
+    TriggerAddEventDialogControl(tClick, c_playerAny, g_sfeBtnConfirm, c_triggerControlEventTypeClick);
+    TriggerAddEventDialogControl(tClick, c_playerAny, g_sfeBtnRandom, c_triggerControlEventTypeClick);
+
+    p = 1;
+    while (p <= c_SFE_MAX_PLAYERS) {
+        g_sfePlayerSelectedHeroId[p] = c_HERO_RAYNOR;
+        g_sfePlayerHasConfirmed[p] = false;
+        SFE_UpdateHeroPreview(p, c_HERO_RAYNOR);
+        p = p + 1;
+    }
+
+    DialogSetVisible(g_sfeSelectDialog, PlayerGroupAll(), true);
+
+    g_sfeSelectCountdownTimer = TimerCreate();
+    TimerStart(g_sfeSelectCountdownTimer, 1.0, true, c_timeGame);
+    tTimer = TriggerCreate("gt_SFE_HeroSelection_Timer_Func");
+    TriggerAddEventTimer(tTimer, g_sfeSelectCountdownTimer);
+}
+
+//--------------------------------------------------------------------------------------------------
+// SECCIÓN 7: BASE ALIADA Y CONDICIONES DE VICTORIA/DERROTA
+//--------------------------------------------------------------------------------------------------
+void SFE_InitAlliedBase () {
+    point pCore;
+    point pDefense;
+    unit u;
+
+    g_sfeBaseCenterPoint = Point(100.0, 100.0);
+    g_sfeGameOverTriggered = false;
+    g_sfeBaseCoreHpPercent = 100.0;
+
+    UnitCreate(1, "PlanetaryFortress", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBaseCenterPoint, 270.0);
+    u = UnitLastCreated();
+    if (u == null) {
+        UnitCreate(1, "CommandCenter", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBaseCenterPoint, 270.0);
+        u = UnitLastCreated();
+    }
+    g_sfeBaseCoreUnit = u;
+    UnitSetPropertyFixed(g_sfeBaseCoreUnit, c_unitPropLifeMax, 8000.0);
+    UnitSetPropertyFixed(g_sfeBaseCoreUnit, c_unitPropLifePercent, 100.0);
+    UnitSetPropertyFixed(g_sfeBaseCoreUnit, c_unitPropLifeRegen, 5.0);
+
+    // Norte
+    pDefense = Point(100.0, 115.0);
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 270.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(94.0, 115.0), 270.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(106.0, 115.0), 270.0);
+
+    // Sur
+    pDefense = Point(100.0, 85.0);
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 90.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(94.0, 85.0), 90.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(106.0, 85.0), 90.0);
+
+    // Este
+    pDefense = Point(115.0, 100.0);
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 180.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(115.0, 94.0), 180.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(115.0, 106.0), 180.0);
+
+    // Oeste
+    pDefense = Point(85.0, 100.0);
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 0.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(85.0, 94.0), 0.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(85.0, 106.0), 0.0);
+}
+
+void SFE_UpdateBaseHealthStatus () {
+    fixed currentHp;
+
+    if (g_sfeGameOverTriggered) {
+        return;
+    }
+
+    if (!UnitIsAlive(g_sfeBaseCoreUnit)) {
+        SFE_TriggerDefeat();
+        return;
+    }
+
+    currentHp = UnitGetPropertyFixed(g_sfeBaseCoreUnit, c_unitPropLifePercent, true);
+    g_sfeBaseCoreHpPercent = currentHp;
+
+    if (currentHp <= 0.0) {
+        SFE_TriggerDefeat();
+    }
+}
+
+void SFE_TriggerDefeat () {
+    int p = 1;
+    text defText;
+
+    if (g_sfeGameOverTriggered) {
+        return;
+    }
+    g_sfeGameOverTriggered = true;
+
+    defText = StringToText("<s val=\"ModCenterSize36Bold\"><c val=\"FF0000\">¡EL CUARTEL GENERAL HA SIDO DESTRUIDO!\nMISIÓN FALLIDA — DERROTA</c></s>");
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, defText);
+
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (PlayerType(p) == c_playerTypeUser) {
+            GameOver(p, c_gameOverDefeat, true, true);
+        }
+        p = p + 1;
+    }
+}
+
+void SFE_TriggerVictory () {
+    int p = 1;
+    text vicText;
+
+    if (g_sfeGameOverTriggered) {
+        return;
+    }
+    g_sfeGameOverTriggered = true;
+
+    vicText = StringToText("<s val=\"ModCenterSize36Bold\"><c val=\"00FF7F\">¡¡VICTORIA SUPREMA EN SPECIAL FORCES ELITE 5!!\nTODAS LAS HORDAS Y JEFES HAN SIDO ERRADICADOS</c></s>");
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, vicText);
+
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (PlayerType(p) == c_playerTypeUser) {
+            SFE_BankRecordVictory(p, g_sfeCurrentDifficulty);
+            GameOver(p, c_gameOverVictory, true, true);
+        }
+        p = p + 1;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// SECCIÓN 8: SISTEMA DE 25 OLEADAS Y ASENTAMIENTOS ENEMIGOS
+//--------------------------------------------------------------------------------------------------
+const int c_TOTAL_WAVES = 25;
+unit g_sfeOutpostNorth;
+unit g_sfeOutpostEast;
+unit g_sfeOutpostWest;
+bool g_sfeOutpostNorthAlive;
+bool g_sfeOutpostEastAlive;
+bool g_sfeOutpostWestAlive;
+point g_sfeSpawnNorth;
+point g_sfeSpawnSouth;
+point g_sfeSpawnEast;
+point g_sfeSpawnWest;
+timer g_sfeWaveTickTimer;
+
+void SFE_InitWaveSpawner () {
+    g_sfeSpawnNorth = Point(100.0, 185.0);
+    g_sfeSpawnSouth = Point(100.0, 15.0);
+    g_sfeSpawnEast  = Point(185.0, 100.0);
+    g_sfeSpawnWest  = Point(15.0, 100.0);
+
+    g_sfeCurrentWaveNumber = 1;
+    g_sfeWaveTimeRemaining = FixedToInt(g_sfeDiffWaveIntervalSeconds[g_sfeCurrentDifficulty]);
+
+    UnitCreate(1, "Hive", 0, c_SFE_PLAYER_HOSTILE, Point(100.0, 160.0), 270.0);
+    g_sfeOutpostNorth = UnitLastCreated();
+    UnitSetPropertyFixed(g_sfeOutpostNorth, c_unitPropLifeMax, 4000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
+    UnitSetPropertyFixed(g_sfeOutpostNorth, c_unitPropLifePercent, 100.0);
+    g_sfeOutpostNorthAlive = true;
+
+    UnitCreate(1, "Nexus", 0, c_SFE_PLAYER_HOSTILE, Point(160.0, 100.0), 180.0);
+    g_sfeOutpostEast = UnitLastCreated();
+    UnitSetPropertyFixed(g_sfeOutpostEast, c_unitPropLifeMax, 4000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
+    UnitSetPropertyFixed(g_sfeOutpostEast, c_unitPropLifePercent, 100.0);
+    g_sfeOutpostEastAlive = true;
+
+    UnitCreate(1, "InfestedCommandCenter", 0, c_SFE_PLAYER_HOSTILE, Point(40.0, 100.0), 0.0);
+    g_sfeOutpostWest = UnitLastCreated();
+    if (g_sfeOutpostWest == null) {
+        UnitCreate(1, "CommandCenter", 0, c_SFE_PLAYER_HOSTILE, Point(40.0, 100.0), 0.0);
+        g_sfeOutpostWest = UnitLastCreated();
+    }
+    UnitSetPropertyFixed(g_sfeOutpostWest, c_unitPropLifeMax, 4000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
+    UnitSetPropertyFixed(g_sfeOutpostWest, c_unitPropLifePercent, 100.0);
+    g_sfeOutpostWestAlive = true;
+}
+
+void SFE_OrderHostilesToCore (unitgroup ug) {
+    int i;
+    int count;
+    unit u;
+    order ord;
+
+    i = 1;
+    count = UnitGroupCount(ug, c_unitCountAlive);
+    ord = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint);
+
+    while (i <= count) {
+        u = UnitGroupUnit(ug, i);
+        UnitIssueOrder(u, ord, c_orderQueueReplace);
+        i = i + 1;
+    }
+}
+
+void SFE_SpawnWave (int waveNum) {
+    unitgroup ug;
+    fixed statMult;
+    int countNorth;
+    int countSouth;
+    int countEast;
+    int countWest;
+    string uType1;
+    string uType2;
+    int k;
+    unit u;
+
+    ug = UnitGroupEmpty();
+    statMult = g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty];
+    countNorth = 4 + (waveNum * 2);
+    countSouth = 4 + (waveNum * 2);
+    countEast  = 4 + (waveNum * 2);
+    countWest  = 4 + (waveNum * 2);
+
+    if (waveNum <= 5) {
+        uType1 = "Zergling";
+        uType2 = "Roach";
+    } else if (waveNum <= 10) {
+        uType1 = "Hydralisk";
+        uType2 = "Marauder";
+    } else if (waveNum <= 15) {
+        uType1 = "Ultralisk";
+        uType2 = "Immortal";
+    } else if (waveNum <= 20) {
+        uType1 = "Thor";
+        uType2 = "Colossus";
+    } else {
+        uType1 = "HybridDestroyer";
+        uType2 = "Aberration";
+    }
+
+    k = 0;
+    while (k < countNorth) {
+        UnitCreate(1, uType1, 0, c_SFE_PLAYER_HOSTILE, g_sfeSpawnNorth, 270.0);
+        u = UnitLastCreated();
+        UnitSetPropertyFixed(u, c_unitPropLifeMax, UnitGetPropertyFixed(u, c_unitPropLifeMax, false) * statMult);
+        UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+        UnitGroupAdd(ug, u);
+        k = k + 1;
+    }
+
+    k = 0;
+    while (k < countSouth) {
+        UnitCreate(1, uType2, 0, c_SFE_PLAYER_HOSTILE, g_sfeSpawnSouth, 90.0);
+        u = UnitLastCreated();
+        UnitSetPropertyFixed(u, c_unitPropLifeMax, UnitGetPropertyFixed(u, c_unitPropLifeMax, false) * statMult);
+        UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+        UnitGroupAdd(ug, u);
+        k = k + 1;
+    }
+
+    k = 0;
+    while (k < countEast) {
+        UnitCreate(1, uType1, 0, c_SFE_PLAYER_HOSTILE, g_sfeSpawnEast, 180.0);
+        u = UnitLastCreated();
+        UnitSetPropertyFixed(u, c_unitPropLifeMax, UnitGetPropertyFixed(u, c_unitPropLifeMax, false) * statMult);
+        UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+        UnitGroupAdd(ug, u);
+        k = k + 1;
+    }
+
+    k = 0;
+    while (k < countWest) {
+        UnitCreate(1, uType2, 0, c_SFE_PLAYER_HOSTILE, g_sfeSpawnWest, 0.0);
+        u = UnitLastCreated();
+        UnitSetPropertyFixed(u, c_unitPropLifeMax, UnitGetPropertyFixed(u, c_unitPropLifeMax, false) * statMult);
+        UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+        UnitGroupAdd(ug, u);
+        k = k + 1;
+    }
+
+    SFE_OrderHostilesToCore(ug);
+
+    if (waveNum == 10) {
+        SFE_TriggerBossMaarSpawn();
+    } else if (waveNum == 20) {
+        SFE_TriggerBossDestroyerSpawn();
+    } else if (waveNum == 25) {
+        SFE_TriggerBossDiabloSpawn();
+    }
+}
+
+void SFE_CheckOutpostStatus () {
+    int p;
+    text bountyText;
+
+    if (g_sfeOutpostNorthAlive && !UnitIsAlive(g_sfeOutpostNorth)) {
+        g_sfeOutpostNorthAlive = false;
+        bountyText = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FFE400\">¡COLMENA ZERG NORTE DESTRUIDA! +1000 MINERALES PARA EL EQUIPO</c></s>");
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, bountyText);
+
+        p = 1;
+        while (p <= c_SFE_MAX_PLAYERS) {
+            PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 1000);
+            p = p + 1;
+        }
+        SFE_TriggerBossMaarSpawn();
+    }
+
+    if (g_sfeOutpostEastAlive && !UnitIsAlive(g_sfeOutpostEast)) {
+        g_sfeOutpostEastAlive = false;
+        bountyText = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FFE400\">¡FORTALEZA PROTOSS ESTE DESTRUIDA! +1000 MINERALES PARA EL EQUIPO</c></s>");
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, bountyText);
+
+        p = 1;
+        while (p <= c_SFE_MAX_PLAYERS) {
+            PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 1000);
+            p = p + 1;
+        }
+        SFE_TriggerBossDestroyerSpawn();
+    }
+
+    if (g_sfeOutpostWestAlive && !UnitIsAlive(g_sfeOutpostWest)) {
+        g_sfeOutpostWestAlive = false;
+        bountyText = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FFE400\">¡COMPLEJO INFESTADO OESTE DESTRUIDO! +1000 MINERALES PARA EL EQUIPO</c></s>");
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, bountyText);
+
+        p = 1;
+        while (p <= c_SFE_MAX_PLAYERS) {
+            PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 1000);
+            p = p + 1;
+        }
+        SFE_TriggerBossDiabloSpawn();
+    }
+}
+
+bool gt_SFE_WaveLoop_Timer_Func (bool testConds, bool runActions) {
+    if (!runActions) {
+        return true;
+    }
+
+    g_sfeWaveTimeRemaining = g_sfeWaveTimeRemaining - 1;
+
+    SFE_UpdateBaseHealthStatus();
+    SFE_CheckOutpostStatus();
+    SFE_UpdateTopBarHUD();
+
+    if (g_sfeWaveTimeRemaining <= 0) {
+        SFE_SpawnWave(g_sfeCurrentWaveNumber);
+
+        g_sfeCurrentWaveNumber = g_sfeCurrentWaveNumber + 1;
+        if (g_sfeCurrentWaveNumber > c_TOTAL_WAVES) {
+            g_sfeCurrentWaveNumber = c_TOTAL_WAVES;
+        }
+
+        g_sfeWaveTimeRemaining = FixedToInt(g_sfeDiffWaveIntervalSeconds[g_sfeCurrentDifficulty]);
+    }
+
+    return true;
+}
+
+bool gt_SFE_UnitDied_Reward_Func (bool testConds, bool runActions) {
+    unit dyingU = EventUnit();
+    unit killerU = EventUnitDamageSourceUnit();
+    int killerPlayer;
+    int bounty;
+
+    if (!runActions) {
+        return true;
+    }
+
+    if (UnitGetOwner(dyingU) != c_SFE_PLAYER_HOSTILE) {
+        return true;
+    }
+
+    killerPlayer = UnitGetOwner(killerU);
+    if (killerPlayer >= 1 && killerPlayer <= c_SFE_MAX_PLAYERS) {
+        bounty = FixedToInt(15.0 * g_sfeDiffIncomeMultiplier[g_sfeCurrentDifficulty]);
+        if (bounty < 5) {
+            bounty = 5;
+        }
+
+        PlayerModifyPropertyInt(killerPlayer, c_playerPropMinerals, c_playerPropOperAdd, bounty);
+        SFE_HeroAddExperience(killerPlayer, 25);
+        SFE_UpdatePlayerHUD(killerPlayer);
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+// SECCIÓN 9: SISTEMA DE JEFES MONUMENTALES (MAAR, DESTROYER, DIABLO)
+//--------------------------------------------------------------------------------------------------
+unit g_sfeBossMaarUnit;
+unit g_sfeBossDestroyerUnit;
+unit g_sfeBossDiabloUnit;
+
+bool g_sfeBossMaarSpawned;
+bool g_sfeBossDestroyerSpawned;
+bool g_sfeBossDiabloSpawned;
+
+int g_sfeBossMaarPhase;
+int g_sfeBossDestroyerPhase;
+int g_sfeBossDiabloPhase;
+
+timer g_sfeBossAITimer;
+
+void SFE_BossCastShockwave (unit bossUnit, fixed radius, fixed damage) {
+    point p;
+    unitgroup ug;
+    int count;
+    int i;
+    unit target;
+    int owner;
+
+    p = UnitGetPosition(bossUnit);
+    ug = UnitGroup(null, c_playerAny, RegionCircle(p, radius), null, 0);
+    count = UnitGroupCount(ug, c_unitCountAlive);
+    i = 1;
+
+    while (i <= count) {
+        target = UnitGroupUnit(ug, i);
+        owner = UnitGetOwner(target);
+        if (owner >= 1 && owner <= c_SFE_MAX_PLAYERS || owner == c_SFE_PLAYER_ALLIED_BASE) {
+            UnitDamage(bossUnit, "WeaponNull", target, damage);
+        }
+        i = i + 1;
+    }
+}
+
+void SFE_BossSummonMinions (point p, string minionType, int count) {
+    int i;
+    unit u;
+    unitgroup ug;
+
+    i = 0;
+    ug = UnitGroupEmpty();
+
+    while (i < count) {
+        UnitCreate(1, minionType, 0, c_SFE_PLAYER_HOSTILE, p, RandomFixed(0.0, 360.0));
+        u = UnitLastCreated();
+        UnitGroupAdd(ug, u);
+        i = i + 1;
+    }
+
+    SFE_OrderHostilesToCore(ug);
+}
+
+void SFE_TriggerBossMaarSpawn () {
+    point pSpawn;
+    unit u;
+    fixed hp;
+
+    if (g_sfeBossMaarSpawned) {
+        return;
+    }
+    g_sfeBossMaarSpawned = true;
+    g_sfeBossMaarPhase = 1;
+
+    pSpawn = Point(100.0, 150.0);
+    UnitCreate(1, "HybridDestroyer", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+    u = UnitLastCreated();
+    if (u == null) {
+        UnitCreate(1, "Archon", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+        u = UnitLastCreated();
+    }
+    g_sfeBossMaarUnit = u;
+
+    hp = 12000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty];
+    UnitSetPropertyFixed(u, c_unitPropLifeMax, hp);
+    UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+    UnitSetPropertyFixed(u, c_unitPropLifeRegen, 15.0);
+
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+        StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"FF00FF\">¡ALERTA MAYOR! ¡EL HÍBRIDO MAAR HA DESPERTADO EN EL SECTOR NORTE!</c></s>"));
+
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+}
+
+void SFE_TriggerBossDestroyerSpawn () {
+    point pSpawn;
+    unit u;
+    fixed hp;
+
+    if (g_sfeBossDestroyerSpawned) {
+        return;
+    }
+    g_sfeBossDestroyerSpawned = true;
+    g_sfeBossDestroyerPhase = 1;
+
+    pSpawn = Point(150.0, 100.0);
+    UnitCreate(1, "HybridReaver", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 180.0);
+    u = UnitLastCreated();
+    if (u == null) {
+        UnitCreate(1, "Colossus", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 180.0);
+        u = UnitLastCreated();
+    }
+    g_sfeBossDestroyerUnit = u;
+
+    hp = 22000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty];
+    UnitSetPropertyFixed(u, c_unitPropLifeMax, hp);
+    UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+    UnitSetPropertyFixed(u, c_unitPropLifeRegen, 25.0);
+
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+        StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"FF4400\">¡ALERTA APOCALÍPTICA! ¡EL DESTROYER OF WORLDS HA DESCENDIDO EN EL SECTOR ESTE!</c></s>"));
+
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+}
+
+void SFE_TriggerBossDiabloSpawn () {
+    point pSpawn;
+    unit u;
+    fixed hp;
+
+    if (g_sfeBossDiabloSpawned) {
+        return;
+    }
+    g_sfeBossDiabloSpawned = true;
+    g_sfeBossDiabloPhase = 1;
+
+    pSpawn = Point(50.0, 100.0);
+    UnitCreate(1, "HybridDominator", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 0.0);
+    u = UnitLastCreated();
+    if (u == null) {
+        UnitCreate(1, "Ultralisk", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 0.0);
+        u = UnitLastCreated();
+    }
+    g_sfeBossDiabloUnit = u;
+
+    hp = 35000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty];
+    UnitSetPropertyFixed(u, c_unitPropLifeMax, hp);
+    UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+    UnitSetPropertyFixed(u, c_unitPropLifeRegen, 40.0);
+
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+        StringToText("<s val=\"ModCenterSize28Bold\"><c val=\"FF0000\">¡¡AMENAZA DESTRUCTORA FINAL!! ¡DIABLO HA ENTRADO AL CAMPO DE BATALLA!</c></s>"));
+
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+}
+
+bool gt_SFE_BossAI_Loop_Func (bool testConds, bool runActions) {
+    fixed hpPct;
+    point bPos;
+
+    if (!runActions) {
+        return true;
+    }
+
+    if (g_sfeBossMaarSpawned && UnitIsAlive(g_sfeBossMaarUnit)) {
+        hpPct = UnitGetPropertyFixed(g_sfeBossMaarUnit, c_unitPropLifePercent, true);
+        bPos = UnitGetPosition(g_sfeBossMaarUnit);
+
+        if (hpPct <= 75.0 && g_sfeBossMaarPhase == 1) {
+            g_sfeBossMaarPhase = 2;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF00FF\">Híbrido Maar entra en Fase 2: ¡Invocando Enjambre del Vacío!</c>"));
+            SFE_BossSummonMinions(bPos, "Mutalisk", 8);
+            SFE_BossCastShockwave(g_sfeBossMaarUnit, 8.0, 150.0);
+        } else if (hpPct <= 50.0 && g_sfeBossMaarPhase == 2) {
+            g_sfeBossMaarPhase = 3;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF00FF\">Híbrido Maar entra en Fase 3: ¡Onda de Choque Psiónica Devastadora!</c>"));
+            SFE_BossSummonMinions(bPos, "Roach", 12);
+            SFE_BossCastShockwave(g_sfeBossMaarUnit, 10.0, 250.0);
+        } else if (hpPct <= 25.0 && g_sfeBossMaarPhase == 3) {
+            g_sfeBossMaarPhase = 4;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF00FF\">Híbrido Maar ¡ENFURECIDO!: Regeneración triplicada y Nova Crítica!</c>"));
+            UnitSetPropertyFixed(g_sfeBossMaarUnit, c_unitPropLifeRegen, 60.0);
+            SFE_BossCastShockwave(g_sfeBossMaarUnit, 12.0, 400.0);
+        }
+    }
+
+    if (g_sfeBossDestroyerSpawned && UnitIsAlive(g_sfeBossDestroyerUnit)) {
+        hpPct = UnitGetPropertyFixed(g_sfeBossDestroyerUnit, c_unitPropLifePercent, true);
+        bPos = UnitGetPosition(g_sfeBossDestroyerUnit);
+
+        if (hpPct <= 75.0 && g_sfeBossDestroyerPhase == 1) {
+            g_sfeBossDestroyerPhase = 2;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF4400\">Destroyer of Worlds Fase 2: ¡Impacto Sísmico!</c>"));
+            SFE_BossSummonMinions(bPos, "Immortal", 4);
+            SFE_BossCastShockwave(g_sfeBossDestroyerUnit, 9.0, 200.0);
+        } else if (hpPct <= 50.0 && g_sfeBossDestroyerPhase == 2) {
+            g_sfeBossDestroyerPhase = 3;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF4400\">Destroyer of Worlds Fase 3: ¡Bombardeo Orbital Masivo!</c>"));
+            SFE_BossSummonMinions(bPos, "Colossus", 3);
+            SFE_BossCastShockwave(g_sfeBossDestroyerUnit, 11.0, 350.0);
+        } else if (hpPct <= 25.0 && g_sfeBossDestroyerPhase == 3) {
+            g_sfeBossDestroyerPhase = 4;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF4400\">Destroyer of Worlds ¡SOBRECARGA NUCLEAR TOTAL!</c>"));
+            SFE_BossCastShockwave(g_sfeBossDestroyerUnit, 14.0, 500.0);
+        }
+    }
+
+    if (g_sfeBossDiabloSpawned && UnitIsAlive(g_sfeBossDiabloUnit)) {
+        hpPct = UnitGetPropertyFixed(g_sfeBossDiabloUnit, c_unitPropLifePercent, true);
+        bPos = UnitGetPosition(g_sfeBossDiabloUnit);
+
+        if (hpPct <= 75.0 && g_sfeBossDiabloPhase == 1) {
+            g_sfeBossDiabloPhase = 2;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF0000\">Diablo Fase 2: ¡Llamas del Infierno!</c>"));
+            SFE_BossSummonMinions(bPos, "Ultralisk", 4);
+            SFE_BossCastShockwave(g_sfeBossDiabloUnit, 10.0, 300.0);
+        } else if (hpPct <= 50.0 && g_sfeBossDiabloPhase == 2) {
+            g_sfeBossDiabloPhase = 3;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF0000\">Diablo Fase 3: ¡Tormenta de Almas!</c>"));
+            SFE_BossSummonMinions(bPos, "HybridDestroyer", 3);
+            SFE_BossCastShockwave(g_sfeBossDiabloUnit, 12.0, 450.0);
+        } else if (hpPct <= 25.0 && g_sfeBossDiabloPhase == 3) {
+            g_sfeBossDiabloPhase = 4;
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"FF0000\">Diablo ¡CATACLISMO FINAL!</c>"));
+            SFE_BossCastShockwave(g_sfeBossDiabloUnit, 15.0, 700.0);
+        }
+    }
+
+    return true;
+}
+
+bool gt_SFE_BossDied_Func (bool testConds, bool runActions) {
+    unit dyingU = EventUnit();
+    int p = 1;
+
+    if (!runActions) {
+        return true;
+    }
+
+    if (dyingU == g_sfeBossMaarUnit) {
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+            StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"55FF55\">¡HÍBRIDO MAAR ELIMINADO! +2500 MINERALES PARA CADA JUGADOR</c></s>"));
+        while (p <= c_SFE_MAX_PLAYERS) {
+            PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 2500);
+            SFE_BankRecordBossKill(p);
+            p = p + 1;
+        }
+    } else if (dyingU == g_sfeBossDestroyerUnit) {
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+            StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"55FF55\">¡DESTROYER OF WORLDS ERRADICADO! +3500 MINERALES PARA CADA JUGADOR</c></s>"));
+        while (p <= c_SFE_MAX_PLAYERS) {
+            PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 3500);
+            SFE_BankRecordBossKill(p);
+            p = p + 1;
+        }
+    } else if (dyingU == g_sfeBossDiabloUnit) {
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
+            StringToText("<s val=\"ModCenterSize28Bold\"><c val=\"FFE400\">¡¡DIABLO HA SIDO DERROTADO!! ¡EL ARCADE HA SIDO COMPLETADO!</c></s>"));
+        while (p <= c_SFE_MAX_PLAYERS) {
+            SFE_BankRecordBossKill(p);
+            p = p + 1;
+        }
+        SFE_TriggerVictory();
+    }
+
+    return true;
+}
+
+void SFE_InitBossSystem () {
+    trigger tBossAI;
+    trigger tBossDied;
+
+    g_sfeBossMaarSpawned = false;
+    g_sfeBossDestroyerSpawned = false;
+    g_sfeBossDiabloSpawned = false;
+
+    g_sfeBossAITimer = TimerCreate();
+    TimerStart(g_sfeBossAITimer, 2.0, true, c_timeGame);
+    tBossAI = TriggerCreate("gt_SFE_BossAI_Loop_Func");
+    TriggerAddEventTimer(tBossAI, g_sfeBossAITimer);
+
+    tBossDied = TriggerCreate("gt_SFE_BossDied_Func");
+    TriggerAddEventUnitDied(tBossDied, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+// SECCIÓN 10: SELECTOR DE DIFICULTAD Y BUCLE MAESTRO
+//--------------------------------------------------------------------------------------------------
+int g_sfeDiffDialog;
+int[c_DIFF_COUNT] g_sfeDiffButtons;
+bool g_sfeDifficultyChosen;
+
+bool gt_SFE_DamageHook_Func (bool testConds, bool runActions) {
+    unit attacker = EventUnitDamageSourceUnit();
+    unit victim = EventUnit();
+    int attackerPlayer = UnitGetOwner(attacker);
+    fixed strBonus;
+
+    if (!runActions) {
+        return true;
+    }
+
+    if (attackerPlayer >= 1 && attackerPlayer <= c_SFE_MAX_PLAYERS && g_sfeHeroStates[attackerPlayer].isActive) {
+        if (attacker == g_sfeHeroStates[attackerPlayer].heroUnit && UnitGetOwner(victim) == c_SFE_PLAYER_HOSTILE) {
+            strBonus = g_sfeHeroStates[attackerPlayer].strength * c_FACTOR_ALPHA_STRENGTH_DAMAGE;
+            if (strBonus > 0.0) {
+                UnitDamage(attacker, "WeaponNull", victim, strBonus);
+            }
+        }
+    }
+
+    return true;
+}
+
+void SFE_StartGameAfterDifficulty (int chosenDiff) {
+    int p;
+    int startingMinerals;
+    trigger tWaveTick;
+    trigger tReward;
+    trigger tDamage;
+    text diffNotice;
+
+    g_sfeCurrentDifficulty = chosenDiff;
+
+    diffNotice = StringToText("<s val=\"ModCenterSize22Bold\"><c val=\"FFE400\">DIFICULTAD ESTABLECIDA EN: </c><c val=\"00FFEA\">" + g_sfeDiffNames[chosenDiff] + "</c></s>");
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, diffNotice);
+
+    if (chosenDiff == c_DIFF_CASUAL) {
+        startingMinerals = 800;
+    } else if (chosenDiff == c_DIFF_NORMAL) {
+        startingMinerals = 500;
+    } else if (chosenDiff == c_DIFF_HARD) {
+        startingMinerals = 350;
+    } else if (chosenDiff == c_DIFF_BRUTAL) {
+        startingMinerals = 200;
+    } else if (chosenDiff == c_DIFF_PRO) {
+        startingMinerals = 100;
+    } else if (chosenDiff == c_DIFF_IMPOSSIBLE) {
+        startingMinerals = 50;
+    } else {
+        startingMinerals = 0;
+    }
+
+    p = 1;
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (PlayerType(p) == c_playerTypeUser) {
+            PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperSetTo, startingMinerals);
+        }
+        p = p + 1;
+    }
+
+    SFE_InitAlliedBase();
+    SFE_InitHUD();
+    SFE_InitWaveSpawner();
+    SFE_InitBossSystem();
+    SFE_InitHeroSelectionUI();
+
+    g_sfeWaveTickTimer = TimerCreate();
+    TimerStart(g_sfeWaveTickTimer, 1.0, true, c_timeGame);
+    tWaveTick = TriggerCreate("gt_SFE_WaveLoop_Timer_Func");
+    TriggerAddEventTimer(tWaveTick, g_sfeWaveTickTimer);
+
+    tReward = TriggerCreate("gt_SFE_UnitDied_Reward_Func");
+    TriggerAddEventUnitDied(tReward, null);
+
+    tDamage = TriggerCreate("gt_SFE_DamageHook_Func");
+    TriggerAddEventUnitDamaged(tDamage, null);
+}
+
+bool gt_SFE_DiffSelect_Click_Func (bool testConds, bool runActions) {
+    int clicked = EventDialogControl();
+    int d = 0;
+
+    if (!runActions || g_sfeDifficultyChosen) {
+        return true;
+    }
+
+    while (d < c_DIFF_COUNT) {
+        if (clicked == g_sfeDiffButtons[d]) {
+            g_sfeDifficultyChosen = true;
+            DialogSetVisible(g_sfeDiffDialog, PlayerGroupAll(), false);
+            SFE_StartGameAfterDifficulty(d);
+            return true;
+        }
+        d = d + 1;
+    }
+
+    return true;
+}
+
+void SFE_InitDifficultySelection () {
+    trigger tClick;
+    int d;
+    int btnY;
+
+    g_sfeDifficultyChosen = false;
+
+    g_sfeDiffDialog = DialogCreate(540, 520, c_anchorCenter, 0, 0, true);
+    DialogSetImage(g_sfeDiffDialog, "Assets\\Textures\\ui_glue_backgrounddialog.dds");
+
+    DialogControlCreate(g_sfeDiffDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(DialogControlLastCreated(), PlayerGroupAll(), 500, 35);
+    DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTop, 0, 20);
+    DialogControlSetPropertyAsText(DialogControlLastCreated(), c_triggerControlPropertyText, PlayerGroupAll(), 
+        StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"FFE400\">SELECCIONA LA DIFICULTAD</c></s>"));
+
+    tClick = TriggerCreate("gt_SFE_DiffSelect_Click_Func");
+
+    d = 0;
+    while (d < c_DIFF_COUNT) {
+        btnY = 70 + (d * 58);
+        g_sfeDiffButtons[d] = DialogControlCreate(g_sfeDiffDialog, c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeDiffButtons[d], PlayerGroupAll(), 460, 48);
+        DialogControlSetPosition(g_sfeDiffButtons[d], PlayerGroupAll(), c_anchorTop, 0, btnY);
+        
+        DialogControlSetPropertyAsText(g_sfeDiffButtons[d], c_triggerControlPropertyText, PlayerGroupAll(), 
+            StringToText("<s val=\"ModCenterSize16Bold\">" + g_sfeDiffNames[d] + "</s>"));
+
+        TriggerAddEventDialogControl(tClick, 1, g_sfeDiffButtons[d], c_triggerControlEventTypeClick);
+        d = d + 1;
+    }
+
+    DialogSetVisible(g_sfeDiffDialog, PlayerGroupAll(), true);
+}
+
+void SFE_SetupDiplomacyAndAlliances () {
+    int p1 = 1;
+    int p2;
+
+    while (p1 <= c_SFE_MAX_PLAYERS) {
+        PlayerSetAlliance(p1, c_SFE_PLAYER_ALLIED_BASE, c_allianceIdPassive, true);
+        PlayerSetAlliance(p1, c_SFE_PLAYER_ALLIED_BASE, c_allianceIdVision, true);
+        PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, p1, c_allianceIdPassive, true);
+        PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, p1, c_allianceIdVision, true);
+
+        PlayerSetAlliance(p1, c_SFE_PLAYER_HOSTILE, c_allianceIdPassive, false);
+        PlayerSetAlliance(p1, c_SFE_PLAYER_HOSTILE, c_allianceIdVision, false);
+        PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, p1, c_allianceIdPassive, false);
+        PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, p1, c_allianceIdVision, false);
+
+        p2 = 1;
+        while (p2 <= c_SFE_MAX_PLAYERS) {
+            if (p1 != p2) {
+                PlayerSetAlliance(p1, p2, c_allianceIdPassive, true);
+                PlayerSetAlliance(p1, p2, c_allianceIdVision, true);
+                PlayerSetAlliance(p1, p2, c_allianceIdSeekHelp, true);
+            }
+            p2 = p2 + 1;
+        }
+        p1 = p1 + 1;
+    }
+
+    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_SFE_PLAYER_HOSTILE, c_allianceIdPassive, false);
+    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_SFE_PLAYER_HOSTILE, c_allianceIdVision, false);
+    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_SFE_PLAYER_ALLIED_BASE, c_allianceIdPassive, false);
+    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_SFE_PLAYER_ALLIED_BASE, c_allianceIdVision, false);
+}
+
+void SFE_MainInit () {
+    int p;
+
+    SFE_SetupDiplomacyAndAlliances();
+    SFE_InitDifficultyTables();
+    SFE_InitHeroCatalog();
+
+    p = 1;
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (PlayerType(p) == c_playerTypeUser) {
+            SFE_BankInit(p);
+        }
+        p = p + 1;
+    }
+
+    SFE_InitDifficultySelection();
+}
+
+//--------------------------------------------------------------------------------------------------
+// SECCIÓN 11: PUNTOS DE ENTRADA DEL MOTOR SC2
+//--------------------------------------------------------------------------------------------------
+void InitLibs () {
+    libNtve_InitLib();
+}
+
+void InitMap () {
+    InitLibs();
+    SFE_MainInit();
+}

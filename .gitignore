@@ -1,0 +1,14 @@
+# StarCraft II Editor backups & temp files
+*.SC2Backup
+*.bak
+*.tmp
+*.temp
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# IDE configurations
+.vscode/
+.idea/

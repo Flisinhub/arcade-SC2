@@ -1,0 +1,142 @@
+//==================================================================================================
+// Special Forces Elite 5 - Allied Base & Victory/Defeat Engine
+// Fortaleza central aliada, defensas perimetrales y condiciones de fin de partida
+//==================================================================================================
+
+#ifndef SFE_ALLIEDBASE_INCLUDED
+#define SFE_ALLIEDBASE_INCLUDED
+
+include "Scripts/Constants.galaxy"
+include "Scripts/Persistence.galaxy"
+include "Scripts/HUD.galaxy"
+
+unit g_sfeBaseCoreUnit;
+point g_sfeBaseCenterPoint;
+bool g_sfeGameOverTriggered;
+
+// Declaraciones
+void SFE_TriggerDefeat ();
+void SFE_TriggerVictory ();
+
+//--------------------------------------------------------------------------------------------------
+// Inicializar la Base Aliada y Estructuras Defensivas
+//--------------------------------------------------------------------------------------------------
+void SFE_InitAlliedBase () {
+    point pCore;
+    point pDefense;
+    unit u;
+
+    g_sfeBaseCenterPoint = Point(100.0, 100.0);
+    g_sfeGameOverTriggered = false;
+    g_sfeBaseCoreHpPercent = 100.0;
+
+    // Crear Fortaleza Planetaria Troncal (Jugador 7 - Aliado)
+    UnitCreate(1, "PlanetaryFortress", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBaseCenterPoint, 270.0);
+    u = UnitLastCreated();
+    if (u == null) {
+        UnitCreate(1, "CommandCenter", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBaseCenterPoint, 270.0);
+        u = UnitLastCreated();
+    }
+    g_sfeBaseCoreUnit = u;
+    UnitSetPropertyFixed(g_sfeBaseCoreUnit, c_unitPropLifeMax, 8000.0);
+    UnitSetPropertyFixed(g_sfeBaseCoreUnit, c_unitPropLifePercent, 100.0);
+    UnitSetPropertyFixed(g_sfeBaseCoreUnit, c_unitPropLifeRegen, 5.0);
+
+    // Torretas y Bunkers en los 4 accesos cardinales
+    // Norte
+    pDefense = Point(100.0, 115.0);
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 270.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(94.0, 115.0), 270.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(106.0, 115.0), 270.0);
+
+    // Sur
+    pDefense = Point(100.0, 85.0);
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 90.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(94.0, 85.0), 90.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(106.0, 85.0), 90.0);
+
+    // Este
+    pDefense = Point(115.0, 100.0);
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 180.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(115.0, 94.0), 180.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(115.0, 106.0), 180.0);
+
+    // Oeste
+    pDefense = Point(85.0, 100.0);
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 0.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(85.0, 94.0), 0.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(85.0, 106.0), 0.0);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Comprobacion de Salud de la Base (Monitoreo regular)
+//--------------------------------------------------------------------------------------------------
+void SFE_UpdateBaseHealthStatus () {
+    fixed currentHp;
+
+    if (g_sfeGameOverTriggered) {
+        return;
+    }
+
+    if (!UnitIsAlive(g_sfeBaseCoreUnit)) {
+        SFE_TriggerDefeat();
+        return;
+    }
+
+    currentHp = UnitGetPropertyFixed(g_sfeBaseCoreUnit, c_unitPropLifePercent, true);
+    g_sfeBaseCoreHpPercent = currentHp;
+
+    if (currentHp <= 0.0) {
+        SFE_TriggerDefeat();
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Secuencia de Derrota
+//--------------------------------------------------------------------------------------------------
+void SFE_TriggerDefeat () {
+    int p = 1;
+    text defText;
+
+    if (g_sfeGameOverTriggered) {
+        return;
+    }
+    g_sfeGameOverTriggered = true;
+
+    defText = StringToText("<s val=\"ModCenterSize36Bold\"><c val=\"FF0000\">¡EL CUARTEL GENERAL HA SIDO DESTRUIDO!\nMISIÓN FALLIDA — DERROTA</c></s>");
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, defText);
+
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (PlayerType(p) == c_playerTypeUser) {
+            GameOver(p, c_gameOverDefeat, true, true);
+        }
+        p = p + 1;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Secuencia de Victoria
+//--------------------------------------------------------------------------------------------------
+void SFE_TriggerVictory () {
+    int p = 1;
+    text vicText;
+
+    if (g_sfeGameOverTriggered) {
+        return;
+    }
+    g_sfeGameOverTriggered = true;
+
+    vicText = StringToText("<s val=\"ModCenterSize36Bold\"><c val=\"00FF7F\">¡¡VICTORIA SUPREMA EN SPECIAL FORCES ELITE 5!!\nTODAS LAS HORDAS Y JEFES HAN SIDO ERRADICADOS</c></s>");
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, vicText);
+
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (PlayerType(p) == c_playerTypeUser) {
+            // Registrar victoria de la dificultad alcanzada en el banco
+            SFE_BankRecordVictory(p, g_sfeCurrentDifficulty);
+            GameOver(p, c_gameOverVictory, true, true);
+        }
+        p = p + 1;
+    }
+}
+
+#endif

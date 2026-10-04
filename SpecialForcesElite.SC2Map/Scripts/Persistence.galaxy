@@ -1,0 +1,202 @@
+//==================================================================================================
+// Special Forces Elite 5 - Persistence & Bank Management
+// Sistema de guardado protegido con Checksum para perfiles y logros en Battle.net
+//==================================================================================================
+
+#ifndef SFE_PERSISTENCE_INCLUDED
+#define SFE_PERSISTENCE_INCLUDED
+
+include "Scripts/Constants.galaxy"
+
+const string c_BANK_NAME = "SpecialForcesElite5_Profile";
+const string c_SEC_PROFILE = "Profile";
+const string c_SEC_WINS = "DifficultyWins";
+const string c_SEC_STATS = "Stats";
+const string c_SEC_SECURITY = "Security";
+
+const int c_SECURITY_SALT = 948271;
+
+struct SFE_PlayerProfile {
+    bank playerBank;
+    bool bankLoaded;
+    int accountLevel;
+    int accountXP;
+    int totalWins;
+    int[c_DIFF_COUNT] difficultyWins;
+    int bossesKilled;
+    bool tormentMaster;
+    bool secretUnlocked;
+};
+
+SFE_PlayerProfile[c_SFE_MAX_PLAYERS + 1] g_sfeProfiles;
+
+//--------------------------------------------------------------------------------------------------
+// Algoritmo de Suma de Verificacion (Checksum)
+//--------------------------------------------------------------------------------------------------
+int SFE_CalculateChecksum (int player) {
+    int sum = c_SECURITY_SALT;
+    int d = 0;
+    sum = sum + (g_sfeProfiles[player].accountLevel * 179);
+    sum = sum + (g_sfeProfiles[player].accountXP * 31);
+    sum = sum + (g_sfeProfiles[player].totalWins * 719);
+    sum = sum + (g_sfeProfiles[player].bossesKilled * 1031);
+    while (d < c_DIFF_COUNT) {
+        sum = sum + (g_sfeProfiles[player].difficultyWins[d] * (211 + (d * 37)));
+        d = d + 1;
+    }
+    return sum;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Cargar Banco de Datos de Jugador
+//--------------------------------------------------------------------------------------------------
+void SFE_BankInit (int player) {
+    bank b;
+    int storedChecksum;
+    int calculatedChecksum;
+    int d;
+    string keyName;
+
+    if (PlayerType(player) != c_playerTypeUser) {
+        return;
+    }
+
+    BankLoad(c_BANK_NAME, player);
+    b = BankLastCreated();
+    g_sfeProfiles[player].playerBank = b;
+
+    if (BankKeyExists(b, c_SEC_PROFILE, "Level")) {
+        g_sfeProfiles[player].accountLevel = BankValueGetAsInt(b, c_SEC_PROFILE, "Level");
+        g_sfeProfiles[player].accountXP = BankValueGetAsInt(b, c_SEC_PROFILE, "XP");
+        g_sfeProfiles[player].totalWins = BankValueGetAsInt(b, c_SEC_PROFILE, "Wins");
+        g_sfeProfiles[player].bossesKilled = BankValueGetAsInt(b, c_SEC_STATS, "Bosses");
+
+        d = 0;
+        while (d < c_DIFF_COUNT) {
+            keyName = "Diff_" + IntToString(d);
+            if (BankKeyExists(b, c_SEC_WINS, keyName)) {
+                g_sfeProfiles[player].difficultyWins[d] = BankValueGetAsInt(b, c_SEC_WINS, keyName);
+            } else {
+                g_sfeProfiles[player].difficultyWins[d] = 0;
+            }
+            d = d + 1;
+        }
+
+        storedChecksum = BankValueGetAsInt(b, c_SEC_SECURITY, "Checksum");
+        calculatedChecksum = SFE_CalculateChecksum(player);
+
+        if (storedChecksum != calculatedChecksum) {
+            // Deteccion de adulteracion: se reinician valores protegidos
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("[SFE5 Guardado] Suma de verificacion no coincidente. Reiniciando perfil seguro."));
+            g_sfeProfiles[player].accountLevel = 1;
+            g_sfeProfiles[player].accountXP = 0;
+            g_sfeProfiles[player].totalWins = 0;
+            g_sfeProfiles[player].bossesKilled = 0;
+            d = 0;
+            while (d < c_DIFF_COUNT) {
+                g_sfeProfiles[player].difficultyWins[d] = 0;
+                d = d + 1;
+            }
+        }
+    } else {
+        // Primer inicio del jugador
+        g_sfeProfiles[player].accountLevel = 1;
+        g_sfeProfiles[player].accountXP = 0;
+        g_sfeProfiles[player].totalWins = 0;
+        g_sfeProfiles[player].bossesKilled = 0;
+        d = 0;
+        while (d < c_DIFF_COUNT) {
+            g_sfeProfiles[player].difficultyWins[d] = 0;
+            d = d + 1;
+        }
+    }
+
+    if (g_sfeProfiles[player].difficultyWins[c_DIFF_TORMENT] > 0) {
+        g_sfeProfiles[player].tormentMaster = true;
+    }
+
+    g_sfeProfiles[player].bankLoaded = true;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Guardar Banco de Datos de Jugador
+//--------------------------------------------------------------------------------------------------
+void SFE_BankSave (int player) {
+    bank b;
+    int d;
+
+    if (!g_sfeProfiles[player].bankLoaded || PlayerType(player) != c_playerTypeUser) {
+        return;
+    }
+
+    b = g_sfeProfiles[player].playerBank;
+
+    BankValueSetFromInt(b, c_SEC_PROFILE, "Level", g_sfeProfiles[player].accountLevel);
+    BankValueSetFromInt(b, c_SEC_PROFILE, "XP", g_sfeProfiles[player].accountXP);
+    BankValueSetFromInt(b, c_SEC_PROFILE, "Wins", g_sfeProfiles[player].totalWins);
+    BankValueSetFromInt(b, c_SEC_STATS, "Bosses", g_sfeProfiles[player].bossesKilled);
+
+    d = 0;
+    while (d < c_DIFF_COUNT) {
+        BankValueSetFromInt(b, c_SEC_WINS, "Diff_" + IntToString(d), g_sfeProfiles[player].difficultyWins[d]);
+        d = d + 1;
+    }
+
+    // Escribir checksum firmado
+    BankValueSetFromInt(b, c_SEC_SECURITY, "Checksum", SFE_CalculateChecksum(player));
+
+    BankSave(b);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Registrar Victoria y Concesion de Experiencia
+//--------------------------------------------------------------------------------------------------
+void SFE_BankRecordVictory (int player, int difficulty) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    g_sfeProfiles[player].totalWins = g_sfeProfiles[player].totalWins + 1;
+    g_sfeProfiles[player].difficultyWins[difficulty] = g_sfeProfiles[player].difficultyWins[difficulty] + 1;
+    g_sfeProfiles[player].accountXP = g_sfeProfiles[player].accountXP + (500 * (difficulty + 1));
+
+    // Nivel = 1 + (XP / 2500)
+    g_sfeProfiles[player].accountLevel = 1 + (g_sfeProfiles[player].accountXP / 2500);
+
+    if (difficulty == c_DIFF_TORMENT) {
+        g_sfeProfiles[player].tormentMaster = true;
+    }
+
+    SFE_BankSave(player);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Registrar Muerte de Jefe
+//--------------------------------------------------------------------------------------------------
+void SFE_BankRecordBossKill (int player) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    g_sfeProfiles[player].bossesKilled = g_sfeProfiles[player].bossesKilled + 1;
+    g_sfeProfiles[player].accountXP = g_sfeProfiles[player].accountXP + 250;
+    g_sfeProfiles[player].accountLevel = 1 + (g_sfeProfiles[player].accountXP / 2500);
+
+    SFE_BankSave(player);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Concesion Generica de Experiencia de Cuenta
+//--------------------------------------------------------------------------------------------------
+void SFE_BankAddExp (int player, int amount) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    g_sfeProfiles[player].accountXP = g_sfeProfiles[player].accountXP + amount;
+    g_sfeProfiles[player].accountLevel = 1 + (g_sfeProfiles[player].accountXP / 2500);
+
+    SFE_BankSave(player);
+}
+
+#endif

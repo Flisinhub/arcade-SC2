@@ -1,0 +1,409 @@
+//==================================================================================================
+// Special Forces Elite 5 - HUD & Tech Shop System
+// Panel en pantalla para asignación interactiva de atributos [+] y Tienda de Mejoras
+//==================================================================================================
+
+#ifndef SFE_HUD_INCLUDED
+#define SFE_HUD_INCLUDED
+
+include "Scripts/Constants.galaxy"
+include "Scripts/Attributes.galaxy"
+
+// Panel HUD individual de Atributos (por jugador)
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudDialog;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudLblHeroInfo;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudLblStrength;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudLblDexterity;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudLblIntel;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudLblPoints;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnAddStr;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnAddDex;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnAddInt;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnOpenShop;
+
+// Barra superior global de estado de la partida
+int g_sfeTopBarDialog;
+int g_sfeTopBarLblWave;
+int g_sfeTopBarLblBaseHp;
+int g_sfeTopBarLblDiff;
+
+// Tienda de Mejoras
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopDialog;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnWeapons;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnArmor;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnShields;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnMedkit;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnBaseRepair;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnClose;
+
+// Variables de estado de juego referenciadas por el HUD
+int g_sfeCurrentDifficulty;
+int g_sfeCurrentWaveNumber;
+int g_sfeWaveTimeRemaining;
+fixed g_sfeBaseCoreHpPercent;
+
+// Declaraciones de funciones
+void SFE_UpdatePlayerHUD (int player);
+void SFE_UpdateTopBarHUD ();
+void SFE_OpenShop (int player);
+void SFE_CloseShop (int player);
+
+//--------------------------------------------------------------------------------------------------
+// Actualizar Valores del HUD para un Jugador
+//--------------------------------------------------------------------------------------------------
+void SFE_UpdatePlayerHUD (int player) {
+    playergroup pg = PlayerGroupSingle(player);
+    text txtInfo;
+    text txtStr;
+    text txtDex;
+    text txtInt;
+    text txtPts;
+    int hid;
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS || !g_sfeHeroStates[player].isActive) {
+        return;
+    }
+
+    hid = g_sfeHeroStates[player].heroId;
+
+    txtInfo = StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"FFE400\">" + g_sfeHeroes[hid].name + 
+        "</c> | Nvl " + IntToString(g_sfeHeroStates[player].level) + 
+        " <c val=\"AAAAAA\">(" + IntToString(g_sfeHeroStates[player].currentXp) + "/" + IntToString(g_sfeHeroStates[player].requiredXp) + " XP)</c></s>");
+
+    txtStr = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"FF4444\">Fuerza: " + IntToString(g_sfeHeroStates[player].strength) + 
+        "</c> <c val=\"AAAAAA\">(+" + FixedToString(g_sfeHeroStates[player].strength * c_FACTOR_ALPHA_STRENGTH_DAMAGE, 0) + " Dmg)</c></s>");
+
+    txtDex = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"55FF55\">Destreza: " + IntToString(g_sfeHeroStates[player].dexterity) + 
+        "</c> <c val=\"AAAAAA\">(Cadencia " + FixedToString(g_sfeHeroStates[player].currentAttackInterval, 2) + "s)</c></s>");
+
+    txtInt = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"00CCFF\">Inteligencia: " + IntToString(g_sfeHeroStates[player].intelligence) + 
+        "</c> <c val=\"AAAAAA\">(+" + FixedToString(g_sfeHeroStates[player].intelligence * c_FACTOR_LAMBDA_INTEL_ENERGY, 0) + " Maná)</c></s>");
+
+    if (g_sfeHeroStates[player].unspentAttributePoints > 0) {
+        txtPts = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"FFFF00\">¡Puntos Disponibles: " + IntToString(g_sfeHeroStates[player].unspentAttributePoints) + "!</c></s>");
+    } else {
+        txtPts = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"888888\">Puntos Disponibles: 0</c></s>");
+    }
+
+    DialogControlSetPropertyAsText(g_sfeHudLblHeroInfo[player], c_triggerControlPropertyText, pg, txtInfo);
+    DialogControlSetPropertyAsText(g_sfeHudLblStrength[player], c_triggerControlPropertyText, pg, txtStr);
+    DialogControlSetPropertyAsText(g_sfeHudLblDexterity[player], c_triggerControlPropertyText, pg, txtDex);
+    DialogControlSetPropertyAsText(g_sfeHudLblIntel[player], c_triggerControlPropertyText, pg, txtInt);
+    DialogControlSetPropertyAsText(g_sfeHudLblPoints[player], c_triggerControlPropertyText, pg, txtPts);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Actualizar Barra Superior de Estado Global
+//--------------------------------------------------------------------------------------------------
+void SFE_UpdateTopBarHUD () {
+    text txtWave;
+    text txtBase;
+    text txtDiff;
+    string diffColor;
+
+    if (g_sfeCurrentDifficulty == c_DIFF_TORMENT) {
+        diffColor = "FF0044";
+    } else if (g_sfeCurrentDifficulty >= c_DIFF_BRUTAL) {
+        diffColor = "FF8800";
+    } else {
+        diffColor = "00FFEA";
+    }
+
+    txtDiff = StringToText("<s val=\"ModCenterSize18Bold\"><c val=\"" + diffColor + "\">[" + g_sfeDiffNames[g_sfeCurrentDifficulty] + "]</c></s>");
+    txtWave = StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"FFFFFF\">Oleada " + IntToString(g_sfeCurrentWaveNumber) + " / 25</c>  |  <c val=\"FFAA00\">Próxima: " + IntToString(g_sfeWaveTimeRemaining) + "s</c></s>");
+
+    if (g_sfeBaseCoreHpPercent < 35.0) {
+        txtBase = StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"FF0000\">¡ALERTA BASE!: " + FixedToString(g_sfeBaseCoreHpPercent, 0) + "%</c></s>");
+    } else {
+        txtBase = StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"55FF55\">Núcleo Base: " + FixedToString(g_sfeBaseCoreHpPercent, 0) + "%</c></s>");
+    }
+
+    DialogControlSetPropertyAsText(g_sfeTopBarLblDiff, c_triggerControlPropertyText, PlayerGroupAll(), txtDiff);
+    DialogControlSetPropertyAsText(g_sfeTopBarLblWave, c_triggerControlPropertyText, PlayerGroupAll(), txtWave);
+    DialogControlSetPropertyAsText(g_sfeTopBarLblBaseHp, c_triggerControlPropertyText, PlayerGroupAll(), txtBase);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Abrir y Cerrar Tienda de Mejoras
+//--------------------------------------------------------------------------------------------------
+void SFE_OpenShop (int player) {
+    if (player >= 1 && player <= c_SFE_MAX_PLAYERS) {
+        DialogSetVisible(g_sfeShopDialog[player], PlayerGroupSingle(player), true);
+    }
+}
+
+void SFE_CloseShop (int player) {
+    if (player >= 1 && player <= c_SFE_MAX_PLAYERS) {
+        DialogSetVisible(g_sfeShopDialog[player], PlayerGroupSingle(player), false);
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Procesar Compras en la Tienda
+//--------------------------------------------------------------------------------------------------
+void SFE_ProcessShopPurchase (int player, int itemType) {
+    int cost;
+    int minerals;
+    unit u;
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS || !g_sfeHeroStates[player].isActive) {
+        return;
+    }
+
+    minerals = PlayerGetPropertyInt(player, c_playerPropMinerals);
+    u = g_sfeHeroStates[player].heroUnit;
+
+    if (itemType == 1) {
+        // Armamento Ofensivo (+5 Dano permanente)
+        cost = 350;
+        if (minerals >= cost) {
+            PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
+            g_sfeHeroStates[player].strength = g_sfeHeroStates[player].strength + 3;
+            SFE_RecalculateStats(player);
+            SFE_UpdatePlayerHUD(player);
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"55FF55\">Mejora de Armamento adquirida (+6 Dmg permanente).</c>"));
+        } else {
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"FF4444\">Minerales insuficientes (Requiere 350 min).</c>"));
+        }
+    } else if (itemType == 2) {
+        // Blindaje Reforzado (+2 Armadura / +100 HP)
+        cost = 300;
+        if (minerals >= cost) {
+            PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
+            g_sfeHeroStates[player].strength = g_sfeHeroStates[player].strength + 4;
+            SFE_RecalculateStats(player);
+            SFE_UpdatePlayerHUD(player);
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"55FF55\">Blindaje reforzado adquirido (+100 HP max).</c>"));
+        } else {
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"FF4444\">Minerales insuficientes (Requiere 300 min).</c>"));
+        }
+    } else if (itemType == 3) {
+        // Recarga de Botiquin Nanomedico (Cura 100% Vida)
+        cost = 150;
+        if (minerals >= cost) {
+            PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
+            UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"55FF55\">¡Botiquín Nanomédico aplicado! Salud restaurada al 100%.</c>"));
+        } else {
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"FF4444\">Minerales insuficientes (Requiere 150 min).</c>"));
+        }
+    } else if (itemType == 4) {
+        // Reparacion de Emergencia del Nucleo de Base (+25% HP)
+        cost = 500;
+        if (minerals >= cost) {
+            PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
+            g_sfeBaseCoreHpPercent = g_sfeBaseCoreHpPercent + 25.0;
+            if (g_sfeBaseCoreHpPercent > 100.0) {
+                g_sfeBaseCoreHpPercent = 100.0;
+            }
+            SFE_UpdateTopBarHUD();
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("<c val=\"00FFEA\">¡Jugador " + IntToString(player) + " ha reparado el Núcleo Aliado (+25% Vida)!</c>"));
+        } else {
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"FF4444\">Minerales insuficientes (Requiere 500 min).</c>"));
+        }
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger Callback: Interacciones del HUD y Tienda
+//--------------------------------------------------------------------------------------------------
+bool gt_SFE_HUD_Click_Func (bool testConds, bool runActions) {
+    int clickedCtrl = EventDialogControl();
+    int player = EventPlayer();
+
+    if (!runActions || player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return true;
+    }
+
+    // Botones de asignacion de atributos
+    if (clickedCtrl == g_sfeHudBtnAddStr[player]) {
+        if (SFE_AllocateAttribute(player, c_ATTR_STRENGTH)) {
+            SFE_UpdatePlayerHUD(player);
+        }
+        return true;
+    }
+    if (clickedCtrl == g_sfeHudBtnAddDex[player]) {
+        if (SFE_AllocateAttribute(player, c_ATTR_DEXTERITY)) {
+            SFE_UpdatePlayerHUD(player);
+        }
+        return true;
+    }
+    if (clickedCtrl == g_sfeHudBtnAddInt[player]) {
+        if (SFE_AllocateAttribute(player, c_ATTR_INTELLIGENCE)) {
+            SFE_UpdatePlayerHUD(player);
+        }
+        return true;
+    }
+
+    // Boton de Abrir Tienda
+    if (clickedCtrl == g_sfeHudBtnOpenShop[player]) {
+        SFE_OpenShop(player);
+        return true;
+    }
+
+    // Botones de la Tienda
+    if (clickedCtrl == g_sfeShopBtnWeapons[player]) {
+        SFE_ProcessShopPurchase(player, 1);
+        return true;
+    }
+    if (clickedCtrl == g_sfeShopBtnArmor[player]) {
+        SFE_ProcessShopPurchase(player, 2);
+        return true;
+    }
+    if (clickedCtrl == g_sfeShopBtnMedkit[player]) {
+        SFE_ProcessShopPurchase(player, 3);
+        return true;
+    }
+    if (clickedCtrl == g_sfeShopBtnBaseRepair[player]) {
+        SFE_ProcessShopPurchase(player, 4);
+        return true;
+    }
+    if (clickedCtrl == g_sfeShopBtnClose[player]) {
+        SFE_CloseShop(player);
+        return true;
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Inicializar Interfaces HUD
+//--------------------------------------------------------------------------------------------------
+void SFE_InitHUD () {
+    trigger tClick;
+    int p = 1;
+    playergroup pg;
+
+    tClick = TriggerCreate("gt_SFE_HUD_Click_Func");
+
+    // 1. Barra superior global de estado
+    g_sfeTopBarDialog = DialogCreate(700, 75, c_anchorTop, 0, 10, false);
+    DialogSetImage(g_sfeTopBarDialog, "Assets\\Textures\\ui_glue_backgrounddialog.dds");
+
+    g_sfeTopBarLblDiff = DialogControlCreate(g_sfeTopBarDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfeTopBarLblDiff, PlayerGroupAll(), 660, 25);
+    DialogControlSetPosition(g_sfeTopBarLblDiff, PlayerGroupAll(), c_anchorTop, 0, 5);
+
+    g_sfeTopBarLblWave = DialogControlCreate(g_sfeTopBarDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfeTopBarLblWave, PlayerGroupAll(), 350, 25);
+    DialogControlSetPosition(g_sfeTopBarLblWave, PlayerGroupAll(), c_anchorBottomLeft, 20, 10);
+
+    g_sfeTopBarLblBaseHp = DialogControlCreate(g_sfeTopBarDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfeTopBarLblBaseHp, PlayerGroupAll(), 280, 25);
+    DialogControlSetPosition(g_sfeTopBarLblBaseHp, PlayerGroupAll(), c_anchorBottomRight, 20, 10);
+
+    DialogSetVisible(g_sfeTopBarDialog, PlayerGroupAll(), true);
+
+    // 2. Paneles HUD y Tiendas para cada jugador
+    while (p <= c_SFE_MAX_PLAYERS) {
+        pg = PlayerGroupSingle(p);
+
+        // Panel HUD de Atributos (Superior Izquierda)
+        g_sfeHudDialog[p] = DialogCreate(380, 230, c_anchorTopLeft, 20, 90, false);
+        DialogSetImage(g_sfeHudDialog[p], "Assets\\Textures\\ui_glue_backgrounddialog.dds");
+
+        g_sfeHudLblHeroInfo[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(g_sfeHudLblHeroInfo[p], pg, 360, 25);
+        DialogControlSetPosition(g_sfeHudLblHeroInfo[p], pg, c_anchorTopLeft, 10, 10);
+
+        // Fila Fuerza
+        g_sfeHudLblStrength[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(g_sfeHudLblStrength[p], pg, 280, 25);
+        DialogControlSetPosition(g_sfeHudLblStrength[p], pg, c_anchorTopLeft, 10, 42);
+
+        g_sfeHudBtnAddStr[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeHudBtnAddStr[p], pg, 65, 26);
+        DialogControlSetPosition(g_sfeHudBtnAddStr[p], pg, c_anchorTopLeft, 300, 42);
+        DialogControlSetPropertyAsText(g_sfeHudBtnAddStr[p], c_triggerControlPropertyText, pg, StringToText("+ F"));
+
+        // Fila Destreza
+        g_sfeHudLblDexterity[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(g_sfeHudLblDexterity[p], pg, 280, 25);
+        DialogControlSetPosition(g_sfeHudLblDexterity[p], pg, c_anchorTopLeft, 10, 75);
+
+        g_sfeHudBtnAddDex[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeHudBtnAddDex[p], pg, 65, 26);
+        DialogControlSetPosition(g_sfeHudBtnAddDex[p], pg, c_anchorTopLeft, 300, 75);
+        DialogControlSetPropertyAsText(g_sfeHudBtnAddDex[p], c_triggerControlPropertyText, pg, StringToText("+ D"));
+
+        // Fila Inteligencia
+        g_sfeHudLblIntel[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(g_sfeHudLblIntel[p], pg, 280, 25);
+        DialogControlSetPosition(g_sfeHudLblIntel[p], pg, c_anchorTopLeft, 10, 108);
+
+        g_sfeHudBtnAddInt[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeHudBtnAddInt[p], pg, 65, 26);
+        DialogControlSetPosition(g_sfeHudBtnAddInt[p], pg, c_anchorTopLeft, 300, 108);
+        DialogControlSetPropertyAsText(g_sfeHudBtnAddInt[p], c_triggerControlPropertyText, pg, StringToText("+ I"));
+
+        // Puntos disponibles y Boton de Tienda
+        g_sfeHudLblPoints[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(g_sfeHudLblPoints[p], pg, 230, 30);
+        DialogControlSetPosition(g_sfeHudLblPoints[p], pg, c_anchorTopLeft, 10, 145);
+
+        g_sfeHudBtnOpenShop[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeHudBtnOpenShop[p], pg, 130, 35);
+        DialogControlSetPosition(g_sfeHudBtnOpenShop[p], pg, c_anchorTopLeft, 235, 145);
+        DialogControlSetPropertyAsText(g_sfeHudBtnOpenShop[p], c_triggerControlPropertyText, pg, StringToText("<c val=\"FFE400\">TIENDA</c>"));
+
+        DialogSetVisible(g_sfeHudDialog[p], pg, true);
+
+        // Dialogo de la Tienda de Mejoras
+        g_sfeShopDialog[p] = DialogCreate(500, 380, c_anchorCenter, 0, 0, false);
+        DialogSetImage(g_sfeShopDialog[p], "Assets\\Textures\\ui_glue_backgrounddialog.dds");
+
+        // Titulo Tienda
+        DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(DialogControlLastCreated(), pg, 460, 35);
+        DialogControlSetPosition(DialogControlLastCreated(), pg, c_anchorTop, 0, 15);
+        DialogControlSetPropertyAsText(DialogControlLastCreated(), c_triggerControlPropertyText, pg, 
+            StringToText("<s val=\"ModCenterSize22Bold\"><c val=\"FFE400\">ARSENAL Y MEJORAS TÁCTICAS</c></s>"));
+
+        // Opciones Tienda
+        g_sfeShopBtnWeapons[p] = DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeShopBtnWeapons[p], pg, 440, 45);
+        DialogControlSetPosition(g_sfeShopBtnWeapons[p], pg, c_anchorTop, 0, 65);
+        DialogControlSetPropertyAsText(g_sfeShopBtnWeapons[p], c_triggerControlPropertyText, pg, 
+            StringToText("Calibre Pesado (+6 Daño permanente) — <c val=\"55FF55\">350 Min</c>"));
+
+        g_sfeShopBtnArmor[p] = DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeShopBtnArmor[p], pg, 440, 45);
+        DialogControlSetPosition(g_sfeShopBtnArmor[p], pg, c_anchorTop, 0, 120);
+        DialogControlSetPropertyAsText(g_sfeShopBtnArmor[p], c_triggerControlPropertyText, pg, 
+            StringToText("Placas de Blindaje (+100 HP permanente) — <c val=\"55FF55\">300 Min</c>"));
+
+        g_sfeShopBtnMedkit[p] = DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeShopBtnMedkit[p], pg, 440, 45);
+        DialogControlSetPosition(g_sfeShopBtnMedkit[p], pg, c_anchorTop, 0, 175);
+        DialogControlSetPropertyAsText(g_sfeShopBtnMedkit[p], c_triggerControlPropertyText, pg, 
+            StringToText("Botiquín Nanomédico (Cura 100% Vida) — <c val=\"55FF55\">150 Min</c>"));
+
+        g_sfeShopBtnBaseRepair[p] = DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeShopBtnBaseRepair[p], pg, 440, 45);
+        DialogControlSetPosition(g_sfeShopBtnBaseRepair[p], pg, c_anchorTop, 0, 230);
+        DialogControlSetPropertyAsText(g_sfeShopBtnBaseRepair[p], c_triggerControlPropertyText, pg, 
+            StringToText("Reparación del Núcleo Aliado (+25% HP Base) — <c val=\"55FF55\">500 Min</c>"));
+
+        g_sfeShopBtnClose[p] = DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeShopBtnClose[p], pg, 180, 40);
+        DialogControlSetPosition(g_sfeShopBtnClose[p], pg, c_anchorBottom, 0, 15);
+        DialogControlSetPropertyAsText(g_sfeShopBtnClose[p], c_triggerControlPropertyText, pg, StringToText("CERRAR"));
+
+        DialogSetVisible(g_sfeShopDialog[p], pg, false);
+
+        // Eventos
+        TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnAddStr[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnAddDex[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnAddInt[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnOpenShop[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnWeapons[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnArmor[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnMedkit[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnBaseRepair[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnClose[p], c_triggerControlEventTypeClick);
+
+        p = p + 1;
+    }
+}
+
+#endif
