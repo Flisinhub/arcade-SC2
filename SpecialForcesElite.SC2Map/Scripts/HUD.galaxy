@@ -36,12 +36,6 @@ int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnMedkit;
 int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnBaseRepair;
 int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnClose;
 
-// Variables de estado de juego referenciadas por el HUD
-int g_sfeCurrentDifficulty;
-int g_sfeCurrentWaveNumber;
-int g_sfeWaveTimeRemaining;
-fixed g_sfeBaseCoreHpPercent;
-
 // Declaraciones de funciones
 void SFE_UpdatePlayerHUD (int player);
 void SFE_UpdateTopBarHUD ();

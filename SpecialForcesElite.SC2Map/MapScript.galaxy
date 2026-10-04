@@ -36,6 +36,12 @@ fixed[c_DIFF_COUNT] g_sfeDiffUpgradeIntervalSeconds; // T_up (intervalo de upgra
 fixed[c_DIFF_COUNT] g_sfeDiffWaveIntervalSeconds;    // Intervalo de oleadas
 string[c_DIFF_COUNT] g_sfeDiffNames;
 
+// Variables Globales de Estado del Juego
+int g_sfeCurrentDifficulty;
+int g_sfeCurrentWaveNumber;
+int g_sfeWaveTimeRemaining;
+fixed g_sfeBaseCoreHpPercent;
+
 void SFE_InitDifficultyTables () {
     // M_inc: Multiplicador de ingreso por baja
     g_sfeDiffIncomeMultiplier[c_DIFF_CASUAL]  = 1.50;
@@ -1112,12 +1118,6 @@ int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnShields;
 int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnMedkit;
 int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnBaseRepair;
 int[c_SFE_MAX_PLAYERS + 1] g_sfeShopBtnClose;
-
-// Variables de estado de juego referenciadas por el HUD
-int g_sfeCurrentDifficulty;
-int g_sfeCurrentWaveNumber;
-int g_sfeWaveTimeRemaining;
-fixed g_sfeBaseCoreHpPercent;
 
 // Declaraciones de funciones
 void SFE_UpdatePlayerHUD (int player);
