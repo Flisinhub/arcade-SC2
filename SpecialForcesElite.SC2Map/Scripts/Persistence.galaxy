@@ -1,6 +1,8 @@
 //==================================================================================================
-// Special Forces Elite 5 - Persistence & Bank Management
-// Sistema de guardado protegido con Checksum para perfiles y logros en Battle.net
+// Special Forces Elite 5 - Persistence & Dual Bank Management
+// Sistema de guardado canónico de SFE5:
+// 1. OrdoAbChao.bank: Banco cifrado con Checksum y Salt (Nivel, XP, Rango, Victorias, Desbloqueos)
+// 2. Settings.bank: Banco de preferencias del jugador (Zoom de cámara, Autocast, Ajustes UI)
 //==================================================================================================
 
 #ifndef SFE_PERSISTENCE_INCLUDED
@@ -8,30 +10,51 @@
 
 include "Scripts/Constants.galaxy"
 
-const string c_BANK_NAME = "SpecialForcesElite5_Profile";
-const string c_SEC_PROFILE = "Profile";
-const string c_SEC_WINS = "DifficultyWins";
-const string c_SEC_STATS = "Stats";
+const string c_BANK_ORDO     = "OrdoAbChao";
+const string c_BANK_SETTINGS = "Settings";
+
+const string c_SEC_PROFILE  = "Profile";
+const string c_SEC_WINS     = "DifficultyWins";
+const string c_SEC_STATS    = "Stats";
 const string c_SEC_SECURITY = "Security";
+const string c_SEC_PREFS    = "Preferences";
 
 const int c_SECURITY_SALT = 948271;
 
 struct SFE_PlayerProfile {
     bank playerBank;
+    bank settingsBank;
     bool bankLoaded;
     int accountLevel;
     int accountXP;
     int totalWins;
     int[c_DIFF_COUNT] difficultyWins;
     int bossesKilled;
+    int rankPoints;
+    string rankTitle;
     bool tormentMaster;
     bool secretUnlocked;
+    int cameraZoomPreference; // 0: Normal (34.0), 1: Lejano (44.0), 2: Ultra (54.0)
+    bool autocastDefaultOn;
 };
 
 SFE_PlayerProfile[c_SFE_MAX_PLAYERS + 1] g_sfeProfiles;
 
+// Declaraciones de funciones
+int SFE_CalculateChecksum (int player);
+void SFE_BankInit (int player);
+void SFE_BankSave (int player);
+void SFE_BankRecordVictory (int player, int difficulty);
+void SFE_BankRecordBossKill (int player);
+void SFE_BankAddExp (int player, int amount);
+void SFE_BankAddRankPoints (int player, int points);
+string SFE_GetPlayerRankTitle (int player);
+void SFE_ApplyCameraZoomPreference (int player);
+void SFE_CycleCameraZoom (int player);
+text SFE_GetProfileSummaryText (int player);
+
 //--------------------------------------------------------------------------------------------------
-// Algoritmo de Suma de Verificacion (Checksum)
+// Algoritmo de Suma de Verificación Criptográfica (Checksum)
 //--------------------------------------------------------------------------------------------------
 int SFE_CalculateChecksum (int player) {
     int sum;
@@ -43,6 +66,7 @@ int SFE_CalculateChecksum (int player) {
     sum = sum + (g_sfeProfiles[player].accountXP * 31);
     sum = sum + (g_sfeProfiles[player].totalWins * 719);
     sum = sum + (g_sfeProfiles[player].bossesKilled * 1031);
+    sum = sum + (g_sfeProfiles[player].rankPoints * 83);
     while (d < c_DIFF_COUNT) {
         sum = sum + (g_sfeProfiles[player].difficultyWins[d] * (211 + (d * 37)));
         d = d + 1;
@@ -51,10 +75,35 @@ int SFE_CalculateChecksum (int player) {
 }
 
 //--------------------------------------------------------------------------------------------------
-// Cargar Banco de Datos de Jugador
+// Calcular Rango Oficial de SFE5
+//--------------------------------------------------------------------------------------------------
+string SFE_GetPlayerRankTitle (int player) {
+    int pts;
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return "R (Recluta)";
+    }
+
+    pts = g_sfeProfiles[player].rankPoints;
+
+    if (g_sfeProfiles[player].tormentMaster || pts >= 10000) {
+        return "S (Pinnacle)";
+    } else if (pts >= 6000) {
+        return "A+ (Master)";
+    } else if (pts >= 3000) {
+        return "A (Veteran)";
+    } else if (pts >= 1000) {
+        return "B (Specialist)";
+    }
+    return "R (Recruit)";
+}
+
+//--------------------------------------------------------------------------------------------------
+// Cargar Banco de Datos de Jugador (OrdoAbChao y Settings)
 //--------------------------------------------------------------------------------------------------
 void SFE_BankInit (int player) {
-    bank b;
+    bank bOrdo;
+    bank bSettings;
     int storedChecksum;
     int calculatedChecksum;
     int d;
@@ -64,37 +113,40 @@ void SFE_BankInit (int player) {
         return;
     }
 
-    BankLoad(c_BANK_NAME, player);
-    b = BankLastCreated();
-    g_sfeProfiles[player].playerBank = b;
+    // 1. Cargar OrdoAbChao.bank (Perfil protegido)
+    BankLoad(c_BANK_ORDO, player);
+    bOrdo = BankLastCreated();
+    g_sfeProfiles[player].playerBank = bOrdo;
 
-    if (BankKeyExists(b, c_SEC_PROFILE, "Level")) {
-        g_sfeProfiles[player].accountLevel = BankValueGetAsInt(b, c_SEC_PROFILE, "Level");
-        g_sfeProfiles[player].accountXP = BankValueGetAsInt(b, c_SEC_PROFILE, "XP");
-        g_sfeProfiles[player].totalWins = BankValueGetAsInt(b, c_SEC_PROFILE, "Wins");
-        g_sfeProfiles[player].bossesKilled = BankValueGetAsInt(b, c_SEC_STATS, "Bosses");
+    if (BankKeyExists(bOrdo, c_SEC_PROFILE, "Level")) {
+        g_sfeProfiles[player].accountLevel  = BankValueGetAsInt(bOrdo, c_SEC_PROFILE, "Level");
+        g_sfeProfiles[player].accountXP     = BankValueGetAsInt(bOrdo, c_SEC_PROFILE, "XP");
+        g_sfeProfiles[player].totalWins     = BankValueGetAsInt(bOrdo, c_SEC_PROFILE, "Wins");
+        g_sfeProfiles[player].rankPoints    = BankValueGetAsInt(bOrdo, c_SEC_PROFILE, "RankPoints");
+        g_sfeProfiles[player].bossesKilled  = BankValueGetAsInt(bOrdo, c_SEC_STATS, "Bosses");
 
         d = 0;
         while (d < c_DIFF_COUNT) {
             keyName = "Diff_" + IntToString(d);
-            if (BankKeyExists(b, c_SEC_WINS, keyName)) {
-                g_sfeProfiles[player].difficultyWins[d] = BankValueGetAsInt(b, c_SEC_WINS, keyName);
+            if (BankKeyExists(bOrdo, c_SEC_WINS, keyName)) {
+                g_sfeProfiles[player].difficultyWins[d] = BankValueGetAsInt(bOrdo, c_SEC_WINS, keyName);
             } else {
                 g_sfeProfiles[player].difficultyWins[d] = 0;
             }
             d = d + 1;
         }
 
-        storedChecksum = BankValueGetAsInt(b, c_SEC_SECURITY, "Checksum");
+        storedChecksum = BankValueGetAsInt(bOrdo, c_SEC_SECURITY, "Checksum");
         calculatedChecksum = SFE_CalculateChecksum(player);
 
         if (storedChecksum != calculatedChecksum) {
-            // Deteccion de adulteracion: se reinician valores protegidos
-            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("[SFE5 Guardado] Suma de verificacion no coincidente. Reiniciando perfil seguro."));
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, 
+                StringToText("<b><c val=\"FF4444\">[OrdoAbChao] Suma de comprobación discrepante. Restableciendo perfil seguro.</c></b>"));
             g_sfeProfiles[player].accountLevel = 1;
             g_sfeProfiles[player].accountXP = 0;
             g_sfeProfiles[player].totalWins = 0;
             g_sfeProfiles[player].bossesKilled = 0;
+            g_sfeProfiles[player].rankPoints = 0;
             d = 0;
             while (d < c_DIFF_COUNT) {
                 g_sfeProfiles[player].difficultyWins[d] = 0;
@@ -102,11 +154,12 @@ void SFE_BankInit (int player) {
             }
         }
     } else {
-        // Primer inicio del jugador
+        // Inicialización de nuevo perfil
         g_sfeProfiles[player].accountLevel = 1;
         g_sfeProfiles[player].accountXP = 0;
         g_sfeProfiles[player].totalWins = 0;
         g_sfeProfiles[player].bossesKilled = 0;
+        g_sfeProfiles[player].rankPoints = 0;
         d = 0;
         while (d < c_DIFF_COUNT) {
             g_sfeProfiles[player].difficultyWins[d] = 0;
@@ -116,59 +169,147 @@ void SFE_BankInit (int player) {
 
     if (g_sfeProfiles[player].difficultyWins[c_DIFF_TORMENT] > 0) {
         g_sfeProfiles[player].tormentMaster = true;
+        g_sfeProfiles[player].secretUnlocked = true;
+    }
+
+    g_sfeProfiles[player].rankTitle = SFE_GetPlayerRankTitle(player);
+
+    // 2. Cargar Settings.bank (Preferencias de usuario)
+    BankLoad(c_BANK_SETTINGS, player);
+    bSettings = BankLastCreated();
+    g_sfeProfiles[player].settingsBank = bSettings;
+
+    if (BankKeyExists(bSettings, c_SEC_PREFS, "Zoom")) {
+        g_sfeProfiles[player].cameraZoomPreference = BankValueGetAsInt(bSettings, c_SEC_PREFS, "Zoom");
+    } else {
+        g_sfeProfiles[player].cameraZoomPreference = 1; // Lejano por defecto
     }
 
     g_sfeProfiles[player].bankLoaded = true;
+
+    // Aplicar zoom guardado
+    SFE_ApplyCameraZoomPreference(player);
 }
 
 //--------------------------------------------------------------------------------------------------
-// Guardar Banco de Datos de Jugador
+// Guardar Bancos de Datos de Jugador
 //--------------------------------------------------------------------------------------------------
 void SFE_BankSave (int player) {
-    bank b;
+    bank bOrdo;
+    bank bSettings;
     int d;
 
     if (!g_sfeProfiles[player].bankLoaded || PlayerType(player) != c_playerTypeUser) {
         return;
     }
 
-    b = g_sfeProfiles[player].playerBank;
+    bOrdo = g_sfeProfiles[player].playerBank;
+    bSettings = g_sfeProfiles[player].settingsBank;
 
-    BankValueSetFromInt(b, c_SEC_PROFILE, "Level", g_sfeProfiles[player].accountLevel);
-    BankValueSetFromInt(b, c_SEC_PROFILE, "XP", g_sfeProfiles[player].accountXP);
-    BankValueSetFromInt(b, c_SEC_PROFILE, "Wins", g_sfeProfiles[player].totalWins);
-    BankValueSetFromInt(b, c_SEC_STATS, "Bosses", g_sfeProfiles[player].bossesKilled);
+    // 1. Guardar OrdoAbChao.bank
+    BankValueSetFromInt(bOrdo, c_SEC_PROFILE, "Level", g_sfeProfiles[player].accountLevel);
+    BankValueSetFromInt(bOrdo, c_SEC_PROFILE, "XP", g_sfeProfiles[player].accountXP);
+    BankValueSetFromInt(bOrdo, c_SEC_PROFILE, "Wins", g_sfeProfiles[player].totalWins);
+    BankValueSetFromInt(bOrdo, c_SEC_PROFILE, "RankPoints", g_sfeProfiles[player].rankPoints);
+    BankValueSetFromInt(bOrdo, c_SEC_STATS, "Bosses", g_sfeProfiles[player].bossesKilled);
 
     d = 0;
     while (d < c_DIFF_COUNT) {
-        BankValueSetFromInt(b, c_SEC_WINS, "Diff_" + IntToString(d), g_sfeProfiles[player].difficultyWins[d]);
+        BankValueSetFromInt(bOrdo, c_SEC_WINS, "Diff_" + IntToString(d), g_sfeProfiles[player].difficultyWins[d]);
         d = d + 1;
     }
 
-    // Escribir checksum firmado
-    BankValueSetFromInt(b, c_SEC_SECURITY, "Checksum", SFE_CalculateChecksum(player));
+    BankValueSetFromInt(bOrdo, c_SEC_SECURITY, "Checksum", SFE_CalculateChecksum(player));
+    BankSave(bOrdo);
 
-    BankSave(b);
+    // 2. Guardar Settings.bank
+    if (bSettings != null) {
+        BankValueSetFromInt(bSettings, c_SEC_PREFS, "Zoom", g_sfeProfiles[player].cameraZoomPreference);
+        BankSave(bSettings);
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
-// Registrar Victoria y Concesion de Experiencia
+// Aplicar Zoom de Cámara según Preferencia
 //--------------------------------------------------------------------------------------------------
-void SFE_BankRecordVictory (int player, int difficulty) {
+void SFE_ApplyCameraZoomPreference (int player) {
+    fixed dist;
+
     if (player < 1 || player > c_SFE_MAX_PLAYERS) {
         return;
     }
 
+    if (g_sfeProfiles[player].cameraZoomPreference == 0) {
+        dist = 34.0; // Normal
+    } else if (g_sfeProfiles[player].cameraZoomPreference == 1) {
+        dist = 44.0; // Lejano
+    } else {
+        dist = 54.0; // Ultra Panorámico
+    }
+
+    CameraSetValue(player, c_cameraValueDistance, dist, 0.5, -1, 10.0);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Conmutar Zoom de Cámara (Normal -> Lejano -> Ultra -> Normal)
+//--------------------------------------------------------------------------------------------------
+void SFE_CycleCameraZoom (int player) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    g_sfeProfiles[player].cameraZoomPreference = (g_sfeProfiles[player].cameraZoomPreference + 1) % 3;
+    SFE_ApplyCameraZoomPreference(player);
+    SFE_BankSave(player);
+
+    if (g_sfeProfiles[player].cameraZoomPreference == 0) {
+        UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"00FFEA\">Zoom de Cámara: Normal (34m)</c>"));
+    } else if (g_sfeProfiles[player].cameraZoomPreference == 1) {
+        UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"00FFEA\">Zoom de Cámara: Lejano Táctico (44m)</c>"));
+    } else {
+        UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"00FFEA\">Zoom de Cámara: Ultra Panorámico (54m)</c>"));
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Registrar Puntos de Rango Honorífico
+//--------------------------------------------------------------------------------------------------
+void SFE_BankAddRankPoints (int player, int points) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    g_sfeProfiles[player].rankPoints = g_sfeProfiles[player].rankPoints + points;
+    g_sfeProfiles[player].rankTitle = SFE_GetPlayerRankTitle(player);
+    SFE_BankSave(player);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Registrar Victoria y Concesión de Experiencia
+//--------------------------------------------------------------------------------------------------
+void SFE_BankRecordVictory (int player, int difficulty) {
+    int earnedPoints;
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    earnedPoints = 500 * (difficulty + 1);
+
     g_sfeProfiles[player].totalWins = g_sfeProfiles[player].totalWins + 1;
     g_sfeProfiles[player].difficultyWins[difficulty] = g_sfeProfiles[player].difficultyWins[difficulty] + 1;
-    g_sfeProfiles[player].accountXP = g_sfeProfiles[player].accountXP + (500 * (difficulty + 1));
+    g_sfeProfiles[player].accountXP = g_sfeProfiles[player].accountXP + earnedPoints;
+    g_sfeProfiles[player].rankPoints = g_sfeProfiles[player].rankPoints + earnedPoints;
 
     // Nivel = 1 + (XP / 2500)
     g_sfeProfiles[player].accountLevel = 1 + (g_sfeProfiles[player].accountXP / 2500);
 
     if (difficulty == c_DIFF_TORMENT) {
         g_sfeProfiles[player].tormentMaster = true;
+        g_sfeProfiles[player].secretUnlocked = true;
     }
+
+    g_sfeProfiles[player].rankTitle = SFE_GetPlayerRankTitle(player);
 
     SFE_BankSave(player);
 }
@@ -183,13 +324,15 @@ void SFE_BankRecordBossKill (int player) {
 
     g_sfeProfiles[player].bossesKilled = g_sfeProfiles[player].bossesKilled + 1;
     g_sfeProfiles[player].accountXP = g_sfeProfiles[player].accountXP + 250;
+    g_sfeProfiles[player].rankPoints = g_sfeProfiles[player].rankPoints + 250;
     g_sfeProfiles[player].accountLevel = 1 + (g_sfeProfiles[player].accountXP / 2500);
+    g_sfeProfiles[player].rankTitle = SFE_GetPlayerRankTitle(player);
 
     SFE_BankSave(player);
 }
 
 //--------------------------------------------------------------------------------------------------
-// Concesion Generica de Experiencia de Cuenta
+// Concesión Genérica de Experiencia de Cuenta
 //--------------------------------------------------------------------------------------------------
 void SFE_BankAddExp (int player, int amount) {
     if (player < 1 || player > c_SFE_MAX_PLAYERS) {
@@ -200,6 +343,38 @@ void SFE_BankAddExp (int player, int amount) {
     g_sfeProfiles[player].accountLevel = 1 + (g_sfeProfiles[player].accountXP / 2500);
 
     SFE_BankSave(player);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Generar Resumen del Perfil para la Pestaña 4 de la Consola
+//--------------------------------------------------------------------------------------------------
+text SFE_GetProfileSummaryText (int player) {
+    string rankStr;
+    string tormentStr;
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return StringToText("");
+    }
+
+    rankStr = SFE_GetPlayerRankTitle(player);
+    if (g_sfeProfiles[player].tormentMaster) {
+        tormentStr = "<c val=\"FF00FF\">¡DESBLOQUEADO (Torment Master)!</c>";
+    } else {
+        tormentStr = "<c val=\"AAAAAA\">Bloqueado (Gana en Torment)</c>";
+    }
+
+    return StringToText("<b><c val=\"FFE400\">=== PERFIL DE HONOR Y PERSISTENCIA (OrdoAbChao) ===</c>\n\n" +
+        "<c val=\"FFFFFF\">Rango Actual SFE5:</c> <c val=\"00FFEA\">" + rankStr + "</c>  |  <c val=\"FFFF00\">Puntos de Rango:</c> " + IntToString(g_sfeProfiles[player].rankPoints) + "\n" +
+        "<c val=\"FFFFFF\">Nivel de Cuenta:</c> " + IntToString(g_sfeProfiles[player].accountLevel) + "  |  <c val=\"AAAAAA\">XP Acumulada:</c> " + IntToString(g_sfeProfiles[player].accountXP) + "\n" +
+        "<c val=\"FFFFFF\">Victorias Totales:</c> <c val=\"55FF55\">" + IntToString(g_sfeProfiles[player].totalWins) + "</c>  |  <c val=\"FF4444\">Jefes Abatidos:</c> " + IntToString(g_sfeProfiles[player].bossesKilled) + "\n\n" +
+        "<c val=\"FFFFFF\">Victorias por Dificultad:</c>\n" +
+        "  Casual: " + IntToString(g_sfeProfiles[player].difficultyWins[c_DIFF_CASUAL]) + 
+        " | Normal: " + IntToString(g_sfeProfiles[player].difficultyWins[c_DIFF_NORMAL]) + 
+        " | Hard: " + IntToString(g_sfeProfiles[player].difficultyWins[c_DIFF_HARD]) + 
+        " | Brutal: " + IntToString(g_sfeProfiles[player].difficultyWins[c_DIFF_BRUTAL]) + 
+        " | Pro: " + IntToString(g_sfeProfiles[player].difficultyWins[c_DIFF_PRO]) + 
+        " | Torment: " + IntToString(g_sfeProfiles[player].difficultyWins[c_DIFF_TORMENT]) + "\n\n" +
+        "<c val=\"FFFFFF\">Héroes Secretos:</c> " + tormentStr + "</b>");
 }
 
 #endif

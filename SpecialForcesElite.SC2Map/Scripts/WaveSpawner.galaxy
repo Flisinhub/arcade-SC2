@@ -14,6 +14,7 @@ include "Scripts/UpgradesEngine.galaxy"
 include "Scripts/AlliedBase.galaxy"
 include "Scripts/TripartiteAssault.galaxy"
 include "Scripts/HUD.galaxy"
+include "Scripts/EliteVeterancy.galaxy"
 
 const int c_TOTAL_WAVES = 25;
 
@@ -540,6 +541,8 @@ bool gt_SFE_UnitDied_Reward_Func (bool testConds, bool runActions) {
             g_sfePlayerVeterancyKills[killerPlayer] = g_sfePlayerVeterancyKills[killerPlayer] + 1;
             SFE_RecalculateStats(killerPlayer);
         }
+
+        SFE_OnUnitKillCredit(killerU);
 
         SFE_UpdatePlayerHUD(killerPlayer);
     }

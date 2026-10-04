@@ -580,36 +580,59 @@ void SFE_InitHeroCatalog () {
 }
 
 //==================================================================================================
-// Special Forces Elite 5 - Persistence & Bank Management
-// Sistema de guardado protegido con Checksum para perfiles y logros en Battle.net
+// Special Forces Elite 5 - Persistence & Dual Bank Management
+// Sistema de guardado canónico de SFE5:
+// 1. OrdoAbChao.bank: Banco cifrado con Checksum y Salt (Nivel, XP, Rango, Victorias, Desbloqueos)
+// 2. Settings.bank: Banco de preferencias del jugador (Zoom de cámara, Autocast, Ajustes UI)
 //==================================================================================================
 
 
 
-const string c_BANK_NAME = "SpecialForcesElite5_Profile";
-const string c_SEC_PROFILE = "Profile";
-const string c_SEC_WINS = "DifficultyWins";
-const string c_SEC_STATS = "Stats";
+const string c_BANK_ORDO     = "OrdoAbChao";
+const string c_BANK_SETTINGS = "Settings";
+
+const string c_SEC_PROFILE  = "Profile";
+const string c_SEC_WINS     = "DifficultyWins";
+const string c_SEC_STATS    = "Stats";
 const string c_SEC_SECURITY = "Security";
+const string c_SEC_PREFS    = "Preferences";
 
 const int c_SECURITY_SALT = 948271;
 
 struct SFE_PlayerProfile {
     bank playerBank;
+    bank settingsBank;
     bool bankLoaded;
     int accountLevel;
     int accountXP;
     int totalWins;
     int[c_DIFF_COUNT] difficultyWins;
     int bossesKilled;
+    int rankPoints;
+    string rankTitle;
     bool tormentMaster;
     bool secretUnlocked;
+    int cameraZoomPreference; // 0: Normal (34.0), 1: Lejano (44.0), 2: Ultra (54.0)
+    bool autocastDefaultOn;
 };
 
 SFE_PlayerProfile[c_SFE_MAX_PLAYERS + 1] g_sfeProfiles;
 
+// Declaraciones de funciones
+int SFE_CalculateChecksum (int player);
+void SFE_BankInit (int player);
+void SFE_BankSave (int player);
+void SFE_BankRecordVictory (int player, int difficulty);
+void SFE_BankRecordBossKill (int player);
+void SFE_BankAddExp (int player, int amount);
+void SFE_BankAddRankPoints (int player, int points);
+string SFE_GetPlayerRankTitle (int player);
+void SFE_ApplyCameraZoomPreference (int player);
+void SFE_CycleCameraZoom (int player);
+text SFE_GetProfileSummaryText (int player);
+
 //--------------------------------------------------------------------------------------------------
-// Algoritmo de Suma de Verificacion (Checksum)
+// Algoritmo de Suma de Verificación Criptográfica (Checksum)
 //--------------------------------------------------------------------------------------------------
 int SFE_CalculateChecksum (int player) {
     int sum;
@@ -621,6 +644,7 @@ int SFE_CalculateChecksum (int player) {
     sum = sum + (g_sfeProfiles[player].accountXP * 31);
     sum = sum + (g_sfeProfiles[player].totalWins * 719);
     sum = sum + (g_sfeProfiles[player].bossesKilled * 1031);
+    sum = sum + (g_sfeProfiles[player].rankPoints * 83);
     while (d < c_DIFF_COUNT) {
         sum = sum + (g_sfeProfiles[player].difficultyWins[d] * (211 + (d * 37)));
         d = d + 1;
@@ -629,10 +653,35 @@ int SFE_CalculateChecksum (int player) {
 }
 
 //--------------------------------------------------------------------------------------------------
-// Cargar Banco de Datos de Jugador
+// Calcular Rango Oficial de SFE5
+//--------------------------------------------------------------------------------------------------
+string SFE_GetPlayerRankTitle (int player) {
+    int pts;
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return "R (Recluta)";
+    }
+
+    pts = g_sfeProfiles[player].rankPoints;
+
+    if (g_sfeProfiles[player].tormentMaster || pts >= 10000) {
+        return "S (Pinnacle)";
+    } else if (pts >= 6000) {
+        return "A+ (Master)";
+    } else if (pts >= 3000) {
+        return "A (Veteran)";
+    } else if (pts >= 1000) {
+        return "B (Specialist)";
+    }
+    return "R (Recruit)";
+}
+
+//--------------------------------------------------------------------------------------------------
+// Cargar Banco de Datos de Jugador (OrdoAbChao y Settings)
 //--------------------------------------------------------------------------------------------------
 void SFE_BankInit (int player) {
-    bank b;
+    bank bOrdo;
+    bank bSettings;
     int storedChecksum;
     int calculatedChecksum;
     int d;
@@ -642,37 +691,40 @@ void SFE_BankInit (int player) {
         return;
     }
 
-    BankLoad(c_BANK_NAME, player);
-    b = BankLastCreated();
-    g_sfeProfiles[player].playerBank = b;
+    // 1. Cargar OrdoAbChao.bank (Perfil protegido)
+    BankLoad(c_BANK_ORDO, player);
+    bOrdo = BankLastCreated();
+    g_sfeProfiles[player].playerBank = bOrdo;
 
-    if (BankKeyExists(b, c_SEC_PROFILE, "Level")) {
-        g_sfeProfiles[player].accountLevel = BankValueGetAsInt(b, c_SEC_PROFILE, "Level");
-        g_sfeProfiles[player].accountXP = BankValueGetAsInt(b, c_SEC_PROFILE, "XP");
-        g_sfeProfiles[player].totalWins = BankValueGetAsInt(b, c_SEC_PROFILE, "Wins");
-        g_sfeProfiles[player].bossesKilled = BankValueGetAsInt(b, c_SEC_STATS, "Bosses");
+    if (BankKeyExists(bOrdo, c_SEC_PROFILE, "Level")) {
+        g_sfeProfiles[player].accountLevel  = BankValueGetAsInt(bOrdo, c_SEC_PROFILE, "Level");
+        g_sfeProfiles[player].accountXP     = BankValueGetAsInt(bOrdo, c_SEC_PROFILE, "XP");
+        g_sfeProfiles[player].totalWins     = BankValueGetAsInt(bOrdo, c_SEC_PROFILE, "Wins");
+        g_sfeProfiles[player].rankPoints    = BankValueGetAsInt(bOrdo, c_SEC_PROFILE, "RankPoints");
+        g_sfeProfiles[player].bossesKilled  = BankValueGetAsInt(bOrdo, c_SEC_STATS, "Bosses");
 
         d = 0;
         while (d < c_DIFF_COUNT) {
             keyName = "Diff_" + IntToString(d);
-            if (BankKeyExists(b, c_SEC_WINS, keyName)) {
-                g_sfeProfiles[player].difficultyWins[d] = BankValueGetAsInt(b, c_SEC_WINS, keyName);
+            if (BankKeyExists(bOrdo, c_SEC_WINS, keyName)) {
+                g_sfeProfiles[player].difficultyWins[d] = BankValueGetAsInt(bOrdo, c_SEC_WINS, keyName);
             } else {
                 g_sfeProfiles[player].difficultyWins[d] = 0;
             }
             d = d + 1;
         }
 
-        storedChecksum = BankValueGetAsInt(b, c_SEC_SECURITY, "Checksum");
+        storedChecksum = BankValueGetAsInt(bOrdo, c_SEC_SECURITY, "Checksum");
         calculatedChecksum = SFE_CalculateChecksum(player);
 
         if (storedChecksum != calculatedChecksum) {
-            // Deteccion de adulteracion: se reinician valores protegidos
-            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("[SFE5 Guardado] Suma de verificacion no coincidente. Reiniciando perfil seguro."));
+            UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, 
+                StringToText("<b><c val=\"FF4444\">[OrdoAbChao] Suma de comprobación discrepante. Restableciendo perfil seguro.</c></b>"));
             g_sfeProfiles[player].accountLevel = 1;
             g_sfeProfiles[player].accountXP = 0;
             g_sfeProfiles[player].totalWins = 0;
             g_sfeProfiles[player].bossesKilled = 0;
+            g_sfeProfiles[player].rankPoints = 0;
             d = 0;
             while (d < c_DIFF_COUNT) {
                 g_sfeProfiles[player].difficultyWins[d] = 0;
@@ -680,11 +732,12 @@ void SFE_BankInit (int player) {
             }
         }
     } else {
-        // Primer inicio del jugador
+        // Inicialización de nuevo perfil
         g_sfeProfiles[player].accountLevel = 1;
         g_sfeProfiles[player].accountXP = 0;
         g_sfeProfiles[player].totalWins = 0;
         g_sfeProfiles[player].bossesKilled = 0;
+        g_sfeProfiles[player].rankPoints = 0;
         d = 0;
         while (d < c_DIFF_COUNT) {
             g_sfeProfiles[player].difficultyWins[d] = 0;
@@ -694,59 +747,147 @@ void SFE_BankInit (int player) {
 
     if (g_sfeProfiles[player].difficultyWins[c_DIFF_TORMENT] > 0) {
         g_sfeProfiles[player].tormentMaster = true;
+        g_sfeProfiles[player].secretUnlocked = true;
+    }
+
+    g_sfeProfiles[player].rankTitle = SFE_GetPlayerRankTitle(player);
+
+    // 2. Cargar Settings.bank (Preferencias de usuario)
+    BankLoad(c_BANK_SETTINGS, player);
+    bSettings = BankLastCreated();
+    g_sfeProfiles[player].settingsBank = bSettings;
+
+    if (BankKeyExists(bSettings, c_SEC_PREFS, "Zoom")) {
+        g_sfeProfiles[player].cameraZoomPreference = BankValueGetAsInt(bSettings, c_SEC_PREFS, "Zoom");
+    } else {
+        g_sfeProfiles[player].cameraZoomPreference = 1; // Lejano por defecto
     }
 
     g_sfeProfiles[player].bankLoaded = true;
+
+    // Aplicar zoom guardado
+    SFE_ApplyCameraZoomPreference(player);
 }
 
 //--------------------------------------------------------------------------------------------------
-// Guardar Banco de Datos de Jugador
+// Guardar Bancos de Datos de Jugador
 //--------------------------------------------------------------------------------------------------
 void SFE_BankSave (int player) {
-    bank b;
+    bank bOrdo;
+    bank bSettings;
     int d;
 
     if (!g_sfeProfiles[player].bankLoaded || PlayerType(player) != c_playerTypeUser) {
         return;
     }
 
-    b = g_sfeProfiles[player].playerBank;
+    bOrdo = g_sfeProfiles[player].playerBank;
+    bSettings = g_sfeProfiles[player].settingsBank;
 
-    BankValueSetFromInt(b, c_SEC_PROFILE, "Level", g_sfeProfiles[player].accountLevel);
-    BankValueSetFromInt(b, c_SEC_PROFILE, "XP", g_sfeProfiles[player].accountXP);
-    BankValueSetFromInt(b, c_SEC_PROFILE, "Wins", g_sfeProfiles[player].totalWins);
-    BankValueSetFromInt(b, c_SEC_STATS, "Bosses", g_sfeProfiles[player].bossesKilled);
+    // 1. Guardar OrdoAbChao.bank
+    BankValueSetFromInt(bOrdo, c_SEC_PROFILE, "Level", g_sfeProfiles[player].accountLevel);
+    BankValueSetFromInt(bOrdo, c_SEC_PROFILE, "XP", g_sfeProfiles[player].accountXP);
+    BankValueSetFromInt(bOrdo, c_SEC_PROFILE, "Wins", g_sfeProfiles[player].totalWins);
+    BankValueSetFromInt(bOrdo, c_SEC_PROFILE, "RankPoints", g_sfeProfiles[player].rankPoints);
+    BankValueSetFromInt(bOrdo, c_SEC_STATS, "Bosses", g_sfeProfiles[player].bossesKilled);
 
     d = 0;
     while (d < c_DIFF_COUNT) {
-        BankValueSetFromInt(b, c_SEC_WINS, "Diff_" + IntToString(d), g_sfeProfiles[player].difficultyWins[d]);
+        BankValueSetFromInt(bOrdo, c_SEC_WINS, "Diff_" + IntToString(d), g_sfeProfiles[player].difficultyWins[d]);
         d = d + 1;
     }
 
-    // Escribir checksum firmado
-    BankValueSetFromInt(b, c_SEC_SECURITY, "Checksum", SFE_CalculateChecksum(player));
+    BankValueSetFromInt(bOrdo, c_SEC_SECURITY, "Checksum", SFE_CalculateChecksum(player));
+    BankSave(bOrdo);
 
-    BankSave(b);
+    // 2. Guardar Settings.bank
+    if (bSettings != null) {
+        BankValueSetFromInt(bSettings, c_SEC_PREFS, "Zoom", g_sfeProfiles[player].cameraZoomPreference);
+        BankSave(bSettings);
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
-// Registrar Victoria y Concesion de Experiencia
+// Aplicar Zoom de Cámara según Preferencia
 //--------------------------------------------------------------------------------------------------
-void SFE_BankRecordVictory (int player, int difficulty) {
+void SFE_ApplyCameraZoomPreference (int player) {
+    fixed dist;
+
     if (player < 1 || player > c_SFE_MAX_PLAYERS) {
         return;
     }
 
+    if (g_sfeProfiles[player].cameraZoomPreference == 0) {
+        dist = 34.0; // Normal
+    } else if (g_sfeProfiles[player].cameraZoomPreference == 1) {
+        dist = 44.0; // Lejano
+    } else {
+        dist = 54.0; // Ultra Panorámico
+    }
+
+    CameraSetValue(player, c_cameraValueDistance, dist, 0.5, -1, 10.0);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Conmutar Zoom de Cámara (Normal -> Lejano -> Ultra -> Normal)
+//--------------------------------------------------------------------------------------------------
+void SFE_CycleCameraZoom (int player) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    g_sfeProfiles[player].cameraZoomPreference = (g_sfeProfiles[player].cameraZoomPreference + 1) % 3;
+    SFE_ApplyCameraZoomPreference(player);
+    SFE_BankSave(player);
+
+    if (g_sfeProfiles[player].cameraZoomPreference == 0) {
+        UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"00FFEA\">Zoom de Cámara: Normal (34m)</c>"));
+    } else if (g_sfeProfiles[player].cameraZoomPreference == 1) {
+        UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"00FFEA\">Zoom de Cámara: Lejano Táctico (44m)</c>"));
+    } else {
+        UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, StringToText("<c val=\"00FFEA\">Zoom de Cámara: Ultra Panorámico (54m)</c>"));
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Registrar Puntos de Rango Honorífico
+//--------------------------------------------------------------------------------------------------
+void SFE_BankAddRankPoints (int player, int points) {
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    g_sfeProfiles[player].rankPoints = g_sfeProfiles[player].rankPoints + points;
+    g_sfeProfiles[player].rankTitle = SFE_GetPlayerRankTitle(player);
+    SFE_BankSave(player);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Registrar Victoria y Concesión de Experiencia
+//--------------------------------------------------------------------------------------------------
+void SFE_BankRecordVictory (int player, int difficulty) {
+    int earnedPoints;
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return;
+    }
+
+    earnedPoints = 500 * (difficulty + 1);
+
     g_sfeProfiles[player].totalWins = g_sfeProfiles[player].totalWins + 1;
     g_sfeProfiles[player].difficultyWins[difficulty] = g_sfeProfiles[player].difficultyWins[difficulty] + 1;
-    g_sfeProfiles[player].accountXP = g_sfeProfiles[player].accountXP + (500 * (difficulty + 1));
+    g_sfeProfiles[player].accountXP = g_sfeProfiles[player].accountXP + earnedPoints;
+    g_sfeProfiles[player].rankPoints = g_sfeProfiles[player].rankPoints + earnedPoints;
 
     // Nivel = 1 + (XP / 2500)
     g_sfeProfiles[player].accountLevel = 1 + (g_sfeProfiles[player].accountXP / 2500);
 
     if (difficulty == c_DIFF_TORMENT) {
         g_sfeProfiles[player].tormentMaster = true;
+        g_sfeProfiles[player].secretUnlocked = true;
     }
+
+    g_sfeProfiles[player].rankTitle = SFE_GetPlayerRankTitle(player);
 
     SFE_BankSave(player);
 }
@@ -761,13 +902,15 @@ void SFE_BankRecordBossKill (int player) {
 
     g_sfeProfiles[player].bossesKilled = g_sfeProfiles[player].bossesKilled + 1;
     g_sfeProfiles[player].accountXP = g_sfeProfiles[player].accountXP + 250;
+    g_sfeProfiles[player].rankPoints = g_sfeProfiles[player].rankPoints + 250;
     g_sfeProfiles[player].accountLevel = 1 + (g_sfeProfiles[player].accountXP / 2500);
+    g_sfeProfiles[player].rankTitle = SFE_GetPlayerRankTitle(player);
 
     SFE_BankSave(player);
 }
 
 //--------------------------------------------------------------------------------------------------
-// Concesion Generica de Experiencia de Cuenta
+// Concesión Genérica de Experiencia de Cuenta
 //--------------------------------------------------------------------------------------------------
 void SFE_BankAddExp (int player, int amount) {
     if (player < 1 || player > c_SFE_MAX_PLAYERS) {
@@ -778,6 +921,38 @@ void SFE_BankAddExp (int player, int amount) {
     g_sfeProfiles[player].accountLevel = 1 + (g_sfeProfiles[player].accountXP / 2500);
 
     SFE_BankSave(player);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Generar Resumen del Perfil para la Pestaña 4 de la Consola
+//--------------------------------------------------------------------------------------------------
+text SFE_GetProfileSummaryText (int player) {
+    string rankStr;
+    string tormentStr;
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS) {
+        return StringToText("");
+    }
+
+    rankStr = SFE_GetPlayerRankTitle(player);
+    if (g_sfeProfiles[player].tormentMaster) {
+        tormentStr = "<c val=\"FF00FF\">¡DESBLOQUEADO (Torment Master)!</c>";
+    } else {
+        tormentStr = "<c val=\"AAAAAA\">Bloqueado (Gana en Torment)</c>";
+    }
+
+    return StringToText("<b><c val=\"FFE400\">=== PERFIL DE HONOR Y PERSISTENCIA (OrdoAbChao) ===</c>\n\n" +
+        "<c val=\"FFFFFF\">Rango Actual SFE5:</c> <c val=\"00FFEA\">" + rankStr + "</c>  |  <c val=\"FFFF00\">Puntos de Rango:</c> " + IntToString(g_sfeProfiles[player].rankPoints) + "\n" +
+        "<c val=\"FFFFFF\">Nivel de Cuenta:</c> " + IntToString(g_sfeProfiles[player].accountLevel) + "  |  <c val=\"AAAAAA\">XP Acumulada:</c> " + IntToString(g_sfeProfiles[player].accountXP) + "\n" +
+        "<c val=\"FFFFFF\">Victorias Totales:</c> <c val=\"55FF55\">" + IntToString(g_sfeProfiles[player].totalWins) + "</c>  |  <c val=\"FF4444\">Jefes Abatidos:</c> " + IntToString(g_sfeProfiles[player].bossesKilled) + "\n\n" +
+        "<c val=\"FFFFFF\">Victorias por Dificultad:</c>\n" +
+        "  Casual: " + IntToString(g_sfeProfiles[player].difficultyWins[c_DIFF_CASUAL]) + 
+        " | Normal: " + IntToString(g_sfeProfiles[player].difficultyWins[c_DIFF_NORMAL]) + 
+        " | Hard: " + IntToString(g_sfeProfiles[player].difficultyWins[c_DIFF_HARD]) + 
+        " | Brutal: " + IntToString(g_sfeProfiles[player].difficultyWins[c_DIFF_BRUTAL]) + 
+        " | Pro: " + IntToString(g_sfeProfiles[player].difficultyWins[c_DIFF_PRO]) + 
+        " | Torment: " + IntToString(g_sfeProfiles[player].difficultyWins[c_DIFF_TORMENT]) + "\n\n" +
+        "<c val=\"FFFFFF\">Héroes Secretos:</c> " + tormentStr + "</b>");
 }
 
 
@@ -802,6 +977,10 @@ int SFE_GetUpgradeCost (int currentLvl);
 bool SFE_BuyPrimaryUpgrade (int player, int upgradeType);
 void SFE_ToggleAutocast (int player);
 void SFE_RunUpgradeAutocast (int player);
+void SFE_InitVeterancyEngine ();
+int SFE_GetUnitKillThreshold (int rank);
+void SFE_ApplyVeterancyToUnit (unit u, int player);
+void SFE_OnUnitKillCredit (unit killerU);
 bool gt_SFE_BaseClicked_Func (bool testConds, bool runActions);
 void SFE_InitAlliedBase ();
 void SFE_PlanetaryFortressDefendTick ();
@@ -1281,6 +1460,7 @@ bool SFE_BuyBuff (int player, int buffId);
 void SFE_SellBuff (int player, int tier);
 void SFE_OnHeroDeathRefundBuffs (int player);
 void SFE_PeriodicBuffTick ();
+void SFE_ApplyVeterancyToUnit (unit u, int player);
 
 //--------------------------------------------------------------------------------------------------
 // Inicializar Catálogo de Buffs
@@ -1590,6 +1770,9 @@ bool SFE_BuyBuff (int player, int buffId) {
             }
             PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
             g_sfePlayerVeterancy[player] = true;
+            if (g_sfeHeroStates[player].isActive && g_sfeHeroStates[player].heroUnit != null) {
+                SFE_ApplyVeterancyToUnit(g_sfeHeroStates[player].heroUnit, player);
+            }
             SFE_RecalculateStats(player);
             UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaChat, StringToText("<c val=\"FFE400\">¡Rango de Veterania adquirido!</c>"));
             return true;
@@ -1949,6 +2132,131 @@ void SFE_RunUpgradeAutocast (int player) {
         }
 
         iterations = iterations + 1;
+    }
+}
+
+//==================================================================================================
+// Special Forces Elite 5 - Elite Units & Veterancy Engine
+// Sistema de Tropas de Élite y Veteranía Canónico de SFE5:
+// Transforma tropas aliadas en Unidades de Élite que ganan rangos por bajas (I a V),
+// escalando vida máxima, daño, regeneración y tinte visual de veteranía.
+//==================================================================================================
+
+
+
+// Declaraciones de funciones
+void SFE_InitVeterancyEngine ();
+void SFE_ApplyVeterancyToUnit (unit u, int player);
+void SFE_OnUnitKillCredit (unit killerU);
+int SFE_GetUnitKillThreshold (int rank);
+
+//--------------------------------------------------------------------------------------------------
+// Inicialización del Motor de Veteranía
+//--------------------------------------------------------------------------------------------------
+void SFE_InitVeterancyEngine () {
+    // Inicialización del subsistema
+}
+
+//--------------------------------------------------------------------------------------------------
+// Umbrales de Bajas para Rangos de Veteranía (I a V)
+//--------------------------------------------------------------------------------------------------
+int SFE_GetUnitKillThreshold (int rank) {
+    if (rank == 1) { return 10; }
+    if (rank == 2) { return 30; }
+    if (rank == 3) { return 70; }
+    if (rank == 4) { return 150; }
+    if (rank == 5) { return 300; }
+    return 500;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Conceder Mejora de Veteranía a una Unidad Aliada
+//--------------------------------------------------------------------------------------------------
+void SFE_ApplyVeterancyToUnit (unit u, int player) {
+    fixed curHp;
+    fixed maxHp;
+
+    if (u == null || !UnitIsAlive(u)) {
+        return;
+    }
+
+    curHp = UnitGetPropertyFixed(u, c_unitPropLife, true);
+    maxHp = UnitGetPropertyFixed(u, c_unitPropLifeMax, false);
+
+    // Bonificación de base por Veterancy (+25% Vida Max y regeneración continua)
+    UnitSetPropertyFixed(u, c_unitPropLifeMax, maxHp * 1.25);
+    UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+    UnitSetPropertyFixed(u, c_unitPropLifeRegen, 4.0);
+
+    // Tinte visual dorado sutil de unidad de élite
+    ActorSend(libNtve_gf_MainActorofUnit(u), "SetTintColor 255,230,120");
+
+    UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, 
+        StringToText("<b><c val=\"FFE400\">¡Unidad promovida a Tropas de Élite con Veterancy!</c></b>"));
+}
+
+//--------------------------------------------------------------------------------------------------
+// Registro de Bajas y Ascenso de Rango de Veteranía
+//--------------------------------------------------------------------------------------------------
+void SFE_OnUnitKillCredit (unit killerU) {
+    int kills;
+    int owner;
+    fixed maxHp;
+    fixed curHp;
+    text rankMsg;
+
+    if (killerU == null || !UnitIsAlive(killerU)) {
+        return;
+    }
+
+    owner = UnitGetOwner(killerU);
+    if ((owner < 1 || owner > c_SFE_MAX_PLAYERS) && owner != c_SFE_PLAYER_ALLIED_BASE) {
+        return;
+    }
+
+    kills = UnitGetPropertyInt(killerU, c_unitPropKills, true);
+
+    // Comprobar hitos de rango
+    if (kills == 10) {
+        maxHp = UnitGetPropertyFixed(killerU, c_unitPropLifeMax, false);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeMax, maxHp * 1.15);
+        UnitSetPropertyFixed(killerU, c_unitPropLifePercent, 100.0);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeRegen, 6.0);
+        ActorSend(libNtve_gf_MainActorofUnit(killerU), "SetTintColor 255,215,80");
+        rankMsg = StringToText("<b><c val=\"00FFEA\">[VETERANCY RANGO I] ¡Unidad Élite ha alcanzado 10 bajas! (+15% Vida / Regen)</c></b>");
+        UIDisplayMessage(PlayerGroupSingle(owner), c_messageAreaSubtitle, rankMsg);
+    } else if (kills == 30) {
+        maxHp = UnitGetPropertyFixed(killerU, c_unitPropLifeMax, false);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeMax, maxHp * 1.20);
+        UnitSetPropertyFixed(killerU, c_unitPropLifePercent, 100.0);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeRegen, 8.0);
+        ActorSend(libNtve_gf_MainActorofUnit(killerU), "SetTintColor 100,220,255");
+        rankMsg = StringToText("<b><c val=\"00FFEA\">[VETERANCY RANGO II] ¡Unidad Élite ha alcanzado 30 bajas! (+20% Vida / Regen)</c></b>");
+        UIDisplayMessage(PlayerGroupSingle(owner), c_messageAreaSubtitle, rankMsg);
+    } else if (kills == 70) {
+        maxHp = UnitGetPropertyFixed(killerU, c_unitPropLifeMax, false);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeMax, maxHp * 1.25);
+        UnitSetPropertyFixed(killerU, c_unitPropLifePercent, 100.0);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeRegen, 12.0);
+        ActorSend(libNtve_gf_MainActorofUnit(killerU), "SetTintColor 200,100,255");
+        rankMsg = StringToText("<b><c val=\"CC88FF\">[VETERANCY RANGO III] ¡Unidad Élite ha alcanzado 70 bajas! (+25% Vida / Regen)</c></b>");
+        UIDisplayMessage(PlayerGroupSingle(owner), c_messageAreaSubtitle, rankMsg);
+    } else if (kills == 150) {
+        maxHp = UnitGetPropertyFixed(killerU, c_unitPropLifeMax, false);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeMax, maxHp * 1.35);
+        UnitSetPropertyFixed(killerU, c_unitPropLifePercent, 100.0);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeRegen, 18.0);
+        ActorSend(libNtve_gf_MainActorofUnit(killerU), "SetTintColor 255,100,100");
+        rankMsg = StringToText("<b><c val=\"FF4444\">[VETERANCY RANGO IV] ¡Unidad Élite ha alcanzado 150 bajas! (+35% Vida / Furia)</c></b>");
+        UIDisplayMessage(PlayerGroupSingle(owner), c_messageAreaSubtitle, rankMsg);
+    } else if (kills == 300) {
+        maxHp = UnitGetPropertyFixed(killerU, c_unitPropLifeMax, false);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeMax, maxHp * 1.50);
+        UnitSetPropertyFixed(killerU, c_unitPropLifePercent, 100.0);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeRegen, 25.0);
+        ActorSend(libNtve_gf_MainActorofUnit(killerU), "SetTintColor 255,255,100");
+        rankMsg = StringToText("<b><c val=\"FFE400\">[VETERANCY RANGO V - LEYENDA] ¡¡UNIDAD ÉLITE MÁXIMA ALCANZADA (300 Bajas)!!</c></b>");
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, rankMsg);
     }
 }
 
@@ -4864,6 +5172,8 @@ bool gt_SFE_UnitDied_Reward_Func (bool testConds, bool runActions) {
             SFE_RecalculateStats(killerPlayer);
         }
 
+        SFE_OnUnitKillCredit(killerU);
+
         SFE_UpdatePlayerHUD(killerPlayer);
     }
 
@@ -5487,11 +5797,13 @@ bool gt_SFE_BossDied_Func (bool testConds, bool runActions) {
         }
     } else if (dyingU == g_sfeBossDiabloUnit) {
         UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-            StringToText("<b><c val=\"FFE400\">¡¡DIABLO HA SIDO DERROTADO EN TORMENT!! ¡HÉROE DIABLO DESBLOQUEADO!</c></b>"));
+            StringToText("<b><c val=\"FFE400\">¡¡DIABLO HA SIDO DERROTADO EN TORMENT!! ¡+10000 MINERALES Y HÉROE DIABLO DESBLOQUEADO!</c></b>"));
         while (p <= c_SFE_MAX_PLAYERS) {
+            PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 10000);
             SFE_BankRecordBossKill(p);
             // Si fue derrotado en Torment, desbloquearlo permanentemente
             if (g_sfeCurrentDifficulty == c_DIFF_TORMENT) {
+                g_sfeProfiles[p].tormentMaster = true;
                 g_sfeProfiles[p].secretUnlocked = true;
                 SFE_BankSave(p);
             }
@@ -5586,9 +5898,12 @@ int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleBtnBuyUpgEnergy;
 int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleLblUpgSpeed;
 int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleBtnBuyUpgSpeed;
 
-// Pestaña 4: Ajustes & Comercio
+// Pestaña 4: Ajustes, Comercio & Perfil de Honor
 int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleBtnTradeMinerals;
 int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleBtnToggleIncomeText;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleBtnCycleZoom;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleBtnSaveProfile;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleLblProfileInfo;
 
 // Declaraciones adelantadas
 void SFE_InitPlayerConsoleUI (int player);
@@ -5879,6 +6194,26 @@ void SFE_InitPlayerConsoleUI (int player) {
         StringToText("<b><c val=\"00CCFF\">Flotantes de Recompensa: ON</c></b>"));
     TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnToggleIncomeText[player], c_triggerControlEventTypeClick);
 
+    g_sfeConsoleBtnCycleZoom[player] = DialogControlCreate(dlg, c_triggerControlTypeButton);
+    DialogControlSetSize(g_sfeConsoleBtnCycleZoom[player], pg, 340, 45);
+    DialogControlSetPosition(g_sfeConsoleBtnCycleZoom[player], pg, c_anchorTopLeft, 50, 250);
+    DialogControlSetPropertyAsText(g_sfeConsoleBtnCycleZoom[player], c_triggerControlPropertyText, pg, 
+        StringToText("<b><c val=\"FFCC00\">Cambiar Zoom Camara [34 / 44 / 54]</c></b>"));
+    TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnCycleZoom[player], c_triggerControlEventTypeClick);
+
+    g_sfeConsoleBtnSaveProfile[player] = DialogControlCreate(dlg, c_triggerControlTypeButton);
+    DialogControlSetSize(g_sfeConsoleBtnSaveProfile[player], pg, 340, 45);
+    DialogControlSetPosition(g_sfeConsoleBtnSaveProfile[player], pg, c_anchorTopLeft, 50, 310);
+    DialogControlSetPropertyAsText(g_sfeConsoleBtnSaveProfile[player], c_triggerControlPropertyText, pg, 
+        StringToText("<b><c val=\"00FF88\">Guardar Perfil de Honor (Bank)</c></b>"));
+    TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnSaveProfile[player], c_triggerControlEventTypeClick);
+
+    g_sfeConsoleLblProfileInfo[player] = DialogControlCreate(dlg, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfeConsoleLblProfileInfo[player], pg, 380, 420);
+    DialogControlSetPosition(g_sfeConsoleLblProfileInfo[player], pg, c_anchorTopLeft, 420, 130);
+    DialogControlSetPropertyAsText(g_sfeConsoleLblProfileInfo[player], c_triggerControlPropertyText, pg, 
+        StringToText("Cargando perfil..."));
+
     // Atajos de teclado: Alt + C para abrir/cerrar
     tKeyAltC = TriggerCreate("gt_SFE_ConsoleKey_Func");
     TriggerAddEventKeyPressed(tKeyAltC, player, c_keyC, true, c_keyModifierStateIgnore, c_keyModifierStateIgnore, c_keyModifierStateRequire);
@@ -5985,6 +6320,9 @@ void SFE_ShowConsoleTab (int player, int tab) {
     // Controles de Ajustes
     DialogControlSetVisible(g_sfeConsoleBtnTradeMinerals[player], pg, isSettings);
     DialogControlSetVisible(g_sfeConsoleBtnToggleIncomeText[player], pg, isSettings);
+    DialogControlSetVisible(g_sfeConsoleBtnCycleZoom[player], pg, isSettings);
+    DialogControlSetVisible(g_sfeConsoleBtnSaveProfile[player], pg, isSettings);
+    DialogControlSetVisible(g_sfeConsoleLblProfileInfo[player], pg, isSettings);
 
     SFE_UpdateConsoleContent(player);
 }
@@ -6119,6 +6457,12 @@ void SFE_UpdateConsoleContent (int player) {
             FixedToString(IntToFixed(g_sfeUpgradeAttackSpeed[player]) * 0.5, 1) + "% Spd)</c></b>"));
         DialogControlSetPropertyAsText(g_sfeConsoleBtnBuyUpgSpeed[player], c_triggerControlPropertyText, pg, 
             StringToText("<b>Mejorar (" + IntToString(SFE_GetUpgradeCost(g_sfeUpgradeAttackSpeed[player])) + " min)</b>"));
+    }
+
+    // Actualizar Textos de Ajustes y Perfil de Honor si la pestaña 4 está activa
+    if (g_sfeConsoleActiveTab[player] == 4) {
+        DialogControlSetPropertyAsText(g_sfeConsoleLblProfileInfo[player], c_triggerControlPropertyText, pg, 
+            SFE_GetProfileSummaryText(player));
     }
 }
 
@@ -6333,6 +6677,16 @@ bool gt_SFE_ConsoleClick_Func (bool testConds, bool runActions) {
             DialogControlSetPropertyAsText(g_sfeConsoleBtnToggleIncomeText[p], c_triggerControlPropertyText, PlayerGroupSingle(p), 
                 StringToText("<b><c val=\"AAAAAA\">Flotantes de Recompensa: OFF</c></b>"));
         }
+        return true;
+    } else if (c == g_sfeConsoleBtnCycleZoom[p]) {
+        SFE_CycleCameraZoom(p);
+        SFE_UpdateConsoleContent(p);
+        return true;
+    } else if (c == g_sfeConsoleBtnSaveProfile[p]) {
+        SFE_BankSave(p);
+        UIDisplayMessage(PlayerGroupSingle(p), c_messageAreaSubtitle, 
+            StringToText("<c val=\"55FF55\">¡Perfil y ajustes guardados en OrdoAbChao.bank y Settings.bank!</c>"));
+        SFE_UpdateConsoleContent(p);
         return true;
     }
 

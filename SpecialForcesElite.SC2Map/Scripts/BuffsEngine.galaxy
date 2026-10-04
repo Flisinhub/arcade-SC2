@@ -16,6 +16,7 @@ bool SFE_BuyBuff (int player, int buffId);
 void SFE_SellBuff (int player, int tier);
 void SFE_OnHeroDeathRefundBuffs (int player);
 void SFE_PeriodicBuffTick ();
+void SFE_ApplyVeterancyToUnit (unit u, int player);
 
 //--------------------------------------------------------------------------------------------------
 // Inicializar Catálogo de Buffs
@@ -325,6 +326,9 @@ bool SFE_BuyBuff (int player, int buffId) {
             }
             PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
             g_sfePlayerVeterancy[player] = true;
+            if (g_sfeHeroStates[player].isActive && g_sfeHeroStates[player].heroUnit != null) {
+                SFE_ApplyVeterancyToUnit(g_sfeHeroStates[player].heroUnit, player);
+            }
             SFE_RecalculateStats(player);
             UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaChat, StringToText("<c val=\"FFE400\">¡Rango de Veterania adquirido!</c>"));
             return true;

@@ -10,6 +10,7 @@ include "Scripts/Constants.galaxy"
 include "Scripts/BuffsEngine.galaxy"
 include "Scripts/UpgradesEngine.galaxy"
 include "Scripts/Attributes.galaxy"
+include "Scripts/Persistence.galaxy"
 
 
 // Controles Comunes
@@ -55,9 +56,12 @@ int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleBtnBuyUpgEnergy;
 int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleLblUpgSpeed;
 int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleBtnBuyUpgSpeed;
 
-// Pestaña 4: Ajustes & Comercio
+// Pestaña 4: Ajustes, Comercio & Perfil de Honor
 int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleBtnTradeMinerals;
 int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleBtnToggleIncomeText;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleBtnCycleZoom;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleBtnSaveProfile;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeConsoleLblProfileInfo;
 
 // Declaraciones adelantadas
 void SFE_InitPlayerConsoleUI (int player);
@@ -348,6 +352,26 @@ void SFE_InitPlayerConsoleUI (int player) {
         StringToText("<b><c val=\"00CCFF\">Flotantes de Recompensa: ON</c></b>"));
     TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnToggleIncomeText[player], c_triggerControlEventTypeClick);
 
+    g_sfeConsoleBtnCycleZoom[player] = DialogControlCreate(dlg, c_triggerControlTypeButton);
+    DialogControlSetSize(g_sfeConsoleBtnCycleZoom[player], pg, 340, 45);
+    DialogControlSetPosition(g_sfeConsoleBtnCycleZoom[player], pg, c_anchorTopLeft, 50, 250);
+    DialogControlSetPropertyAsText(g_sfeConsoleBtnCycleZoom[player], c_triggerControlPropertyText, pg, 
+        StringToText("<b><c val=\"FFCC00\">Cambiar Zoom Camara [34 / 44 / 54]</c></b>"));
+    TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnCycleZoom[player], c_triggerControlEventTypeClick);
+
+    g_sfeConsoleBtnSaveProfile[player] = DialogControlCreate(dlg, c_triggerControlTypeButton);
+    DialogControlSetSize(g_sfeConsoleBtnSaveProfile[player], pg, 340, 45);
+    DialogControlSetPosition(g_sfeConsoleBtnSaveProfile[player], pg, c_anchorTopLeft, 50, 310);
+    DialogControlSetPropertyAsText(g_sfeConsoleBtnSaveProfile[player], c_triggerControlPropertyText, pg, 
+        StringToText("<b><c val=\"00FF88\">Guardar Perfil de Honor (Bank)</c></b>"));
+    TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnSaveProfile[player], c_triggerControlEventTypeClick);
+
+    g_sfeConsoleLblProfileInfo[player] = DialogControlCreate(dlg, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfeConsoleLblProfileInfo[player], pg, 380, 420);
+    DialogControlSetPosition(g_sfeConsoleLblProfileInfo[player], pg, c_anchorTopLeft, 420, 130);
+    DialogControlSetPropertyAsText(g_sfeConsoleLblProfileInfo[player], c_triggerControlPropertyText, pg, 
+        StringToText("Cargando perfil..."));
+
     // Atajos de teclado: Alt + C para abrir/cerrar
     tKeyAltC = TriggerCreate("gt_SFE_ConsoleKey_Func");
     TriggerAddEventKeyPressed(tKeyAltC, player, c_keyC, true, c_keyModifierStateIgnore, c_keyModifierStateIgnore, c_keyModifierStateRequire);
@@ -454,6 +478,9 @@ void SFE_ShowConsoleTab (int player, int tab) {
     // Controles de Ajustes
     DialogControlSetVisible(g_sfeConsoleBtnTradeMinerals[player], pg, isSettings);
     DialogControlSetVisible(g_sfeConsoleBtnToggleIncomeText[player], pg, isSettings);
+    DialogControlSetVisible(g_sfeConsoleBtnCycleZoom[player], pg, isSettings);
+    DialogControlSetVisible(g_sfeConsoleBtnSaveProfile[player], pg, isSettings);
+    DialogControlSetVisible(g_sfeConsoleLblProfileInfo[player], pg, isSettings);
 
     SFE_UpdateConsoleContent(player);
 }
@@ -588,6 +615,12 @@ void SFE_UpdateConsoleContent (int player) {
             FixedToString(IntToFixed(g_sfeUpgradeAttackSpeed[player]) * 0.5, 1) + "% Spd)</c></b>"));
         DialogControlSetPropertyAsText(g_sfeConsoleBtnBuyUpgSpeed[player], c_triggerControlPropertyText, pg, 
             StringToText("<b>Mejorar (" + IntToString(SFE_GetUpgradeCost(g_sfeUpgradeAttackSpeed[player])) + " min)</b>"));
+    }
+
+    // Actualizar Textos de Ajustes y Perfil de Honor si la pestaña 4 está activa
+    if (g_sfeConsoleActiveTab[player] == 4) {
+        DialogControlSetPropertyAsText(g_sfeConsoleLblProfileInfo[player], c_triggerControlPropertyText, pg, 
+            SFE_GetProfileSummaryText(player));
     }
 }
 
@@ -802,6 +835,16 @@ bool gt_SFE_ConsoleClick_Func (bool testConds, bool runActions) {
             DialogControlSetPropertyAsText(g_sfeConsoleBtnToggleIncomeText[p], c_triggerControlPropertyText, PlayerGroupSingle(p), 
                 StringToText("<b><c val=\"AAAAAA\">Flotantes de Recompensa: OFF</c></b>"));
         }
+        return true;
+    } else if (c == g_sfeConsoleBtnCycleZoom[p]) {
+        SFE_CycleCameraZoom(p);
+        SFE_UpdateConsoleContent(p);
+        return true;
+    } else if (c == g_sfeConsoleBtnSaveProfile[p]) {
+        SFE_BankSave(p);
+        UIDisplayMessage(PlayerGroupSingle(p), c_messageAreaSubtitle, 
+            StringToText("<c val=\"55FF55\">¡Perfil y ajustes guardados en OrdoAbChao.bank y Settings.bank!</c>"));
+        SFE_UpdateConsoleContent(p);
         return true;
     }
 

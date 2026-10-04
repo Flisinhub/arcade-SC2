@@ -1,0 +1,129 @@
+//==================================================================================================
+// Special Forces Elite 5 - Elite Units & Veterancy Engine
+// Sistema de Tropas de Élite y Veteranía Canónico de SFE5:
+// Transforma tropas aliadas en Unidades de Élite que ganan rangos por bajas (I a V),
+// escalando vida máxima, daño, regeneración y tinte visual de veteranía.
+//==================================================================================================
+
+#ifndef SFE_ELITEVETERANCY_INCLUDED
+#define SFE_ELITEVETERANCY_INCLUDED
+
+include "Scripts/Constants.galaxy"
+
+// Declaraciones de funciones
+void SFE_InitVeterancyEngine ();
+void SFE_ApplyVeterancyToUnit (unit u, int player);
+void SFE_OnUnitKillCredit (unit killerU);
+int SFE_GetUnitKillThreshold (int rank);
+
+//--------------------------------------------------------------------------------------------------
+// Inicialización del Motor de Veteranía
+//--------------------------------------------------------------------------------------------------
+void SFE_InitVeterancyEngine () {
+    // Inicialización del subsistema
+}
+
+//--------------------------------------------------------------------------------------------------
+// Umbrales de Bajas para Rangos de Veteranía (I a V)
+//--------------------------------------------------------------------------------------------------
+int SFE_GetUnitKillThreshold (int rank) {
+    if (rank == 1) { return 10; }
+    if (rank == 2) { return 30; }
+    if (rank == 3) { return 70; }
+    if (rank == 4) { return 150; }
+    if (rank == 5) { return 300; }
+    return 500;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Conceder Mejora de Veteranía a una Unidad Aliada
+//--------------------------------------------------------------------------------------------------
+void SFE_ApplyVeterancyToUnit (unit u, int player) {
+    fixed curHp;
+    fixed maxHp;
+
+    if (u == null || !UnitIsAlive(u)) {
+        return;
+    }
+
+    curHp = UnitGetPropertyFixed(u, c_unitPropLife, true);
+    maxHp = UnitGetPropertyFixed(u, c_unitPropLifeMax, false);
+
+    // Bonificación de base por Veterancy (+25% Vida Max y regeneración continua)
+    UnitSetPropertyFixed(u, c_unitPropLifeMax, maxHp * 1.25);
+    UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+    UnitSetPropertyFixed(u, c_unitPropLifeRegen, 4.0);
+
+    // Tinte visual dorado sutil de unidad de élite
+    ActorSend(libNtve_gf_MainActorofUnit(u), "SetTintColor 255,230,120");
+
+    UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, 
+        StringToText("<b><c val=\"FFE400\">¡Unidad promovida a Tropas de Élite con Veterancy!</c></b>"));
+}
+
+//--------------------------------------------------------------------------------------------------
+// Registro de Bajas y Ascenso de Rango de Veteranía
+//--------------------------------------------------------------------------------------------------
+void SFE_OnUnitKillCredit (unit killerU) {
+    int kills;
+    int owner;
+    fixed maxHp;
+    fixed curHp;
+    text rankMsg;
+
+    if (killerU == null || !UnitIsAlive(killerU)) {
+        return;
+    }
+
+    owner = UnitGetOwner(killerU);
+    if ((owner < 1 || owner > c_SFE_MAX_PLAYERS) && owner != c_SFE_PLAYER_ALLIED_BASE) {
+        return;
+    }
+
+    kills = UnitGetPropertyInt(killerU, c_unitPropKills, true);
+
+    // Comprobar hitos de rango
+    if (kills == 10) {
+        maxHp = UnitGetPropertyFixed(killerU, c_unitPropLifeMax, false);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeMax, maxHp * 1.15);
+        UnitSetPropertyFixed(killerU, c_unitPropLifePercent, 100.0);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeRegen, 6.0);
+        ActorSend(libNtve_gf_MainActorofUnit(killerU), "SetTintColor 255,215,80");
+        rankMsg = StringToText("<b><c val=\"00FFEA\">[VETERANCY RANGO I] ¡Unidad Élite ha alcanzado 10 bajas! (+15% Vida / Regen)</c></b>");
+        UIDisplayMessage(PlayerGroupSingle(owner), c_messageAreaSubtitle, rankMsg);
+    } else if (kills == 30) {
+        maxHp = UnitGetPropertyFixed(killerU, c_unitPropLifeMax, false);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeMax, maxHp * 1.20);
+        UnitSetPropertyFixed(killerU, c_unitPropLifePercent, 100.0);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeRegen, 8.0);
+        ActorSend(libNtve_gf_MainActorofUnit(killerU), "SetTintColor 100,220,255");
+        rankMsg = StringToText("<b><c val=\"00FFEA\">[VETERANCY RANGO II] ¡Unidad Élite ha alcanzado 30 bajas! (+20% Vida / Regen)</c></b>");
+        UIDisplayMessage(PlayerGroupSingle(owner), c_messageAreaSubtitle, rankMsg);
+    } else if (kills == 70) {
+        maxHp = UnitGetPropertyFixed(killerU, c_unitPropLifeMax, false);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeMax, maxHp * 1.25);
+        UnitSetPropertyFixed(killerU, c_unitPropLifePercent, 100.0);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeRegen, 12.0);
+        ActorSend(libNtve_gf_MainActorofUnit(killerU), "SetTintColor 200,100,255");
+        rankMsg = StringToText("<b><c val=\"CC88FF\">[VETERANCY RANGO III] ¡Unidad Élite ha alcanzado 70 bajas! (+25% Vida / Regen)</c></b>");
+        UIDisplayMessage(PlayerGroupSingle(owner), c_messageAreaSubtitle, rankMsg);
+    } else if (kills == 150) {
+        maxHp = UnitGetPropertyFixed(killerU, c_unitPropLifeMax, false);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeMax, maxHp * 1.35);
+        UnitSetPropertyFixed(killerU, c_unitPropLifePercent, 100.0);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeRegen, 18.0);
+        ActorSend(libNtve_gf_MainActorofUnit(killerU), "SetTintColor 255,100,100");
+        rankMsg = StringToText("<b><c val=\"FF4444\">[VETERANCY RANGO IV] ¡Unidad Élite ha alcanzado 150 bajas! (+35% Vida / Furia)</c></b>");
+        UIDisplayMessage(PlayerGroupSingle(owner), c_messageAreaSubtitle, rankMsg);
+    } else if (kills == 300) {
+        maxHp = UnitGetPropertyFixed(killerU, c_unitPropLifeMax, false);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeMax, maxHp * 1.50);
+        UnitSetPropertyFixed(killerU, c_unitPropLifePercent, 100.0);
+        UnitSetPropertyFixed(killerU, c_unitPropLifeRegen, 25.0);
+        ActorSend(libNtve_gf_MainActorofUnit(killerU), "SetTintColor 255,255,100");
+        rankMsg = StringToText("<b><c val=\"FFE400\">[VETERANCY RANGO V - LEYENDA] ¡¡UNIDAD ÉLITE MÁXIMA ALCANZADA (300 Bajas)!!</c></b>");
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, rankMsg);
+    }
+}
+
+#endif
