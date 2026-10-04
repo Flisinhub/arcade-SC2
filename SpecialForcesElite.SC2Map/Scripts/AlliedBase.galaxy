@@ -14,7 +14,6 @@ include "Scripts/HUD.galaxy"
 unit g_sfeBaseCoreUnit;
 unit g_sfeMedic1;
 unit g_sfeMedic2;
-point g_sfeBaseCenterPoint;
 bool g_sfeGameOverTriggered;
 
 // Declaraciones
@@ -50,16 +49,26 @@ void SFE_InitAlliedBase () {
     point pDefense;
     unit u;
     trigger tClickBase;
+    int p;
 
-    g_sfeBaseCenterPoint = Point(100.0, 100.0);
+    // Coordenadas canónicas: Base en la esquina inferior izquierda
+    g_sfeBaseCenterPoint = Point(35.0, 35.0);
+    g_sfeFinalHivePoint = Point(165.0, 155.0);
+
+    // Las 4 Elevaciones Estratégicas en los cruces de caminos
+    g_sfePlateauSouthWest = Point(58.0, 58.0);  // Bifurcación Principal Salida Base
+    g_sfePlateauNorthWest = Point(55.0, 105.0); // Cruce Noroeste (Super Spawning Pool)
+    g_sfePlateauSouthEast = Point(105.0, 55.0); // Cruce Sureste (Hydralisk Den)
+    g_sfePlateauCenter    = Point(135.0, 115.0);// Gran Meseta Central Protoss
+
     g_sfeGameOverTriggered = false;
     g_sfeBaseCoreHpPercent = 100.0;
 
-    // Crear Fortaleza Planetaria Troncal (Jugador 14 - Aliado)
-    UnitCreate(1, "PlanetaryFortress", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBaseCenterPoint, 270.0);
+    // Crear Fortaleza Planetaria Troncal en la Esquina Inferior Izquierda (Jugador 14 - Aliado)
+    UnitCreate(1, "PlanetaryFortress", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBaseCenterPoint, 45.0);
     u = UnitLastCreated();
     if (u == null) {
-        UnitCreate(1, "CommandCenter", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBaseCenterPoint, 270.0);
+        UnitCreate(1, "CommandCenter", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBaseCenterPoint, 45.0);
         u = UnitLastCreated();
     }
     g_sfeBaseCoreUnit = u;
@@ -71,42 +80,45 @@ void SFE_InitAlliedBase () {
     tClickBase = TriggerCreate("gt_SFE_BaseClicked_Func");
     TriggerAddEventUnitClick(tClickBase, UnitRefFromUnit(g_sfeBaseCoreUnit), c_playerAny);
 
-    // Torretas y Bunkers en los 4 accesos cardinales
-    // Norte
-    pDefense = Point(100.0, 115.0);
-    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 270.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(94.0, 115.0), 270.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(106.0, 115.0), 270.0);
+    // Bunkers y Torretas protegiendo los 3 cuellos de botella de salida de la base
+    // 1. Salida Norte (hacia Ruta Noroeste / Rupturer / Spawning Pools)
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, Point(35.0, 50.0), 90.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(29.0, 50.0), 90.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(41.0, 50.0), 90.0);
 
-    // Sur
-    pDefense = Point(100.0, 85.0);
-    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 90.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(94.0, 85.0), 90.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(106.0, 85.0), 90.0);
+    // 2. Salida Este (hacia Ruta Sureste / Roach Den / Hydralisk Den)
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, Point(50.0, 35.0), 0.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(50.0, 29.0), 0.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(50.0, 41.0), 0.0);
 
-    // Este
-    pDefense = Point(115.0, 100.0);
-    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 180.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(115.0, 94.0), 180.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(115.0, 106.0), 180.0);
-
-    // Oeste
-    pDefense = Point(85.0, 100.0);
-    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 0.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(85.0, 94.0), 0.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(85.0, 106.0), 0.0);
+    // 3. Salida Diagonal / Cuello de botella Central (hacia Meseta Suroeste)
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, Point(48.0, 48.0), 45.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(43.0, 53.0), 45.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(53.0, 43.0), 45.0);
 
     // Médicos de Campaña Aliados para dar soporte continuo
-    UnitCreate(1, "Medic", 0, c_SFE_PLAYER_ALLIED_BASE, Point(97.0, 95.0), 45.0);
+    UnitCreate(1, "Medic", 0, c_SFE_PLAYER_ALLIED_BASE, Point(33.0, 37.0), 45.0);
     g_sfeMedic1 = UnitLastCreated();
     if (g_sfeMedic1 != null) {
         UnitSetPropertyFixed(g_sfeMedic1, c_unitPropEnergyPercent, 100.0);
     }
 
-    UnitCreate(1, "Medic", 0, c_SFE_PLAYER_ALLIED_BASE, Point(103.0, 95.0), 135.0);
+    UnitCreate(1, "Medic", 0, c_SFE_PLAYER_ALLIED_BASE, Point(37.0, 33.0), 45.0);
     g_sfeMedic2 = UnitLastCreated();
     if (g_sfeMedic2 != null) {
         UnitSetPropertyFixed(g_sfeMedic2, c_unitPropEnergyPercent, 100.0);
+    }
+
+    // Visibilidad permanente de las 4 elevaciones estratégicas para todos los jugadores
+    p = 1;
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (PlayerType(p) == c_playerTypeUser) {
+            VisRevealerCreate(p, RegionCircle(g_sfePlateauSouthWest, 6.0));
+            VisRevealerCreate(p, RegionCircle(g_sfePlateauNorthWest, 6.0));
+            VisRevealerCreate(p, RegionCircle(g_sfePlateauSouthEast, 6.0));
+            VisRevealerCreate(p, RegionCircle(g_sfePlateauCenter, 7.0));
+        }
+        p = p + 1;
     }
 }
 

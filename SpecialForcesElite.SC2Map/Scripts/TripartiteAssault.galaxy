@@ -33,11 +33,11 @@ void SFE_InitTripartiteSystem () {
     g_sfeCurrentNydusWorm = null;
     g_sfeNydusAlive = false;
 
-    // Coordenadas fijas de los 4 cráteres del terreno
-    g_sfeNydusCraterPoints[0] = Point(55.0, 145.0); // Noroeste
-    g_sfeNydusCraterPoints[1] = Point(145.0, 145.0); // Noreste
-    g_sfeNydusCraterPoints[2] = Point(55.0, 55.0);   // Suroeste
-    g_sfeNydusCraterPoints[3] = Point(145.0, 55.0);  // Sureste
+    // Coordenadas fijas de los 4 cráteres del terreno a lo largo de los valles
+    g_sfeNydusCraterPoints[0] = Point(45.0, 95.0); // Cráter Noroeste
+    g_sfeNydusCraterPoints[1] = Point(85.0, 85.0); // Cráter Central
+    g_sfeNydusCraterPoints[2] = Point(95.0, 45.0); // Cráter Sureste
+    g_sfeNydusCraterPoints[3] = Point(145.0, 85.0);// Cráter Este-Noreste
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -102,10 +102,10 @@ void SFE_CheckDropPods () {
                         } else {
                             unitType = "Roach";
                         }
-                        UnitCreate(1, unitType, 0, c_SFE_PLAYER_HOSTILE, dropPos, 270.0);
+                        UnitCreate(1, unitType, 0, c_SFE_PLAYER_HOSTILE, dropPos, 225.0);
                         spawned = UnitLastCreated();
                         if (spawned == null) {
-                            UnitCreate(1, "Zergling", 0, c_SFE_PLAYER_HOSTILE, dropPos, 270.0);
+                            UnitCreate(1, "Zergling", 0, c_SFE_PLAYER_HOSTILE, dropPos, 225.0);
                             spawned = UnitLastCreated();
                         }
 
@@ -154,10 +154,14 @@ void SFE_SpawnTimedHiveBoss (int bossIndex) {
     int escortCount;
     string escortType;
     int i;
-    order ordMarch;
+    order ordWp1;
+    order ordWp2;
+    order ordFinal;
 
-    pSpawn = Point(100.0, 165.0); // Colmena Zerg Norte
-    ordMarch = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint);
+    pSpawn = g_sfeFinalHivePoint; // Gran Colmena Zerg en la esquina superior derecha
+    ordWp1 = OrderTargetingPoint(AbilityCommand("attack", 0), Point(135.0, 115.0)); // Cruce Meseta Central
+    ordWp2 = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest); // Cruce Meseta Suroeste
+    ordFinal = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint); // Fortaleza Planetaria
 
     if (bossIndex == 0) {
         // Minuto 5: Infested General
@@ -210,11 +214,11 @@ void SFE_SpawnTimedHiveBoss (int bossIndex) {
         escortCount = 6;
     }
 
-    // Crear Jefe
-    UnitCreate(1, bossType, 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+    // Crear Jefe en la Colmena Superior Derecha
+    UnitCreate(1, bossType, 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
     uBoss = UnitLastCreated();
     if (uBoss == null) {
-        UnitCreate(1, "Archon", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+        UnitCreate(1, "Archon", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
         uBoss = UnitLastCreated();
     }
 
@@ -222,18 +226,22 @@ void SFE_SpawnTimedHiveBoss (int bossIndex) {
     UnitSetPropertyFixed(uBoss, c_unitPropLifeMax, bossHp);
     UnitSetPropertyFixed(uBoss, c_unitPropLifePercent, 100.0);
     UnitSetPropertyFixed(uBoss, c_unitPropLifeRegen, 10.0);
-    UnitIssueOrder(uBoss, ordMarch, c_orderQueueReplace);
+    UnitIssueOrder(uBoss, ordWp1, c_orderQueueReplace);
+    UnitIssueOrder(uBoss, ordWp2, c_orderQueueAddToEnd);
+    UnitIssueOrder(uBoss, ordFinal, c_orderQueueAddToEnd);
 
     // Crear escolta vanguardia
     i = 0;
     while (i < escortCount) {
-        UnitCreate(1, escortType, 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+        UnitCreate(1, escortType, 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
         uEscort = UnitLastCreated();
         if (uEscort != null) {
             UnitSetPropertyFixed(uEscort, c_unitPropLifeMax, 
                 UnitGetPropertyFixed(uEscort, c_unitPropLifeMax, true) * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
             UnitSetPropertyFixed(uEscort, c_unitPropLifePercent, 100.0);
-            UnitIssueOrder(uEscort, ordMarch, c_orderQueueReplace);
+            UnitIssueOrder(uEscort, ordWp1, c_orderQueueReplace);
+            UnitIssueOrder(uEscort, ordWp2, c_orderQueueAddToEnd);
+            UnitIssueOrder(uEscort, ordFinal, c_orderQueueAddToEnd);
         }
         i = i + 1;
     }

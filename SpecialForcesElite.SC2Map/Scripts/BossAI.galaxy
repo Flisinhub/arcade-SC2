@@ -54,7 +54,7 @@ void SFE_TriggerBossHybridsSpawn ();
 void SFE_TriggerHellGateIncursion ();
 
 //--------------------------------------------------------------------------------------------------
-// Invocación del Jefe 1: Híbrido Maar (Sector Norte)
+// Invocación del Jefe 1: Híbrido Maar (Sector Central-Norte)
 //--------------------------------------------------------------------------------------------------
 void SFE_TriggerBossMaarSpawn () {
     point pSpawn;
@@ -67,11 +67,11 @@ void SFE_TriggerBossMaarSpawn () {
     g_sfeBossMaarSpawned = true;
     g_sfeBossMaarPhase = 1;
 
-    pSpawn = Point(100.0, 150.0);
-    UnitCreate(1, "HybridDestroyer", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+    pSpawn = Point(115.0, 135.0);
+    UnitCreate(1, "HybridDestroyer", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
     u = UnitLastCreated();
     if (u == null) {
-        UnitCreate(1, "Archon", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+        UnitCreate(1, "Archon", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
         u = UnitLastCreated();
     }
     g_sfeBossMaarUnit = u;
@@ -82,9 +82,10 @@ void SFE_TriggerBossMaarSpawn () {
     UnitSetPropertyFixed(u, c_unitPropLifeRegen, 15.0);
 
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-        StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"FF00FF\">¡ALERTA MAYOR! ¡EL HÍBRIDO MAAR HA DESPERTADO EN EL SECTOR NORTE!</c></s>"));
+        StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"FF00FF\">¡ALERTA MAYOR! ¡EL HÍBRIDO MAAR HA DESPERTADO EN EL SECTOR CENTRAL-NORTE!</c></s>"));
 
-    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueAddToEnd);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -101,11 +102,11 @@ void SFE_TriggerBossDestroyerSpawn () {
     g_sfeBossDestroyerSpawned = true;
     g_sfeBossDestroyerPhase = 1;
 
-    pSpawn = Point(40.0, 160.0);
-    UnitCreate(1, "HybridReaver", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+    pSpawn = Point(55.0, 155.0);
+    UnitCreate(1, "HybridReaver", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
     u = UnitLastCreated();
     if (u == null) {
-        UnitCreate(1, "Colossus", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+        UnitCreate(1, "Colossus", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
         u = UnitLastCreated();
     }
     g_sfeBossDestroyerUnit = u;
@@ -118,7 +119,9 @@ void SFE_TriggerBossDestroyerSpawn () {
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
         StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"FF4400\">¡RITUAL COMPLETADO! ¡DESTROYER OF WORLDS HA SIDO INVOCADO EN EL CUADRANTE NW!</c></s>"));
 
-    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauNorthWest), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueAddToEnd);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueAddToEnd);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -135,11 +138,11 @@ void SFE_TriggerBossHybridsSpawn () {
     g_sfeBossHybridsSpawned = true;
     g_sfeBossHybridsPhase = 1;
 
-    pSpawn = Point(160.0, 40.0);
-    UnitCreate(1, "HybridDominator", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 90.0);
+    pSpawn = Point(155.0, 55.0);
+    UnitCreate(1, "HybridDominator", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 135.0);
     u = UnitLastCreated();
     if (u == null) {
-        UnitCreate(1, "Archon", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 90.0);
+        UnitCreate(1, "Archon", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 135.0);
         u = UnitLastCreated();
     }
     g_sfeBossHybridsUnit = u;
@@ -152,7 +155,9 @@ void SFE_TriggerBossHybridsSpawn () {
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
         StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"CC00FF\">¡ARTEFACTO ACTIVADO! ¡HÍBRIDOS ANCESTRALES DESPIERTAN EN EL SECTOR SE!</c></s>"));
 
-    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthEast), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueAddToEnd);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueAddToEnd);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -169,8 +174,8 @@ void SFE_TriggerBossChainDogSpawn () {
     g_sfeBossChainDogSpawned = true;
     g_sfeBossChainDogPhase = 1;
 
-    pSpawn = Point(100.0, 125.0);
-    UnitCreate(1, "Ultralisk", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+    pSpawn = Point(135.0, 115.0);
+    UnitCreate(1, "Ultralisk", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
     u = UnitLastCreated();
     g_sfeBossChainDogUnit = u;
 
@@ -182,7 +187,8 @@ void SFE_TriggerBossChainDogSpawn () {
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
         StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"FF2222\">¡GUARDIÁN LIBERADO! ¡CHAINDOG HA ROTO SUS CADENAS EN LA ESTATUA CENTRAL!</c></s>"));
 
-    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueAddToEnd);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -192,7 +198,6 @@ void SFE_TriggerHellGateIncursion () {
     point pSpawn;
     int k;
     unit u;
-    order ord;
     int p;
 
     if (g_sfeBossHellGateTriggered) {
@@ -200,8 +205,7 @@ void SFE_TriggerHellGateIncursion () {
     }
     g_sfeBossHellGateTriggered = true;
 
-    pSpawn = Point(160.0, 160.0);
-    ord = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint);
+    pSpawn = g_sfeFinalHivePoint;
 
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
         StringToText("<s val=\"ModCenterSize28Bold\"><c val=\"FF0000\">¡¡PORTAL DEL INFIERNO DESATADO!! ¡INCURSIÓN MASIVA DE ÉLITE EN EL SECTOR NE!</c></s>"));
@@ -210,7 +214,9 @@ void SFE_TriggerHellGateIncursion () {
     while (k < 12) {
         UnitCreate(1, "Aberration", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
         u = UnitLastCreated();
-        UnitIssueOrder(u, ord, c_orderQueueReplace);
+        UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauCenter), c_orderQueueReplace);
+        UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueAddToEnd);
+        UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueAddToEnd);
         k = k + 1;
     }
 
@@ -218,7 +224,9 @@ void SFE_TriggerHellGateIncursion () {
     while (k < 6) {
         UnitCreate(1, "HybridDestroyer", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
         u = UnitLastCreated();
-        UnitIssueOrder(u, ord, c_orderQueueReplace);
+        UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauCenter), c_orderQueueReplace);
+        UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueAddToEnd);
+        UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueAddToEnd);
         k = k + 1;
     }
 
@@ -233,7 +241,7 @@ void SFE_TriggerHellGateIncursion () {
 }
 
 //--------------------------------------------------------------------------------------------------
-// Invocación Secreta 5: Diablo Megaboss (SW - Gasolinera en Dificultad Torment)
+// Invocación Secreta 5: Diablo Megaboss (SE Extremo - Santuario Volcánico en Dificultad Torment)
 //--------------------------------------------------------------------------------------------------
 void SFE_TriggerBossDiabloSpawn () {
     point pSpawn;
@@ -246,11 +254,11 @@ void SFE_TriggerBossDiabloSpawn () {
     g_sfeBossDiabloSpawned = true;
     g_sfeBossDiabloPhase = 1;
 
-    pSpawn = Point(40.0, 40.0);
-    UnitCreate(1, "HybridDominator", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 45.0);
+    pSpawn = Point(165.0, 35.0);
+    UnitCreate(1, "HybridDominator", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 135.0);
     u = UnitLastCreated();
     if (u == null) {
-        UnitCreate(1, "Ultralisk", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 45.0);
+        UnitCreate(1, "Ultralisk", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 135.0);
         u = UnitLastCreated();
     }
     g_sfeBossDiabloUnit = u;
@@ -263,7 +271,9 @@ void SFE_TriggerBossDiabloSpawn () {
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
         StringToText("<s val=\"ModCenterSize28Bold\"><c val=\"FF0000\">¡¡AMENAZA DESTRUCTORA FINAL!! ¡DIABLO HA ENTRADO AL CAMPO DE BATALLA!</c></s>"));
 
-    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthEast), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueAddToEnd);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueAddToEnd);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -341,32 +351,32 @@ void SFE_CheckTerritorialInvocations () {
             if (u != null && UnitIsAlive(u)) {
                 livingHeroesTotal = livingHeroesTotal + 1;
 
-                // 1. NW (Destroyer of Worlds) - Point(40.0, 160.0)
-                d = DistanceBetweenPoints(UnitGetPosition(u), Point(40.0, 160.0));
+                // 1. NW (Destroyer of Worlds) - Point(55.0, 155.0)
+                d = DistanceBetweenPoints(UnitGetPosition(u), Point(55.0, 155.0));
                 if (d <= 12.0) {
                     nwCount = nwCount + 1;
                 }
 
-                // 2. SE (Híbridos Ancestrales) - Point(160.0, 40.0)
-                d = DistanceBetweenPoints(UnitGetPosition(u), Point(160.0, 40.0));
+                // 2. SE (Híbridos Ancestrales) - Point(155.0, 55.0)
+                d = DistanceBetweenPoints(UnitGetPosition(u), Point(155.0, 55.0));
                 if (d <= 12.0) {
                     seCount = seCount + 1;
                 }
 
-                // 3. Centro (ChainDog) - Point(100.0, 125.0)
-                d = DistanceBetweenPoints(UnitGetPosition(u), Point(100.0, 125.0));
+                // 3. Centro (ChainDog) - Point(135.0, 115.0)
+                d = DistanceBetweenPoints(UnitGetPosition(u), Point(135.0, 115.0));
                 if (d <= 10.0) {
                     centerCount = centerCount + 1;
                 }
 
-                // 4. NE (Hell Gate) - Point(160.0, 160.0)
-                d = DistanceBetweenPoints(UnitGetPosition(u), Point(160.0, 160.0));
+                // 4. NE (Hell Gate) - g_sfeFinalHivePoint (165.0, 155.0)
+                d = DistanceBetweenPoints(UnitGetPosition(u), g_sfeFinalHivePoint);
                 if (d <= 15.0) {
                     neHeroesInZone = neHeroesInZone + 1;
                 }
 
-                // 5. SW (Diablo en Torment) - Point(40.0, 40.0)
-                d = DistanceBetweenPoints(UnitGetPosition(u), Point(40.0, 40.0));
+                // 5. SE Extremo (Diablo en Torment) - Point(165.0, 35.0)
+                d = DistanceBetweenPoints(UnitGetPosition(u), Point(165.0, 35.0));
                 if (d <= 15.0) {
                     swCount = swCount + 1;
                 }
@@ -437,13 +447,13 @@ void SFE_CheckTerritorialInvocations () {
         }
     }
 
-    // Protocolo 5: SW Diablo (en dificultad Torment, presencia en la gasolinera por 20s)
+    // Protocolo 5: Santuario SE Diablo (en dificultad Torment, presencia por 20s)
     if (!g_sfeBossDiabloSpawned && g_sfeCurrentDifficulty == c_DIFF_TORMENT) {
         if (swCount >= 1) {
             g_sfeTimerDiablo = g_sfeTimerDiablo + 2;
             if (g_sfeTimerDiablo % 10 == 0) {
                 UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, 
-                    StringToText("<c val=\"FF0000\">[Torment SW] Presencia de Diablo incrementando: " + IntToString(g_sfeTimerDiablo) + "s / 20s</c>"));
+                    StringToText("<c val=\"FF0000\">[Santuario Volcánico SE] Presencia de Diablo incrementando: " + IntToString(g_sfeTimerDiablo) + "s / 20s</c>"));
             }
             if (g_sfeTimerDiablo >= 20) {
                 SFE_TriggerBossDiabloSpawn();

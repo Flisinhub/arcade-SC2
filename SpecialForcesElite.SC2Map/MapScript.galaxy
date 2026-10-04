@@ -180,6 +180,14 @@ unit g_sfeCurrentNydusWorm;
 bool g_sfeNydusAlive;
 point[4] g_sfeNydusCraterPoints;
 
+// Topología Territorial y Elevaciones Estratégicas
+point g_sfeBaseCenterPoint;
+point g_sfeFinalHivePoint;
+point g_sfePlateauSouthWest;
+point g_sfePlateauNorthWest;
+point g_sfePlateauSouthEast;
+point g_sfePlateauCenter;
+
 void SFE_InitDifficultyTables () {
     // M_inc: Multiplicador de ingreso por baja
     g_sfeDiffIncomeMultiplier[c_DIFF_CASUAL]  = 1.50;
@@ -781,7 +789,7 @@ bool gt_SFE_HeroSelection_Click_Func (bool testConds, bool runActions);
 bool gt_SFE_HeroSelection_Timer_Func (bool testConds, bool runActions);
 void SFE_InitHeroSelectionUI ();
 void SFE_InitWaveSpawner ();
-void SFE_OrderHostilesToCore (unitgroup ug);
+void SFE_OrderHostilesAlongRoute (unitgroup ug, int routeType);
 void SFE_SpawnWave (int waveNum);
 void SFE_CheckOutpostStatus ();
 bool gt_SFE_EntropyUpgrade_Timer_Func (bool testConds, bool runActions);
@@ -1893,7 +1901,6 @@ void SFE_RunUpgradeAutocast (int player) {
 unit g_sfeBaseCoreUnit;
 unit g_sfeMedic1;
 unit g_sfeMedic2;
-point g_sfeBaseCenterPoint;
 bool g_sfeGameOverTriggered;
 
 // Declaraciones
@@ -1929,16 +1936,26 @@ void SFE_InitAlliedBase () {
     point pDefense;
     unit u;
     trigger tClickBase;
+    int p;
 
-    g_sfeBaseCenterPoint = Point(100.0, 100.0);
+    // Coordenadas canónicas: Base en la esquina inferior izquierda
+    g_sfeBaseCenterPoint = Point(35.0, 35.0);
+    g_sfeFinalHivePoint = Point(165.0, 155.0);
+
+    // Las 4 Elevaciones Estratégicas en los cruces de caminos
+    g_sfePlateauSouthWest = Point(58.0, 58.0);  // Bifurcación Principal Salida Base
+    g_sfePlateauNorthWest = Point(55.0, 105.0); // Cruce Noroeste (Super Spawning Pool)
+    g_sfePlateauSouthEast = Point(105.0, 55.0); // Cruce Sureste (Hydralisk Den)
+    g_sfePlateauCenter    = Point(135.0, 115.0);// Gran Meseta Central Protoss
+
     g_sfeGameOverTriggered = false;
     g_sfeBaseCoreHpPercent = 100.0;
 
-    // Crear Fortaleza Planetaria Troncal (Jugador 14 - Aliado)
-    UnitCreate(1, "PlanetaryFortress", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBaseCenterPoint, 270.0);
+    // Crear Fortaleza Planetaria Troncal en la Esquina Inferior Izquierda (Jugador 14 - Aliado)
+    UnitCreate(1, "PlanetaryFortress", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBaseCenterPoint, 45.0);
     u = UnitLastCreated();
     if (u == null) {
-        UnitCreate(1, "CommandCenter", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBaseCenterPoint, 270.0);
+        UnitCreate(1, "CommandCenter", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBaseCenterPoint, 45.0);
         u = UnitLastCreated();
     }
     g_sfeBaseCoreUnit = u;
@@ -1950,42 +1967,45 @@ void SFE_InitAlliedBase () {
     tClickBase = TriggerCreate("gt_SFE_BaseClicked_Func");
     TriggerAddEventUnitClick(tClickBase, UnitRefFromUnit(g_sfeBaseCoreUnit), c_playerAny);
 
-    // Torretas y Bunkers en los 4 accesos cardinales
-    // Norte
-    pDefense = Point(100.0, 115.0);
-    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 270.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(94.0, 115.0), 270.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(106.0, 115.0), 270.0);
+    // Bunkers y Torretas protegiendo los 3 cuellos de botella de salida de la base
+    // 1. Salida Norte (hacia Ruta Noroeste / Rupturer / Spawning Pools)
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, Point(35.0, 50.0), 90.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(29.0, 50.0), 90.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(41.0, 50.0), 90.0);
 
-    // Sur
-    pDefense = Point(100.0, 85.0);
-    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 90.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(94.0, 85.0), 90.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(106.0, 85.0), 90.0);
+    // 2. Salida Este (hacia Ruta Sureste / Roach Den / Hydralisk Den)
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, Point(50.0, 35.0), 0.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(50.0, 29.0), 0.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(50.0, 41.0), 0.0);
 
-    // Este
-    pDefense = Point(115.0, 100.0);
-    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 180.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(115.0, 94.0), 180.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(115.0, 106.0), 180.0);
-
-    // Oeste
-    pDefense = Point(85.0, 100.0);
-    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, pDefense, 0.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(85.0, 94.0), 0.0);
-    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(85.0, 106.0), 0.0);
+    // 3. Salida Diagonal / Cuello de botella Central (hacia Meseta Suroeste)
+    UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, Point(48.0, 48.0), 45.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(43.0, 53.0), 45.0);
+    UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(53.0, 43.0), 45.0);
 
     // Médicos de Campaña Aliados para dar soporte continuo
-    UnitCreate(1, "Medic", 0, c_SFE_PLAYER_ALLIED_BASE, Point(97.0, 95.0), 45.0);
+    UnitCreate(1, "Medic", 0, c_SFE_PLAYER_ALLIED_BASE, Point(33.0, 37.0), 45.0);
     g_sfeMedic1 = UnitLastCreated();
     if (g_sfeMedic1 != null) {
         UnitSetPropertyFixed(g_sfeMedic1, c_unitPropEnergyPercent, 100.0);
     }
 
-    UnitCreate(1, "Medic", 0, c_SFE_PLAYER_ALLIED_BASE, Point(103.0, 95.0), 135.0);
+    UnitCreate(1, "Medic", 0, c_SFE_PLAYER_ALLIED_BASE, Point(37.0, 33.0), 45.0);
     g_sfeMedic2 = UnitLastCreated();
     if (g_sfeMedic2 != null) {
         UnitSetPropertyFixed(g_sfeMedic2, c_unitPropEnergyPercent, 100.0);
+    }
+
+    // Visibilidad permanente de las 4 elevaciones estratégicas para todos los jugadores
+    p = 1;
+    while (p <= c_SFE_MAX_PLAYERS) {
+        if (PlayerType(p) == c_playerTypeUser) {
+            VisRevealerCreate(p, RegionCircle(g_sfePlateauSouthWest, 6.0));
+            VisRevealerCreate(p, RegionCircle(g_sfePlateauNorthWest, 6.0));
+            VisRevealerCreate(p, RegionCircle(g_sfePlateauSouthEast, 6.0));
+            VisRevealerCreate(p, RegionCircle(g_sfePlateauCenter, 7.0));
+        }
+        p = p + 1;
     }
 }
 
@@ -2215,11 +2235,11 @@ void SFE_InitTripartiteSystem () {
     g_sfeCurrentNydusWorm = null;
     g_sfeNydusAlive = false;
 
-    // Coordenadas fijas de los 4 cráteres del terreno
-    g_sfeNydusCraterPoints[0] = Point(55.0, 145.0); // Noroeste
-    g_sfeNydusCraterPoints[1] = Point(145.0, 145.0); // Noreste
-    g_sfeNydusCraterPoints[2] = Point(55.0, 55.0);   // Suroeste
-    g_sfeNydusCraterPoints[3] = Point(145.0, 55.0);  // Sureste
+    // Coordenadas fijas de los 4 cráteres del terreno a lo largo de los valles
+    g_sfeNydusCraterPoints[0] = Point(45.0, 95.0); // Cráter Noroeste
+    g_sfeNydusCraterPoints[1] = Point(85.0, 85.0); // Cráter Central
+    g_sfeNydusCraterPoints[2] = Point(95.0, 45.0); // Cráter Sureste
+    g_sfeNydusCraterPoints[3] = Point(145.0, 85.0);// Cráter Este-Noreste
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -2284,10 +2304,10 @@ void SFE_CheckDropPods () {
                         } else {
                             unitType = "Roach";
                         }
-                        UnitCreate(1, unitType, 0, c_SFE_PLAYER_HOSTILE, dropPos, 270.0);
+                        UnitCreate(1, unitType, 0, c_SFE_PLAYER_HOSTILE, dropPos, 225.0);
                         spawned = UnitLastCreated();
                         if (spawned == null) {
-                            UnitCreate(1, "Zergling", 0, c_SFE_PLAYER_HOSTILE, dropPos, 270.0);
+                            UnitCreate(1, "Zergling", 0, c_SFE_PLAYER_HOSTILE, dropPos, 225.0);
                             spawned = UnitLastCreated();
                         }
 
@@ -2336,10 +2356,14 @@ void SFE_SpawnTimedHiveBoss (int bossIndex) {
     int escortCount;
     string escortType;
     int i;
-    order ordMarch;
+    order ordWp1;
+    order ordWp2;
+    order ordFinal;
 
-    pSpawn = Point(100.0, 165.0); // Colmena Zerg Norte
-    ordMarch = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint);
+    pSpawn = g_sfeFinalHivePoint; // Gran Colmena Zerg en la esquina superior derecha
+    ordWp1 = OrderTargetingPoint(AbilityCommand("attack", 0), Point(135.0, 115.0)); // Cruce Meseta Central
+    ordWp2 = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest); // Cruce Meseta Suroeste
+    ordFinal = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint); // Fortaleza Planetaria
 
     if (bossIndex == 0) {
         // Minuto 5: Infested General
@@ -2392,11 +2416,11 @@ void SFE_SpawnTimedHiveBoss (int bossIndex) {
         escortCount = 6;
     }
 
-    // Crear Jefe
-    UnitCreate(1, bossType, 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+    // Crear Jefe en la Colmena Superior Derecha
+    UnitCreate(1, bossType, 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
     uBoss = UnitLastCreated();
     if (uBoss == null) {
-        UnitCreate(1, "Archon", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+        UnitCreate(1, "Archon", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
         uBoss = UnitLastCreated();
     }
 
@@ -2404,18 +2428,22 @@ void SFE_SpawnTimedHiveBoss (int bossIndex) {
     UnitSetPropertyFixed(uBoss, c_unitPropLifeMax, bossHp);
     UnitSetPropertyFixed(uBoss, c_unitPropLifePercent, 100.0);
     UnitSetPropertyFixed(uBoss, c_unitPropLifeRegen, 10.0);
-    UnitIssueOrder(uBoss, ordMarch, c_orderQueueReplace);
+    UnitIssueOrder(uBoss, ordWp1, c_orderQueueReplace);
+    UnitIssueOrder(uBoss, ordWp2, c_orderQueueAddToEnd);
+    UnitIssueOrder(uBoss, ordFinal, c_orderQueueAddToEnd);
 
     // Crear escolta vanguardia
     i = 0;
     while (i < escortCount) {
-        UnitCreate(1, escortType, 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+        UnitCreate(1, escortType, 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
         uEscort = UnitLastCreated();
         if (uEscort != null) {
             UnitSetPropertyFixed(uEscort, c_unitPropLifeMax, 
                 UnitGetPropertyFixed(uEscort, c_unitPropLifeMax, true) * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
             UnitSetPropertyFixed(uEscort, c_unitPropLifePercent, 100.0);
-            UnitIssueOrder(uEscort, ordMarch, c_orderQueueReplace);
+            UnitIssueOrder(uEscort, ordWp1, c_orderQueueReplace);
+            UnitIssueOrder(uEscort, ordWp2, c_orderQueueAddToEnd);
+            UnitIssueOrder(uEscort, ordFinal, c_orderQueueAddToEnd);
         }
         i = i + 1;
     }
@@ -3008,7 +3036,7 @@ void SFE_ConfirmHeroSelection (int player, int heroId) {
 
     g_sfePlayerHasConfirmed[player] = true;
     unitType = g_sfeHeroes[heroId].unitType;
-    pSpawn = Point(100.0, 92.0);
+    pSpawn = Point(38.0, 38.0);
 
     // Despliegue de la unidad
     UnitCreate(1, unitType, 0, player, pSpawn, 90.0);
@@ -3287,15 +3315,16 @@ void SFE_TriggerBossDestroyerSpawn ();
 void SFE_TriggerBossDiabloSpawn ();
 
 //--------------------------------------------------------------------------------------------------
-// Inicializar Puntos Cardinales y Nidos de Asedio
+// Inicializar Puntos de Rutas y Nidos de Asedio
 //--------------------------------------------------------------------------------------------------
 void SFE_InitWaveSpawner () {
     trigger tEntropy;
 
-    g_sfeSpawnNorth = Point(100.0, 185.0);
-    g_sfeSpawnSouth = Point(100.0, 15.0);
-    g_sfeSpawnEast  = Point(185.0, 100.0);
-    g_sfeSpawnWest  = Point(15.0, 100.0);
+    // Puntos de generación en los extremos de los 3 caminos y la Gran Colmena
+    g_sfeSpawnNorth = Point(55.0, 165.0); // Extremo Norte de la Ruta Noroeste
+    g_sfeSpawnSouth = Point(165.0, 55.0); // Extremo Este de la Ruta Sureste
+    g_sfeSpawnEast  = Point(140.0, 120.0);// Meseta Central Protoss
+    g_sfeSpawnWest  = Point(165.0, 155.0);// Bastión de la Gran Colmena (Top-Right)
 
     g_sfeCurrentWaveNumber = 1;
     g_sfeWaveTimeRemaining = FixedToInt(g_sfeDiffWaveIntervalSeconds[g_sfeCurrentDifficulty]);
@@ -3303,29 +3332,37 @@ void SFE_InitWaveSpawner () {
     g_sfeHostileArmorBonus = 0.0;
     g_sfeHostileLifeBonusPct = 0.0;
 
-    // Crear los 3 reductos/nidos hostiles (Jugador 15)
-    // 1. Colmena Zerg Norte
-    UnitCreate(1, "Hive", 0, c_SFE_PLAYER_HOSTILE, Point(100.0, 160.0), 270.0);
+    // Crear los 3 reductos/nidos hostiles sobre los caminos (Jugador 15)
+    // 1. Super Spawning Pool (Ruta Noroeste)
+    UnitCreate(1, "SpawningPool", 0, c_SFE_PLAYER_HOSTILE, Point(35.0, 105.0), 270.0);
     g_sfeOutpostNorth = UnitLastCreated();
-    UnitSetPropertyFixed(g_sfeOutpostNorth, c_unitPropLifeMax, 4000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
+    if (g_sfeOutpostNorth == null) {
+        UnitCreate(1, "Hive", 0, c_SFE_PLAYER_HOSTILE, Point(35.0, 105.0), 270.0);
+        g_sfeOutpostNorth = UnitLastCreated();
+    }
+    UnitSetPropertyFixed(g_sfeOutpostNorth, c_unitPropLifeMax, 5000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
     UnitSetPropertyFixed(g_sfeOutpostNorth, c_unitPropLifePercent, 100.0);
     g_sfeOutpostNorthAlive = true;
 
-    // 2. Fortaleza Protoss Corrompida Este
-    UnitCreate(1, "Nexus", 0, c_SFE_PLAYER_HOSTILE, Point(160.0, 100.0), 180.0);
+    // 2. Madriguera de Cucarachas / Roach Den (Ruta Sureste)
+    UnitCreate(1, "RoachWarren", 0, c_SFE_PLAYER_HOSTILE, Point(90.0, 35.0), 180.0);
     g_sfeOutpostEast = UnitLastCreated();
-    UnitSetPropertyFixed(g_sfeOutpostEast, c_unitPropLifeMax, 4000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
+    if (g_sfeOutpostEast == null) {
+        UnitCreate(1, "Nexus", 0, c_SFE_PLAYER_HOSTILE, Point(90.0, 35.0), 180.0);
+        g_sfeOutpostEast = UnitLastCreated();
+    }
+    UnitSetPropertyFixed(g_sfeOutpostEast, c_unitPropLifeMax, 5000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
     UnitSetPropertyFixed(g_sfeOutpostEast, c_unitPropLifePercent, 100.0);
     g_sfeOutpostEastAlive = true;
 
-    // 3. Complejo Infestado Oeste
-    UnitCreate(1, "InfestedCommandCenter", 0, c_SFE_PLAYER_HOSTILE, Point(40.0, 100.0), 0.0);
+    // 3. Base Protoss Corrompida (Ruta Central)
+    UnitCreate(1, "Nexus", 0, c_SFE_PLAYER_HOSTILE, Point(115.0, 135.0), 225.0);
     g_sfeOutpostWest = UnitLastCreated();
     if (g_sfeOutpostWest == null) {
-        UnitCreate(1, "CommandCenter", 0, c_SFE_PLAYER_HOSTILE, Point(40.0, 100.0), 0.0);
+        UnitCreate(1, "CommandCenter", 0, c_SFE_PLAYER_HOSTILE, Point(115.0, 135.0), 225.0);
         g_sfeOutpostWest = UnitLastCreated();
     }
-    UnitSetPropertyFixed(g_sfeOutpostWest, c_unitPropLifeMax, 4000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
+    UnitSetPropertyFixed(g_sfeOutpostWest, c_unitPropLifeMax, 5000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
     UnitSetPropertyFixed(g_sfeOutpostWest, c_unitPropLifePercent, 100.0);
     g_sfeOutpostWestAlive = true;
 
@@ -3337,30 +3374,63 @@ void SFE_InitWaveSpawner () {
 }
 
 //--------------------------------------------------------------------------------------------------
-// Enviar Grupo de Unidades Hostiles hacia el Núcleo Aliado
+// Enviar Grupo de Unidades Hostiles Siguiendo los Caminos Hacia el Núcleo
 //--------------------------------------------------------------------------------------------------
-void SFE_OrderHostilesToCore (unitgroup ug) {
+void SFE_OrderHostilesAlongRoute (unitgroup ug, int routeType) {
     int i;
     int count;
     unit u;
-    order ord;
+    point wp1;
+    point wp2;
+    order ord1;
+    order ord2;
+    order ordFinal;
+
+    count = UnitGroupCount(ug, c_unitCountAlive);
+    if (count <= 0) {
+        return;
+    }
+
+    if (routeType == 1) {
+        // Ruta Noroeste: baja bordeando el flanco oeste hasta el cruce suroeste
+        wp1 = Point(45.0, 95.0);
+        wp2 = g_sfePlateauSouthWest;
+    } else if (routeType == 2) {
+        // Ruta Sureste: avanza por el flanco sur hacia la entrada este de la base
+        wp1 = Point(105.0, 55.0);
+        wp2 = Point(50.0, 35.0);
+    } else if (routeType == 3) {
+        // Ruta Central: desciende desde la meseta central hacia el cruce suroeste
+        wp1 = Point(110.0, 105.0);
+        wp2 = g_sfePlateauSouthWest;
+    } else {
+        // Ruta Colmena Final: cruza la meseta central y avanza al cruce suroeste
+        wp1 = Point(135.0, 115.0);
+        wp2 = g_sfePlateauSouthWest;
+    }
+
+    ord1 = OrderTargetingPoint(AbilityCommand("attack", 0), wp1);
+    ord2 = OrderTargetingPoint(AbilityCommand("attack", 0), wp2);
+    ordFinal = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint);
 
     i = 1;
-    count = UnitGroupCount(ug, c_unitCountAlive);
-    ord = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint);
-
     while (i <= count) {
         u = UnitGroupUnit(ug, i);
-        UnitIssueOrder(u, ord, c_orderQueueReplace);
+        UnitIssueOrder(u, ord1, c_orderQueueReplace);
+        UnitIssueOrder(u, ord2, c_orderQueueAddToEnd);
+        UnitIssueOrder(u, ordFinal, c_orderQueueAddToEnd);
         i = i + 1;
     }
 }
 
 //--------------------------------------------------------------------------------------------------
-// Desplegar Oleada Hostil
+// Desplegar Oleada Hostil a lo largo de las Rutas
 //--------------------------------------------------------------------------------------------------
 void SFE_SpawnWave (int waveNum) {
-    unitgroup ug;
+    unitgroup ugNorth;
+    unitgroup ugSouth;
+    unitgroup ugEast;
+    unitgroup ugWest;
     fixed statMult;
     int countNorth;
     int countSouth;
@@ -3371,7 +3441,11 @@ void SFE_SpawnWave (int waveNum) {
     int k;
     unit u;
 
-    ug = UnitGroupEmpty();
+    ugNorth = UnitGroupEmpty();
+    ugSouth = UnitGroupEmpty();
+    ugEast  = UnitGroupEmpty();
+    ugWest  = UnitGroupEmpty();
+
     statMult = g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty] * (1.0 + (g_sfeHostileLifeBonusPct / 100.0));
     countNorth = 4 + (waveNum * 2);
     countSouth = 4 + (waveNum * 2);
@@ -3396,49 +3470,52 @@ void SFE_SpawnWave (int waveNum) {
         uType2 = "Aberration";
     }
 
-    // Generar tropas en los 4 cuadrantes
+    // Generar tropas en las 4 rutas
     k = 0;
     while (k < countNorth) {
-        UnitCreate(1, uType1, 0, c_SFE_PLAYER_HOSTILE, g_sfeSpawnNorth, 270.0);
+        UnitCreate(1, uType1, 0, c_SFE_PLAYER_HOSTILE, g_sfeSpawnNorth, 225.0);
         u = UnitLastCreated();
         UnitSetPropertyFixed(u, c_unitPropLifeMax, UnitGetPropertyFixed(u, c_unitPropLifeMax, false) * statMult);
         UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
-        UnitGroupAdd(ug, u);
+        UnitGroupAdd(ugNorth, u);
         k = k + 1;
     }
 
     k = 0;
     while (k < countSouth) {
-        UnitCreate(1, uType2, 0, c_SFE_PLAYER_HOSTILE, g_sfeSpawnSouth, 90.0);
+        UnitCreate(1, uType2, 0, c_SFE_PLAYER_HOSTILE, g_sfeSpawnSouth, 225.0);
         u = UnitLastCreated();
         UnitSetPropertyFixed(u, c_unitPropLifeMax, UnitGetPropertyFixed(u, c_unitPropLifeMax, false) * statMult);
         UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
-        UnitGroupAdd(ug, u);
+        UnitGroupAdd(ugSouth, u);
         k = k + 1;
     }
 
     k = 0;
     while (k < countEast) {
-        UnitCreate(1, uType1, 0, c_SFE_PLAYER_HOSTILE, g_sfeSpawnEast, 180.0);
+        UnitCreate(1, uType1, 0, c_SFE_PLAYER_HOSTILE, g_sfeSpawnEast, 225.0);
         u = UnitLastCreated();
         UnitSetPropertyFixed(u, c_unitPropLifeMax, UnitGetPropertyFixed(u, c_unitPropLifeMax, false) * statMult);
         UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
-        UnitGroupAdd(ug, u);
+        UnitGroupAdd(ugEast, u);
         k = k + 1;
     }
 
     k = 0;
     while (k < countWest) {
-        UnitCreate(1, uType2, 0, c_SFE_PLAYER_HOSTILE, g_sfeSpawnWest, 0.0);
+        UnitCreate(1, uType2, 0, c_SFE_PLAYER_HOSTILE, g_sfeSpawnWest, 225.0);
         u = UnitLastCreated();
         UnitSetPropertyFixed(u, c_unitPropLifeMax, UnitGetPropertyFixed(u, c_unitPropLifeMax, false) * statMult);
         UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
-        UnitGroupAdd(ug, u);
+        UnitGroupAdd(ugWest, u);
         k = k + 1;
     }
 
-    // Ordenar avance general al núcleo
-    SFE_OrderHostilesToCore(ug);
+    // Ordenar avance por sus respectivas rutas tácticas
+    SFE_OrderHostilesAlongRoute(ugNorth, 1);
+    SFE_OrderHostilesAlongRoute(ugSouth, 2);
+    SFE_OrderHostilesAlongRoute(ugEast, 3);
+    SFE_OrderHostilesAlongRoute(ugWest, 4);
 
     // Eventos especiales de Jefes por hito de oleada
     if (waveNum == 10) {
@@ -3664,7 +3741,7 @@ void SFE_TriggerBossHybridsSpawn ();
 void SFE_TriggerHellGateIncursion ();
 
 //--------------------------------------------------------------------------------------------------
-// Invocación del Jefe 1: Híbrido Maar (Sector Norte)
+// Invocación del Jefe 1: Híbrido Maar (Sector Central-Norte)
 //--------------------------------------------------------------------------------------------------
 void SFE_TriggerBossMaarSpawn () {
     point pSpawn;
@@ -3677,11 +3754,11 @@ void SFE_TriggerBossMaarSpawn () {
     g_sfeBossMaarSpawned = true;
     g_sfeBossMaarPhase = 1;
 
-    pSpawn = Point(100.0, 150.0);
-    UnitCreate(1, "HybridDestroyer", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+    pSpawn = Point(115.0, 135.0);
+    UnitCreate(1, "HybridDestroyer", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
     u = UnitLastCreated();
     if (u == null) {
-        UnitCreate(1, "Archon", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+        UnitCreate(1, "Archon", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
         u = UnitLastCreated();
     }
     g_sfeBossMaarUnit = u;
@@ -3692,9 +3769,10 @@ void SFE_TriggerBossMaarSpawn () {
     UnitSetPropertyFixed(u, c_unitPropLifeRegen, 15.0);
 
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-        StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"FF00FF\">¡ALERTA MAYOR! ¡EL HÍBRIDO MAAR HA DESPERTADO EN EL SECTOR NORTE!</c></s>"));
+        StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"FF00FF\">¡ALERTA MAYOR! ¡EL HÍBRIDO MAAR HA DESPERTADO EN EL SECTOR CENTRAL-NORTE!</c></s>"));
 
-    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueAddToEnd);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -3711,11 +3789,11 @@ void SFE_TriggerBossDestroyerSpawn () {
     g_sfeBossDestroyerSpawned = true;
     g_sfeBossDestroyerPhase = 1;
 
-    pSpawn = Point(40.0, 160.0);
-    UnitCreate(1, "HybridReaver", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+    pSpawn = Point(55.0, 155.0);
+    UnitCreate(1, "HybridReaver", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
     u = UnitLastCreated();
     if (u == null) {
-        UnitCreate(1, "Colossus", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+        UnitCreate(1, "Colossus", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
         u = UnitLastCreated();
     }
     g_sfeBossDestroyerUnit = u;
@@ -3728,7 +3806,9 @@ void SFE_TriggerBossDestroyerSpawn () {
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
         StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"FF4400\">¡RITUAL COMPLETADO! ¡DESTROYER OF WORLDS HA SIDO INVOCADO EN EL CUADRANTE NW!</c></s>"));
 
-    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauNorthWest), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueAddToEnd);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueAddToEnd);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -3745,11 +3825,11 @@ void SFE_TriggerBossHybridsSpawn () {
     g_sfeBossHybridsSpawned = true;
     g_sfeBossHybridsPhase = 1;
 
-    pSpawn = Point(160.0, 40.0);
-    UnitCreate(1, "HybridDominator", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 90.0);
+    pSpawn = Point(155.0, 55.0);
+    UnitCreate(1, "HybridDominator", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 135.0);
     u = UnitLastCreated();
     if (u == null) {
-        UnitCreate(1, "Archon", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 90.0);
+        UnitCreate(1, "Archon", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 135.0);
         u = UnitLastCreated();
     }
     g_sfeBossHybridsUnit = u;
@@ -3762,7 +3842,9 @@ void SFE_TriggerBossHybridsSpawn () {
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
         StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"CC00FF\">¡ARTEFACTO ACTIVADO! ¡HÍBRIDOS ANCESTRALES DESPIERTAN EN EL SECTOR SE!</c></s>"));
 
-    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthEast), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueAddToEnd);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueAddToEnd);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -3779,8 +3861,8 @@ void SFE_TriggerBossChainDogSpawn () {
     g_sfeBossChainDogSpawned = true;
     g_sfeBossChainDogPhase = 1;
 
-    pSpawn = Point(100.0, 125.0);
-    UnitCreate(1, "Ultralisk", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 270.0);
+    pSpawn = Point(135.0, 115.0);
+    UnitCreate(1, "Ultralisk", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
     u = UnitLastCreated();
     g_sfeBossChainDogUnit = u;
 
@@ -3792,7 +3874,8 @@ void SFE_TriggerBossChainDogSpawn () {
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
         StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"FF2222\">¡GUARDIÁN LIBERADO! ¡CHAINDOG HA ROTO SUS CADENAS EN LA ESTATUA CENTRAL!</c></s>"));
 
-    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueAddToEnd);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -3802,7 +3885,6 @@ void SFE_TriggerHellGateIncursion () {
     point pSpawn;
     int k;
     unit u;
-    order ord;
     int p;
 
     if (g_sfeBossHellGateTriggered) {
@@ -3810,8 +3892,7 @@ void SFE_TriggerHellGateIncursion () {
     }
     g_sfeBossHellGateTriggered = true;
 
-    pSpawn = Point(160.0, 160.0);
-    ord = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint);
+    pSpawn = g_sfeFinalHivePoint;
 
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
         StringToText("<s val=\"ModCenterSize28Bold\"><c val=\"FF0000\">¡¡PORTAL DEL INFIERNO DESATADO!! ¡INCURSIÓN MASIVA DE ÉLITE EN EL SECTOR NE!</c></s>"));
@@ -3820,7 +3901,9 @@ void SFE_TriggerHellGateIncursion () {
     while (k < 12) {
         UnitCreate(1, "Aberration", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
         u = UnitLastCreated();
-        UnitIssueOrder(u, ord, c_orderQueueReplace);
+        UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauCenter), c_orderQueueReplace);
+        UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueAddToEnd);
+        UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueAddToEnd);
         k = k + 1;
     }
 
@@ -3828,7 +3911,9 @@ void SFE_TriggerHellGateIncursion () {
     while (k < 6) {
         UnitCreate(1, "HybridDestroyer", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 225.0);
         u = UnitLastCreated();
-        UnitIssueOrder(u, ord, c_orderQueueReplace);
+        UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauCenter), c_orderQueueReplace);
+        UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueAddToEnd);
+        UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueAddToEnd);
         k = k + 1;
     }
 
@@ -3843,7 +3928,7 @@ void SFE_TriggerHellGateIncursion () {
 }
 
 //--------------------------------------------------------------------------------------------------
-// Invocación Secreta 5: Diablo Megaboss (SW - Gasolinera en Dificultad Torment)
+// Invocación Secreta 5: Diablo Megaboss (SE Extremo - Santuario Volcánico en Dificultad Torment)
 //--------------------------------------------------------------------------------------------------
 void SFE_TriggerBossDiabloSpawn () {
     point pSpawn;
@@ -3856,11 +3941,11 @@ void SFE_TriggerBossDiabloSpawn () {
     g_sfeBossDiabloSpawned = true;
     g_sfeBossDiabloPhase = 1;
 
-    pSpawn = Point(40.0, 40.0);
-    UnitCreate(1, "HybridDominator", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 45.0);
+    pSpawn = Point(165.0, 35.0);
+    UnitCreate(1, "HybridDominator", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 135.0);
     u = UnitLastCreated();
     if (u == null) {
-        UnitCreate(1, "Ultralisk", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 45.0);
+        UnitCreate(1, "Ultralisk", 0, c_SFE_PLAYER_HOSTILE, pSpawn, 135.0);
         u = UnitLastCreated();
     }
     g_sfeBossDiabloUnit = u;
@@ -3873,7 +3958,9 @@ void SFE_TriggerBossDiabloSpawn () {
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
         StringToText("<s val=\"ModCenterSize28Bold\"><c val=\"FF0000\">¡¡AMENAZA DESTRUCTORA FINAL!! ¡DIABLO HA ENTRADO AL CAMPO DE BATALLA!</c></s>"));
 
-    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthEast), c_orderQueueReplace);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueAddToEnd);
+    UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueAddToEnd);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -3951,32 +4038,32 @@ void SFE_CheckTerritorialInvocations () {
             if (u != null && UnitIsAlive(u)) {
                 livingHeroesTotal = livingHeroesTotal + 1;
 
-                // 1. NW (Destroyer of Worlds) - Point(40.0, 160.0)
-                d = DistanceBetweenPoints(UnitGetPosition(u), Point(40.0, 160.0));
+                // 1. NW (Destroyer of Worlds) - Point(55.0, 155.0)
+                d = DistanceBetweenPoints(UnitGetPosition(u), Point(55.0, 155.0));
                 if (d <= 12.0) {
                     nwCount = nwCount + 1;
                 }
 
-                // 2. SE (Híbridos Ancestrales) - Point(160.0, 40.0)
-                d = DistanceBetweenPoints(UnitGetPosition(u), Point(160.0, 40.0));
+                // 2. SE (Híbridos Ancestrales) - Point(155.0, 55.0)
+                d = DistanceBetweenPoints(UnitGetPosition(u), Point(155.0, 55.0));
                 if (d <= 12.0) {
                     seCount = seCount + 1;
                 }
 
-                // 3. Centro (ChainDog) - Point(100.0, 125.0)
-                d = DistanceBetweenPoints(UnitGetPosition(u), Point(100.0, 125.0));
+                // 3. Centro (ChainDog) - Point(135.0, 115.0)
+                d = DistanceBetweenPoints(UnitGetPosition(u), Point(135.0, 115.0));
                 if (d <= 10.0) {
                     centerCount = centerCount + 1;
                 }
 
-                // 4. NE (Hell Gate) - Point(160.0, 160.0)
-                d = DistanceBetweenPoints(UnitGetPosition(u), Point(160.0, 160.0));
+                // 4. NE (Hell Gate) - g_sfeFinalHivePoint (165.0, 155.0)
+                d = DistanceBetweenPoints(UnitGetPosition(u), g_sfeFinalHivePoint);
                 if (d <= 15.0) {
                     neHeroesInZone = neHeroesInZone + 1;
                 }
 
-                // 5. SW (Diablo en Torment) - Point(40.0, 40.0)
-                d = DistanceBetweenPoints(UnitGetPosition(u), Point(40.0, 40.0));
+                // 5. SE Extremo (Diablo en Torment) - Point(165.0, 35.0)
+                d = DistanceBetweenPoints(UnitGetPosition(u), Point(165.0, 35.0));
                 if (d <= 15.0) {
                     swCount = swCount + 1;
                 }
@@ -4047,13 +4134,13 @@ void SFE_CheckTerritorialInvocations () {
         }
     }
 
-    // Protocolo 5: SW Diablo (en dificultad Torment, presencia en la gasolinera por 20s)
+    // Protocolo 5: Santuario SE Diablo (en dificultad Torment, presencia por 20s)
     if (!g_sfeBossDiabloSpawned && g_sfeCurrentDifficulty == c_DIFF_TORMENT) {
         if (swCount >= 1) {
             g_sfeTimerDiablo = g_sfeTimerDiablo + 2;
             if (g_sfeTimerDiablo % 10 == 0) {
                 UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, 
-                    StringToText("<c val=\"FF0000\">[Torment SW] Presencia de Diablo incrementando: " + IntToString(g_sfeTimerDiablo) + "s / 20s</c>"));
+                    StringToText("<c val=\"FF0000\">[Santuario Volcánico SE] Presencia de Diablo incrementando: " + IntToString(g_sfeTimerDiablo) + "s / 20s</c>"));
             }
             if (g_sfeTimerDiablo >= 20) {
                 SFE_TriggerBossDiabloSpawn();

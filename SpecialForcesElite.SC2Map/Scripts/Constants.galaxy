@@ -176,6 +176,14 @@ unit g_sfeCurrentNydusWorm;
 bool g_sfeNydusAlive;
 point[4] g_sfeNydusCraterPoints;
 
+// Topología Territorial y Elevaciones Estratégicas
+point g_sfeBaseCenterPoint;
+point g_sfeFinalHivePoint;
+point g_sfePlateauSouthWest;
+point g_sfePlateauNorthWest;
+point g_sfePlateauSouthEast;
+point g_sfePlateauCenter;
+
 void SFE_InitDifficultyTables () {
     // M_inc: Multiplicador de ingreso por baja
     g_sfeDiffIncomeMultiplier[c_DIFF_CASUAL]  = 1.50;

@@ -90,7 +90,7 @@ void SFE_ConfirmHeroSelection (int player, int heroId) {
 
     g_sfePlayerHasConfirmed[player] = true;
     unitType = g_sfeHeroes[heroId].unitType;
-    pSpawn = Point(100.0, 92.0);
+    pSpawn = Point(38.0, 38.0);
 
     // Despliegue de la unidad
     UnitCreate(1, unitType, 0, player, pSpawn, 90.0);
