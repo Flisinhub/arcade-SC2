@@ -788,6 +788,7 @@ void SFE_HeroSelectionRandom (int player);
 bool gt_SFE_HeroSelection_Click_Func (bool testConds, bool runActions);
 bool gt_SFE_HeroSelection_Timer_Func (bool testConds, bool runActions);
 void SFE_InitHeroSelectionUI ();
+void SFE_CreateRoadBeacon (point p);
 void SFE_InitWaveSpawner ();
 void SFE_OrderHostilesAlongRoute (unitgroup ug, int routeType);
 void SFE_OrderHostilesToCore (unitgroup ug);
@@ -2005,14 +2006,21 @@ void SFE_InitAlliedBase () {
         UnitSetPropertyFixed(g_sfeMedic2, c_unitPropEnergyPercent, 100.0);
     }
 
-    // Visibilidad permanente de las 4 elevaciones estratégicas para todos los jugadores
+    // 1. Desactivar Niebla Negra (Black Mask) para revelar la topologia, relieve y caminos
+    VisEnable(c_visTypeMask, false);
+
+    // 2. Centrar camara inmediatamente en la base aliada y otorgar visibilidad permanente
     p = 1;
     while (p <= c_SFE_MAX_PLAYERS) {
         if (PlayerType(p) == c_playerTypeUser) {
-            VisRevealerCreate(p, RegionCircle(g_sfePlateauSouthWest, 6.0));
-            VisRevealerCreate(p, RegionCircle(g_sfePlateauNorthWest, 6.0));
-            VisRevealerCreate(p, RegionCircle(g_sfePlateauSouthEast, 6.0));
-            VisRevealerCreate(p, RegionCircle(g_sfePlateauCenter, 7.0));
+            CameraPan(p, g_sfeBaseCenterPoint, 0.0, -1, 10.0, false);
+            // Revelador de visión sobre el enclave completo de la base
+            VisRevealerCreate(p, RegionCircle(g_sfeBaseCenterPoint, 24.0));
+            // Reveladores permanentes sobre las 4 mesetas estratégicas
+            VisRevealerCreate(p, RegionCircle(g_sfePlateauSouthWest, 12.0));
+            VisRevealerCreate(p, RegionCircle(g_sfePlateauNorthWest, 12.0));
+            VisRevealerCreate(p, RegionCircle(g_sfePlateauSouthEast, 12.0));
+            VisRevealerCreate(p, RegionCircle(g_sfePlateauCenter, 14.0));
         }
         p = p + 1;
     }
@@ -3328,10 +3336,24 @@ void SFE_TriggerBossDestroyerSpawn ();
 void SFE_TriggerBossDiabloSpawn ();
 
 //--------------------------------------------------------------------------------------------------
+// Crear Baliza Luminosa Indicadora de Camino (Inmune y Neutral)
+//--------------------------------------------------------------------------------------------------
+void SFE_CreateRoadBeacon (point p) {
+    unit u;
+    UnitCreate(1, "BeaconTerran", 0, c_SFE_PLAYER_NEUTRAL, p, 0.0);
+    u = UnitLastCreated();
+    if (u != null) {
+        UnitSetState(u, c_unitStateInvulnerable, true);
+        UnitSetState(u, c_unitStateSelectable, false);
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
 // Inicializar Puntos de Rutas y Nidos de Asedio
 //--------------------------------------------------------------------------------------------------
 void SFE_InitWaveSpawner () {
     trigger tEntropy;
+    unit u;
 
     // Puntos de generación en los extremos de los 3 caminos y la Gran Colmena
     g_sfeSpawnNorth = Point(55.0, 165.0); // Extremo Norte de la Ruta Noroeste
@@ -3345,7 +3367,7 @@ void SFE_InitWaveSpawner () {
     g_sfeHostileArmorBonus = 0.0;
     g_sfeHostileLifeBonusPct = 0.0;
 
-    // Crear los 3 reductos/nidos hostiles sobre los caminos (Jugador 15)
+    // Crear los 3 reductos/nidos hostiles sobre los caminos (Jugador 2 - Hostil)
     // 1. Super Spawning Pool (Ruta Noroeste)
     UnitCreate(1, "SpawningPool", 0, c_SFE_PLAYER_HOSTILE, Point(35.0, 105.0), 270.0);
     g_sfeOutpostNorth = UnitLastCreated();
@@ -3355,7 +3377,9 @@ void SFE_InitWaveSpawner () {
     }
     UnitSetPropertyFixed(g_sfeOutpostNorth, c_unitPropLifeMax, 5000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
     UnitSetPropertyFixed(g_sfeOutpostNorth, c_unitPropLifePercent, 100.0);
+    UnitCreate(2, "SpineCrawler", 0, c_SFE_PLAYER_HOSTILE, Point(38.0, 102.0), 270.0);
     g_sfeOutpostNorthAlive = true;
+    VisRevealerCreate(1, RegionCircle(Point(35.0, 105.0), 12.0));
 
     // 2. Madriguera de Cucarachas / Roach Den (Ruta Sureste)
     UnitCreate(1, "RoachWarren", 0, c_SFE_PLAYER_HOSTILE, Point(90.0, 35.0), 180.0);
@@ -3366,7 +3390,9 @@ void SFE_InitWaveSpawner () {
     }
     UnitSetPropertyFixed(g_sfeOutpostEast, c_unitPropLifeMax, 5000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
     UnitSetPropertyFixed(g_sfeOutpostEast, c_unitPropLifePercent, 100.0);
+    UnitCreate(2, "SpineCrawler", 0, c_SFE_PLAYER_HOSTILE, Point(87.0, 38.0), 180.0);
     g_sfeOutpostEastAlive = true;
+    VisRevealerCreate(1, RegionCircle(Point(90.0, 35.0), 12.0));
 
     // 3. Base Protoss Corrompida (Ruta Central)
     UnitCreate(1, "Nexus", 0, c_SFE_PLAYER_HOSTILE, Point(115.0, 135.0), 225.0);
@@ -3377,7 +3403,38 @@ void SFE_InitWaveSpawner () {
     }
     UnitSetPropertyFixed(g_sfeOutpostWest, c_unitPropLifeMax, 5000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
     UnitSetPropertyFixed(g_sfeOutpostWest, c_unitPropLifePercent, 100.0);
+    UnitCreate(2, "PhotonCannon", 0, c_SFE_PLAYER_HOSTILE, Point(112.0, 132.0), 225.0);
     g_sfeOutpostWestAlive = true;
+    VisRevealerCreate(1, RegionCircle(Point(115.0, 135.0), 12.0));
+
+    // 4. Bastión Supremo: Gran Colmena Zerg en la Esquina Superior Derecha
+    UnitCreate(1, "Hive", 0, c_SFE_PLAYER_HOSTILE, g_sfeFinalHivePoint, 225.0);
+    u = UnitLastCreated();
+    if (u != null) {
+        UnitSetPropertyFixed(u, c_unitPropLifeMax, 25000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
+        UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
+        UnitSetPropertyFixed(u, c_unitPropLifeRegen, 15.0);
+    }
+    UnitCreate(2, "SporeCrawler", 0, c_SFE_PLAYER_HOSTILE, Point(160.0, 150.0), 225.0);
+    UnitCreate(2, "SpineCrawler", 0, c_SFE_PLAYER_HOSTILE, Point(155.0, 160.0), 225.0);
+    VisRevealerCreate(1, RegionCircle(g_sfeFinalHivePoint, 18.0));
+
+    // 5. Señalizadores de Caminos (Balizas luminosas en las 3 rutas para trazado visible)
+    SFE_CreateRoadBeacon(Point(35.0, 70.0));
+    SFE_CreateRoadBeacon(Point(45.0, 95.0));
+    SFE_CreateRoadBeacon(Point(55.0, 130.0));
+    SFE_CreateRoadBeacon(Point(55.0, 155.0));
+
+    SFE_CreateRoadBeacon(Point(70.0, 70.0));
+    SFE_CreateRoadBeacon(Point(95.0, 90.0));
+    SFE_CreateRoadBeacon(Point(115.0, 105.0));
+    SFE_CreateRoadBeacon(Point(145.0, 130.0));
+
+    SFE_CreateRoadBeacon(Point(70.0, 35.0));
+    SFE_CreateRoadBeacon(Point(95.0, 45.0));
+    SFE_CreateRoadBeacon(Point(125.0, 55.0));
+    SFE_CreateRoadBeacon(Point(155.0, 85.0));
+    SFE_CreateRoadBeacon(Point(165.0, 120.0));
 
     // Inicializar temporizador de evolución de entropía (T_up)
     g_sfeEntropyTimer = TimerCreate();

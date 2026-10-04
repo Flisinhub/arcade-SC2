@@ -117,14 +117,21 @@ void SFE_InitAlliedBase () {
         UnitSetPropertyFixed(g_sfeMedic2, c_unitPropEnergyPercent, 100.0);
     }
 
-    // Visibilidad permanente de las 4 elevaciones estratégicas para todos los jugadores
+    // 1. Desactivar Niebla Negra (Black Mask) para revelar la topologia, relieve y caminos
+    VisEnable(c_visTypeMask, false);
+
+    // 2. Centrar camara inmediatamente en la base aliada y otorgar visibilidad permanente
     p = 1;
     while (p <= c_SFE_MAX_PLAYERS) {
         if (PlayerType(p) == c_playerTypeUser) {
-            VisRevealerCreate(p, RegionCircle(g_sfePlateauSouthWest, 6.0));
-            VisRevealerCreate(p, RegionCircle(g_sfePlateauNorthWest, 6.0));
-            VisRevealerCreate(p, RegionCircle(g_sfePlateauSouthEast, 6.0));
-            VisRevealerCreate(p, RegionCircle(g_sfePlateauCenter, 7.0));
+            CameraPan(p, g_sfeBaseCenterPoint, 0.0, -1, 10.0, false);
+            // Revelador de visión sobre el enclave completo de la base
+            VisRevealerCreate(p, RegionCircle(g_sfeBaseCenterPoint, 24.0));
+            // Reveladores permanentes sobre las 4 mesetas estratégicas
+            VisRevealerCreate(p, RegionCircle(g_sfePlateauSouthWest, 12.0));
+            VisRevealerCreate(p, RegionCircle(g_sfePlateauNorthWest, 12.0));
+            VisRevealerCreate(p, RegionCircle(g_sfePlateauSouthEast, 12.0));
+            VisRevealerCreate(p, RegionCircle(g_sfePlateauCenter, 14.0));
         }
         p = p + 1;
     }
