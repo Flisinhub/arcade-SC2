@@ -61,23 +61,23 @@ void SFE_UpdatePlayerHUD (int player) {
     pg = PlayerGroupSingle(player);
     hid = g_sfeHeroStates[player].heroId;
 
-    txtInfo = StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"FFE400\">" + g_sfeHeroes[hid].name + 
+    txtInfo = StringToText("<b><c val=\"FFE400\">" + g_sfeHeroes[hid].name + 
         "</c> | Nvl " + IntToString(g_sfeHeroStates[player].level) + 
-        " <c val=\"AAAAAA\">(" + IntToString(g_sfeHeroStates[player].currentXp) + "/" + IntToString(g_sfeHeroStates[player].requiredXp) + " XP)</c></s>");
+        " <c val=\"AAAAAA\">(" + IntToString(g_sfeHeroStates[player].currentXp) + "/" + IntToString(g_sfeHeroStates[player].requiredXp) + " XP)</c></b>");
 
-    txtStr = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"FF4444\">Fuerza: " + IntToString(g_sfeHeroStates[player].strength) + 
-        "</c> <c val=\"AAAAAA\">(+" + FixedToString(g_sfeHeroStates[player].strength * c_FACTOR_ALPHA_STRENGTH_DAMAGE, 1) + " Dmg)</c></s>");
+    txtStr = StringToText("<b><c val=\"FF4444\">Fuerza: " + IntToString(g_sfeHeroStates[player].strength) + 
+        "</c> <c val=\"AAAAAA\">(+" + FixedToString(g_sfeHeroStates[player].strength * c_FACTOR_ALPHA_STRENGTH_DAMAGE, 1) + " Dmg)</c></b>");
 
-    txtDex = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"55FF55\">Destreza: " + IntToString(g_sfeHeroStates[player].dexterity) + 
-        "</c> <c val=\"AAAAAA\">(Cadencia " + FixedToString(g_sfeHeroStates[player].currentAttackInterval, 2) + "s)</c></s>");
+    txtDex = StringToText("<b><c val=\"55FF55\">Destreza: " + IntToString(g_sfeHeroStates[player].dexterity) + 
+        "</c> <c val=\"AAAAAA\">(Cadencia " + FixedToString(g_sfeHeroStates[player].currentAttackInterval, 2) + "s)</c></b>");
 
-    txtInt = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"00CCFF\">Inteligencia: " + IntToString(g_sfeHeroStates[player].intelligence) + 
-        "</c> <c val=\"AAAAAA\">(+" + FixedToString(g_sfeHeroStates[player].intelligence * c_FACTOR_LAMBDA_INTEL_ENERGY, 0) + " Maná)</c></s>");
+    txtInt = StringToText("<b><c val=\"00CCFF\">Inteligencia: " + IntToString(g_sfeHeroStates[player].intelligence) + 
+        "</c> <c val=\"AAAAAA\">(+" + FixedToString(g_sfeHeroStates[player].intelligence * c_FACTOR_LAMBDA_INTEL_ENERGY, 0) + " Maná)</c></b>");
 
     if (g_sfeHeroStates[player].unspentAttributePoints > 0) {
-        txtPts = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"FFFF00\">¡Puntos Disponibles: " + IntToString(g_sfeHeroStates[player].unspentAttributePoints) + "!</c></s>");
+        txtPts = StringToText("<b><c val=\"FFFF00\">¡Puntos Disponibles: " + IntToString(g_sfeHeroStates[player].unspentAttributePoints) + "!</c></b>");
     } else {
-        txtPts = StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"888888\">Puntos Disponibles: 0</c></s>");
+        txtPts = StringToText("<b><c val=\"888888\">Puntos Disponibles: 0</c></b>");
     }
 
     DialogControlSetPropertyAsText(g_sfeHudLblHeroInfo[player], c_triggerControlPropertyText, pg, txtInfo);
@@ -104,13 +104,13 @@ void SFE_UpdateTopBarHUD () {
         diffColor = "00FFEA";
     }
 
-    txtDiff = StringToText("<s val=\"ModCenterSize18Bold\"><c val=\"" + diffColor + "\">[" + g_sfeDiffNames[g_sfeCurrentDifficulty] + "]</c></s>");
-    txtWave = StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"FFFFFF\">Oleada " + IntToString(g_sfeCurrentWaveNumber) + " / 25</c>  |  <c val=\"FFAA00\">Próxima: " + IntToString(g_sfeWaveTimeRemaining) + "s</c></s>");
+    txtDiff = StringToText("<b><c val=\"" + diffColor + "\">[" + g_sfeDiffNames[g_sfeCurrentDifficulty] + "]</c></b>");
+    txtWave = StringToText("<b><c val=\"FFFFFF\">Oleada " + IntToString(g_sfeCurrentWaveNumber) + " / 25</c>  |  <c val=\"FFAA00\">Próxima: " + IntToString(g_sfeWaveTimeRemaining) + "s</c></b>");
 
     if (g_sfeBaseCoreHpPercent < 35.0) {
-        txtBase = StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"FF0000\">¡ALERTA BASE!: " + FixedToString(g_sfeBaseCoreHpPercent, 0) + "%</c></s>");
+        txtBase = StringToText("<b><c val=\"FF0000\">¡ALERTA BASE!: " + FixedToString(g_sfeBaseCoreHpPercent, 0) + "%</c></b>");
     } else {
-        txtBase = StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"55FF55\">Núcleo Base: " + FixedToString(g_sfeBaseCoreHpPercent, 0) + "%</c></s>");
+        txtBase = StringToText("<b><c val=\"55FF55\">Núcleo Base: " + FixedToString(g_sfeBaseCoreHpPercent, 0) + "%</c></b>");
     }
 
     DialogControlSetPropertyAsText(g_sfeTopBarLblDiff, c_triggerControlPropertyText, PlayerGroupAll(), txtDiff);
@@ -302,7 +302,7 @@ void SFE_InitHUD () {
         pg = PlayerGroupSingle(p);
 
         // Panel HUD de Atributos (Superior Izquierda)
-        g_sfeHudDialog[p] = DialogCreate(380, 230, c_anchorTopLeft, 20, 90, false);
+        g_sfeHudDialog[p] = DialogCreate(380, 240, c_anchorTopLeft, 20, 90, false);
         DialogSetImage(g_sfeHudDialog[p], "Assets\\Textures\\ui_glue_backgrounddialog.dds");
 
         g_sfeHudLblHeroInfo[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
@@ -311,42 +311,42 @@ void SFE_InitHUD () {
 
         // Fila Fuerza
         g_sfeHudLblStrength[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
-        DialogControlSetSize(g_sfeHudLblStrength[p], pg, 280, 25);
+        DialogControlSetSize(g_sfeHudLblStrength[p], pg, 280, 28);
         DialogControlSetPosition(g_sfeHudLblStrength[p], pg, c_anchorTopLeft, 10, 42);
 
         g_sfeHudBtnAddStr[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
-        DialogControlSetSize(g_sfeHudBtnAddStr[p], pg, 65, 26);
-        DialogControlSetPosition(g_sfeHudBtnAddStr[p], pg, c_anchorTopLeft, 300, 42);
+        DialogControlSetSize(g_sfeHudBtnAddStr[p], pg, 70, 36);
+        DialogControlSetPosition(g_sfeHudBtnAddStr[p], pg, c_anchorTopLeft, 295, 38);
         DialogControlSetPropertyAsText(g_sfeHudBtnAddStr[p], c_triggerControlPropertyText, pg, StringToText("+ F"));
 
         // Fila Destreza
         g_sfeHudLblDexterity[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
-        DialogControlSetSize(g_sfeHudLblDexterity[p], pg, 280, 25);
-        DialogControlSetPosition(g_sfeHudLblDexterity[p], pg, c_anchorTopLeft, 10, 75);
+        DialogControlSetSize(g_sfeHudLblDexterity[p], pg, 280, 28);
+        DialogControlSetPosition(g_sfeHudLblDexterity[p], pg, c_anchorTopLeft, 10, 80);
 
         g_sfeHudBtnAddDex[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
-        DialogControlSetSize(g_sfeHudBtnAddDex[p], pg, 65, 26);
-        DialogControlSetPosition(g_sfeHudBtnAddDex[p], pg, c_anchorTopLeft, 300, 75);
+        DialogControlSetSize(g_sfeHudBtnAddDex[p], pg, 70, 36);
+        DialogControlSetPosition(g_sfeHudBtnAddDex[p], pg, c_anchorTopLeft, 295, 76);
         DialogControlSetPropertyAsText(g_sfeHudBtnAddDex[p], c_triggerControlPropertyText, pg, StringToText("+ D"));
 
         // Fila Inteligencia
         g_sfeHudLblIntel[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
-        DialogControlSetSize(g_sfeHudLblIntel[p], pg, 280, 25);
-        DialogControlSetPosition(g_sfeHudLblIntel[p], pg, c_anchorTopLeft, 10, 108);
+        DialogControlSetSize(g_sfeHudLblIntel[p], pg, 280, 28);
+        DialogControlSetPosition(g_sfeHudLblIntel[p], pg, c_anchorTopLeft, 10, 118);
 
         g_sfeHudBtnAddInt[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
-        DialogControlSetSize(g_sfeHudBtnAddInt[p], pg, 65, 26);
-        DialogControlSetPosition(g_sfeHudBtnAddInt[p], pg, c_anchorTopLeft, 300, 108);
+        DialogControlSetSize(g_sfeHudBtnAddInt[p], pg, 70, 36);
+        DialogControlSetPosition(g_sfeHudBtnAddInt[p], pg, c_anchorTopLeft, 295, 114);
         DialogControlSetPropertyAsText(g_sfeHudBtnAddInt[p], c_triggerControlPropertyText, pg, StringToText("+ I"));
 
         // Puntos disponibles y Botón de Tienda
         g_sfeHudLblPoints[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
         DialogControlSetSize(g_sfeHudLblPoints[p], pg, 230, 30);
-        DialogControlSetPosition(g_sfeHudLblPoints[p], pg, c_anchorTopLeft, 10, 145);
+        DialogControlSetPosition(g_sfeHudLblPoints[p], pg, c_anchorTopLeft, 10, 160);
 
         g_sfeHudBtnOpenShop[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
-        DialogControlSetSize(g_sfeHudBtnOpenShop[p], pg, 130, 35);
-        DialogControlSetPosition(g_sfeHudBtnOpenShop[p], pg, c_anchorTopLeft, 235, 145);
+        DialogControlSetSize(g_sfeHudBtnOpenShop[p], pg, 130, 36);
+        DialogControlSetPosition(g_sfeHudBtnOpenShop[p], pg, c_anchorTopLeft, 235, 157);
         DialogControlSetPropertyAsText(g_sfeHudBtnOpenShop[p], c_triggerControlPropertyText, pg, StringToText("<c val=\"FFE400\">CONSOLA [Alt+C]</c>"));
 
         DialogSetVisible(g_sfeHudDialog[p], pg, true);
@@ -360,7 +360,7 @@ void SFE_InitHUD () {
         DialogControlSetSize(DialogControlLastCreated(), pg, 460, 35);
         DialogControlSetPosition(DialogControlLastCreated(), pg, c_anchorTop, 0, 15);
         DialogControlSetPropertyAsText(DialogControlLastCreated(), c_triggerControlPropertyText, pg, 
-            StringToText("<s val=\"ModCenterSize22Bold\"><c val=\"FFE400\">ARSENAL Y MEJORAS TÁCTICAS</c></s>"));
+            StringToText("<b><c val=\"FFE400\">ARSENAL Y MEJORAS TÁCTICAS</c></b>"));
 
         // Opciones Tienda
         g_sfeShopBtnWeapons[p] = DialogControlCreate(g_sfeShopDialog[p], c_triggerControlTypeButton);

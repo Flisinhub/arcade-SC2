@@ -296,9 +296,9 @@ void SFE_CheckOutpostStatus () {
     int p;
     text bountyText;
 
-    if (g_sfeOutpostNorthAlive && !UnitIsAlive(g_sfeOutpostNorth)) {
+    if (g_sfeOutpostNorthAlive && g_sfeOutpostNorth != null && !UnitIsAlive(g_sfeOutpostNorth)) {
         g_sfeOutpostNorthAlive = false;
-        bountyText = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FFE400\">¡COLMENA ZERG NORTE DESTRUIDA! +1000 MINERALES PARA EL EQUIPO</c></s>");
+        bountyText = StringToText("<c val=\"FFE400\"><b>¡COLMENA ZERG NORTE DESTRUIDA! +1000 MINERALES PARA EL EQUIPO</b></c>");
         UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, bountyText);
 
         p = 1;
@@ -309,9 +309,9 @@ void SFE_CheckOutpostStatus () {
         SFE_TriggerBossMaarSpawn();
     }
 
-    if (g_sfeOutpostEastAlive && !UnitIsAlive(g_sfeOutpostEast)) {
+    if (g_sfeOutpostEastAlive && g_sfeOutpostEast != null && !UnitIsAlive(g_sfeOutpostEast)) {
         g_sfeOutpostEastAlive = false;
-        bountyText = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FFE400\">¡FORTALEZA PROTOSS ESTE DESTRUIDA! +1000 MINERALES PARA EL EQUIPO</c></s>");
+        bountyText = StringToText("<c val=\"FFE400\"><b>¡FORTALEZA PROTOSS ESTE DESTRUIDA! +1000 MINERALES PARA EL EQUIPO</b></c>");
         UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, bountyText);
 
         p = 1;
@@ -322,9 +322,9 @@ void SFE_CheckOutpostStatus () {
         SFE_TriggerBossDestroyerSpawn();
     }
 
-    if (g_sfeOutpostWestAlive && !UnitIsAlive(g_sfeOutpostWest)) {
+    if (g_sfeOutpostWestAlive && g_sfeOutpostWest != null && !UnitIsAlive(g_sfeOutpostWest)) {
         g_sfeOutpostWestAlive = false;
-        bountyText = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FFE400\">¡COMPLEJO INFESTADO OESTE DESTRUIDO! +1000 MINERALES PARA EL EQUIPO</c></s>");
+        bountyText = StringToText("<c val=\"FFE400\"><b>¡COMPLEJO INFESTADO OESTE DESTRUIDO! +1000 MINERALES PARA EL EQUIPO</b></c>");
         UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, bountyText);
 
         p = 1;

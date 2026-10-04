@@ -64,7 +64,15 @@ void SFE_InitAlliedBase () {
     g_sfeGameOverTriggered = false;
     g_sfeBaseCoreHpPercent = 100.0;
 
-    // Crear Fortaleza Planetaria Troncal en la Esquina Inferior Izquierda (Jugador 14 - Aliado)
+    // Configurar alianzas y colores oficiales: Jugador 1 (Base/Usuario) vs Jugador 2 (Hostil)
+    PlayerSetAlliance(1, c_allianceIdPassive, 2, false);
+    PlayerSetAlliance(2, c_allianceIdPassive, 1, false);
+    PlayerSetAlliance(1, c_allianceIdVision, 2, false);
+    PlayerSetAlliance(2, c_allianceIdVision, 1, false);
+    PlayerSetColorIndex(1, 0, true);
+    PlayerSetColorIndex(2, 1, true);
+
+    // Crear Fortaleza Planetaria Troncal en la Esquina Inferior Izquierda (Jugador 1 - Base Aliada)
     UnitCreate(1, "PlanetaryFortress", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBaseCenterPoint, 45.0);
     u = UnitLastCreated();
     if (u == null) {
@@ -256,6 +264,10 @@ void SFE_UpdateBaseHealthStatus () {
         return;
     }
 
+    if (g_sfeBaseCoreUnit == null) {
+        return;
+    }
+
     if (!UnitIsAlive(g_sfeBaseCoreUnit)) {
         SFE_TriggerDefeat();
         return;
@@ -282,7 +294,7 @@ void SFE_TriggerDefeat () {
     g_sfeGameOverTriggered = true;
 
     p = 1;
-    defText = StringToText("<s val=\"ModCenterSize36Bold\"><c val=\"FF0000\">¡EL CUARTEL GENERAL HA SIDO DESTRUIDO!\nMISIÓN FALLIDA — DERROTA</c></s>");
+    defText = StringToText("<b><c val=\"FF0000\">¡EL CUARTEL GENERAL HA SIDO DESTRUIDO!\nMISIÓN FALLIDA — DERROTA</c></b>");
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, defText);
 
     while (p <= c_SFE_MAX_PLAYERS) {
@@ -306,7 +318,7 @@ void SFE_TriggerVictory () {
     g_sfeGameOverTriggered = true;
 
     p = 1;
-    vicText = StringToText("<s val=\"ModCenterSize36Bold\"><c val=\"00FF7F\">¡¡VICTORIA SUPREMA EN SPECIAL FORCES ELITE 5!!\nTODAS LAS HORDAS Y JEFES HAN SIDO ERRADICADOS</c></s>");
+    vicText = StringToText("<b><c val=\"00FF7F\">¡¡VICTORIA SUPREMA EN SPECIAL FORCES ELITE 5!!\nTODAS LAS HORDAS Y JEFES HAN SIDO ERRADICADOS</c></b>");
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, vicText);
 
     while (p <= c_SFE_MAX_PLAYERS) {

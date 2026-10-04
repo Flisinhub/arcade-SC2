@@ -357,7 +357,7 @@ void SFE_HeroLevelUp (int player) {
     SFE_RecalculateStats(player);
 
     // Notificación de subida de nivel
-    msg = StringToText("<s val=\"ModCenterSize22Bold\"><c val=\"FFFF00\">¡NIVEL " + IntToString(g_sfeHeroStates[player].level) + "! (+3 Puntos Disponibles)</c></s>");
+    msg = StringToText("<b><c val=\"FFFF00\">¡NIVEL " + IntToString(g_sfeHeroStates[player].level) + "! (+3 Puntos Disponibles)</c></b>");
     UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, msg);
 
     // Conceder experiencia de cuenta al banco

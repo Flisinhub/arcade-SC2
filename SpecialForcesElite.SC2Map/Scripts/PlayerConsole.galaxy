@@ -102,7 +102,7 @@ void SFE_InitPlayerConsoleUI (int player) {
     DialogControlSetSize(g_sfeConsoleLblTitle[player], pg, 500, 30);
     DialogControlSetPosition(g_sfeConsoleLblTitle[player], pg, c_anchorTop, 0, 15);
     DialogControlSetPropertyAsText(g_sfeConsoleLblTitle[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FFE400\">SPECIAL FORCES ELITE 5 — CONSOLA DE JUGADOR</c></s>"));
+        StringToText("<b><c val=\"FFE400\">SPECIAL FORCES ELITE 5 — CONSOLA DE JUGADOR</c></b>"));
 
     // Indicador de Minerales Disponibles
     g_sfeConsoleLblMinerals[player] = DialogControlCreate(dlg, c_triggerControlTypeLabel);
@@ -114,32 +114,32 @@ void SFE_InitPlayerConsoleUI (int player) {
     DialogControlSetSize(g_sfeConsoleBtnTabBuffs[player], pg, 185, 34);
     DialogControlSetPosition(g_sfeConsoleBtnTabBuffs[player], pg, c_anchorTopLeft, 25, 55);
     DialogControlSetPropertyAsText(g_sfeConsoleBtnTabBuffs[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModCenterSize14Bold\"><c val=\"00FFEA\">1. BUFFS (T1 - T7)</c></s>"));
+        StringToText("<b><c val=\"00FFEA\">1. BUFFS (T1 - T7)</c></b>"));
 
     g_sfeConsoleBtnTabStats[player] = DialogControlCreate(dlg, c_triggerControlTypeButton);
     DialogControlSetSize(g_sfeConsoleBtnTabStats[player], pg, 185, 34);
     DialogControlSetPosition(g_sfeConsoleBtnTabStats[player], pg, c_anchorTopLeft, 220, 55);
     DialogControlSetPropertyAsText(g_sfeConsoleBtnTabStats[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModCenterSize14Bold\"><c val=\"55FF55\">2. ATRIBUTOS & STATS</c></s>"));
+        StringToText("<b><c val=\"55FF55\">2. ATRIBUTOS & STATS</c></b>"));
 
     g_sfeConsoleBtnTabUpgrades[player] = DialogControlCreate(dlg, c_triggerControlTypeButton);
     DialogControlSetSize(g_sfeConsoleBtnTabUpgrades[player], pg, 215, 34);
     DialogControlSetPosition(g_sfeConsoleBtnTabUpgrades[player], pg, c_anchorTopLeft, 415, 55);
     DialogControlSetPropertyAsText(g_sfeConsoleBtnTabUpgrades[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModCenterSize14Bold\"><c val=\"FFE400\">3. 500 UPGRADES / AUTO</c></s>"));
+        StringToText("<b><c val=\"FFE400\">3. 500 UPGRADES / AUTO</c></b>"));
 
     g_sfeConsoleBtnTabSettings[player] = DialogControlCreate(dlg, c_triggerControlTypeButton);
     DialogControlSetSize(g_sfeConsoleBtnTabSettings[player], pg, 175, 34);
     DialogControlSetPosition(g_sfeConsoleBtnTabSettings[player], pg, c_anchorTopLeft, 640, 55);
     DialogControlSetPropertyAsText(g_sfeConsoleBtnTabSettings[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModCenterSize14Bold\"><c val=\"CC88FF\">4. AJUSTES / COMERCIO</c></s>"));
+        StringToText("<b><c val=\"CC88FF\">4. AJUSTES / COMERCIO</c></b>"));
 
     // Botón de Cierre
     g_sfeConsoleBtnClose[player] = DialogControlCreate(dlg, c_triggerControlTypeButton);
     DialogControlSetSize(g_sfeConsoleBtnClose[player], pg, 200, 36);
     DialogControlSetPosition(g_sfeConsoleBtnClose[player], pg, c_anchorBottom, 0, 15);
     DialogControlSetPropertyAsText(g_sfeConsoleBtnClose[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModCenterSize14Bold\"><c val=\"FFFFFF\">Cerrar Consola [Alt+C]</c></s>"));
+        StringToText("<b><c val=\"FFFFFF\">Cerrar Consola [Alt+C]</c></b>"));
 
     tClick = TriggerCreate("gt_SFE_ConsoleClick_Func");
     TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnTabBuffs[player], c_triggerControlEventTypeClick);
@@ -175,7 +175,7 @@ void SFE_InitPlayerConsoleUI (int player) {
         DialogControlSetSize(g_sfeConsoleBtnSellBuff[player][t], pg, 105, 48);
         DialogControlSetPosition(g_sfeConsoleBtnSellBuff[player][t], pg, c_anchorTopLeft, 720, rowY);
         DialogControlSetPropertyAsText(g_sfeConsoleBtnSellBuff[player][t], c_triggerControlPropertyText, pg, 
-            StringToText("<s val=\"ModCenterSize12Bold\"><c val=\"FF8888\">Vender T" + IntToString(t) + "</c></s>"));
+            StringToText("<b><c val=\"FF8888\">Vender T" + IntToString(t) + "</c></b>"));
         TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnSellBuff[player][t], c_triggerControlEventTypeClick);
 
         t = t + 1;
@@ -186,28 +186,28 @@ void SFE_InitPlayerConsoleUI (int player) {
     DialogControlSetSize(g_sfeConsoleBtnAce[player], pg, 185, 45);
     DialogControlSetPosition(g_sfeConsoleBtnAce[player], pg, c_anchorTopLeft, 25, 525);
     DialogControlSetPropertyAsText(g_sfeConsoleBtnAce[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModCenterSize13Bold\"><c val=\"FFE400\">ACE (15k)</c></s>"));
+        StringToText("<b><c val=\"FFE400\">ACE (15k)</c></b>"));
     TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnAce[player], c_triggerControlEventTypeClick);
 
     g_sfeConsoleBtnDemiurge[player] = DialogControlCreate(dlg, c_triggerControlTypeButton);
     DialogControlSetSize(g_sfeConsoleBtnDemiurge[player], pg, 185, 45);
     DialogControlSetPosition(g_sfeConsoleBtnDemiurge[player], pg, c_anchorTopLeft, 220, 525);
     DialogControlSetPropertyAsText(g_sfeConsoleBtnDemiurge[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModCenterSize13Bold\"><c val=\"00FFEA\">DEMIURGE (30k)</c></s>"));
+        StringToText("<b><c val=\"00FFEA\">DEMIURGE (30k)</c></b>"));
     TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnDemiurge[player], c_triggerControlEventTypeClick);
 
     g_sfeConsoleBtnVeterancy[player] = DialogControlCreate(dlg, c_triggerControlTypeButton);
     DialogControlSetSize(g_sfeConsoleBtnVeterancy[player], pg, 185, 45);
     DialogControlSetPosition(g_sfeConsoleBtnVeterancy[player], pg, c_anchorTopLeft, 415, 525);
     DialogControlSetPropertyAsText(g_sfeConsoleBtnVeterancy[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModCenterSize13Bold\"><c val=\"55FF55\">VETERANCY (10k)</c></s>"));
+        StringToText("<b><c val=\"55FF55\">VETERANCY (10k)</c></b>"));
     TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnVeterancy[player], c_triggerControlEventTypeClick);
 
     g_sfeConsoleBtnMaxExp[player] = DialogControlCreate(dlg, c_triggerControlTypeButton);
     DialogControlSetSize(g_sfeConsoleBtnMaxExp[player], pg, 210, 45);
     DialogControlSetPosition(g_sfeConsoleBtnMaxExp[player], pg, c_anchorTopLeft, 610, 525);
     DialogControlSetPropertyAsText(g_sfeConsoleBtnMaxExp[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModCenterSize13Bold\"><c val=\"FF44AA\">MAX EXP (75k)</c></s>"));
+        StringToText("<b><c val=\"FF44AA\">MAX EXP (75k)</c></b>"));
     TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnMaxExp[player], c_triggerControlEventTypeClick);
 
     // =========================================================================
@@ -222,7 +222,7 @@ void SFE_InitPlayerConsoleUI (int player) {
     DialogControlSetSize(g_sfeConsoleBtnBuyStr[player], pg, 200, 45);
     DialogControlSetPosition(g_sfeConsoleBtnBuyStr[player], pg, c_anchorTopLeft, 580, 120);
     DialogControlSetPropertyAsText(g_sfeConsoleBtnBuyStr[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModCenterSize14Bold\"><c val=\"FF5555\">+5 Fuerza (1,000)</c></s>"));
+        StringToText("<b><c val=\"FF5555\">+5 Fuerza (1,000)</c></b>"));
     TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnBuyStr[player], c_triggerControlEventTypeClick);
 
     // Destreza
@@ -234,7 +234,7 @@ void SFE_InitPlayerConsoleUI (int player) {
     DialogControlSetSize(g_sfeConsoleBtnBuyDex[player], pg, 200, 45);
     DialogControlSetPosition(g_sfeConsoleBtnBuyDex[player], pg, c_anchorTopLeft, 580, 180);
     DialogControlSetPropertyAsText(g_sfeConsoleBtnBuyDex[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModCenterSize14Bold\"><c val=\"55FF55\">+5 Destreza (1,000)</c></s>"));
+        StringToText("<b><c val=\"55FF55\">+5 Destreza (1,000)</c></b>"));
     TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnBuyDex[player], c_triggerControlEventTypeClick);
 
     // Inteligencia
@@ -246,7 +246,7 @@ void SFE_InitPlayerConsoleUI (int player) {
     DialogControlSetSize(g_sfeConsoleBtnBuyInt[player], pg, 200, 45);
     DialogControlSetPosition(g_sfeConsoleBtnBuyInt[player], pg, c_anchorTopLeft, 580, 240);
     DialogControlSetPropertyAsText(g_sfeConsoleBtnBuyInt[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModCenterSize14Bold\"><c val=\"00CCFF\">+5 Inteligencia (1,000)</c></s>"));
+        StringToText("<b><c val=\"00CCFF\">+5 Inteligencia (1,000)</c></b>"));
     TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnBuyInt[player], c_triggerControlEventTypeClick);
 
     // Resistencia / Stamina
@@ -258,7 +258,7 @@ void SFE_InitPlayerConsoleUI (int player) {
     DialogControlSetSize(g_sfeConsoleBtnBuyStamina[player], pg, 200, 45);
     DialogControlSetPosition(g_sfeConsoleBtnBuyStamina[player], pg, c_anchorTopLeft, 580, 300);
     DialogControlSetPropertyAsText(g_sfeConsoleBtnBuyStamina[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModCenterSize14Bold\"><c val=\"FFE400\">+1 Stamina (500)</c></s>"));
+        StringToText("<b><c val=\"FFE400\">+1 Stamina (500)</c></b>"));
     TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnBuyStamina[player], c_triggerControlEventTypeClick);
 
     // Neutron Armor
@@ -270,7 +270,7 @@ void SFE_InitPlayerConsoleUI (int player) {
     DialogControlSetSize(g_sfeConsoleBtnBuyNeutron[player], pg, 200, 45);
     DialogControlSetPosition(g_sfeConsoleBtnBuyNeutron[player], pg, c_anchorTopLeft, 580, 360);
     DialogControlSetPropertyAsText(g_sfeConsoleBtnBuyNeutron[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModCenterSize14Bold\"><c val=\"FFAA00\">Neutron Armor (12.5k)</c></s>"));
+        StringToText("<b><c val=\"FFAA00\">Neutron Armor (12.5k)</c></b>"));
     TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnBuyNeutron[player], c_triggerControlEventTypeClick);
 
     // =========================================================================
@@ -338,14 +338,14 @@ void SFE_InitPlayerConsoleUI (int player) {
     DialogControlSetSize(g_sfeConsoleBtnTradeMinerals[player], pg, 340, 45);
     DialogControlSetPosition(g_sfeConsoleBtnTradeMinerals[player], pg, c_anchorTopLeft, 50, 130);
     DialogControlSetPropertyAsText(g_sfeConsoleBtnTradeMinerals[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModCenterSize14Bold\"><c val=\"55FF55\">Enviar 500 Minerales al Equipo</c></s>"));
+        StringToText("<b><c val=\"55FF55\">Enviar 500 Minerales al Equipo</c></b>"));
     TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnTradeMinerals[player], c_triggerControlEventTypeClick);
 
     g_sfeConsoleBtnToggleIncomeText[player] = DialogControlCreate(dlg, c_triggerControlTypeButton);
     DialogControlSetSize(g_sfeConsoleBtnToggleIncomeText[player], pg, 340, 45);
     DialogControlSetPosition(g_sfeConsoleBtnToggleIncomeText[player], pg, c_anchorTopLeft, 50, 190);
     DialogControlSetPropertyAsText(g_sfeConsoleBtnToggleIncomeText[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModCenterSize14Bold\"><c val=\"00CCFF\">Flotantes de Recompensa: ON</c></s>"));
+        StringToText("<b><c val=\"00CCFF\">Flotantes de Recompensa: ON</c></b>"));
     TriggerAddEventDialogControl(tClick, player, g_sfeConsoleBtnToggleIncomeText[player], c_triggerControlEventTypeClick);
 
     // Atajos de teclado: Alt + C para abrir/cerrar
@@ -480,7 +480,7 @@ void SFE_UpdateConsoleContent (int player) {
 
     // Actualizar etiqueta de minerales
     DialogControlSetPropertyAsText(g_sfeConsoleLblMinerals[player], c_triggerControlPropertyText, pg, 
-        StringToText("<s val=\"ModRightSize15Bold\"><c val=\"00FFEA\">Minerales: " + IntToString(minerals) + "</c></s>"));
+        StringToText("<b><c val=\"00FFEA\">Minerales: " + IntToString(minerals) + "</c></b>"));
 
     // Actualizar Textos de Buffs si la pestaña 1 está activa
     if (g_sfeConsoleActiveTab[player] == 1) {
@@ -494,7 +494,7 @@ void SFE_UpdateConsoleContent (int player) {
             }
 
             DialogControlSetPropertyAsText(g_sfeConsoleLblTierInfo[player][t], c_triggerControlPropertyText, pg, 
-                StringToText("<s val=\"ModLeftSize13Bold\"><c val=\"FFE400\">Tier " + IntToString(t) + ":</c>\n" + activeName + "</s>"));
+                StringToText("<b><c val=\"FFE400\">Tier " + IntToString(t) + ":</c>\n" + activeName + "</b>"));
 
             opt = 1;
             while (opt <= 4) {
@@ -505,8 +505,8 @@ void SFE_UpdateConsoleContent (int player) {
                     btnColor = "FFFFFF";
                 }
                 DialogControlSetPropertyAsText(g_sfeConsoleBtnBuff[player][t][opt], c_triggerControlPropertyText, pg, 
-                    StringToText("<s val=\"ModCenterSize11Bold\"><c val=\"" + btnColor + "\">" + g_sfeBuffCatalog[bId].name + 
-                    "\n(" + IntToString(g_sfeBuffCatalog[bId].cost) + ")</c></s>"));
+                    StringToText("<b><c val=\"" + btnColor + "\">" + g_sfeBuffCatalog[bId].name + 
+                    "\n(" + IntToString(g_sfeBuffCatalog[bId].cost) + ")</c></b>"));
                 opt = opt + 1;
             }
             t = t + 1;
@@ -516,78 +516,78 @@ void SFE_UpdateConsoleContent (int player) {
     // Actualizar Textos de Atributos si la pestaña 2 está activa
     if (g_sfeConsoleActiveTab[player] == 2) {
         DialogControlSetPropertyAsText(g_sfeConsoleLblStrength[player], c_triggerControlPropertyText, pg, 
-            StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"FF4444\">Fuerza: " + IntToString(g_sfeHeroStates[player].strength) + 
+            StringToText("<b><c val=\"FF4444\">Fuerza: " + IntToString(g_sfeHeroStates[player].strength) + 
             "</c> <c val=\"AAAAAA\">(+" + FixedToString(g_sfeHeroStates[player].strength * 25.0, 0) + " HP / +" + 
-            FixedToString(g_sfeHeroStates[player].strength * 1.5, 1) + " Dmg)</c></s>"));
+            FixedToString(g_sfeHeroStates[player].strength * 1.5, 1) + " Dmg)</c></b>"));
 
         DialogControlSetPropertyAsText(g_sfeConsoleLblDexterity[player], c_triggerControlPropertyText, pg, 
-            StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"55FF55\">Destreza: " + IntToString(g_sfeHeroStates[player].dexterity) + 
+            StringToText("<b><c val=\"55FF55\">Destreza: " + IntToString(g_sfeHeroStates[player].dexterity) + 
             "</c> <c val=\"AAAAAA\">(Cadencia " + FixedToString(g_sfeHeroStates[player].currentAttackInterval, 2) + "s / +" + 
-            FixedToString(g_sfeHeroStates[player].dexterity * 0.25, 1) + " Regen)</c></s>"));
+            FixedToString(g_sfeHeroStates[player].dexterity * 0.25, 1) + " Regen)</c></b>"));
 
         DialogControlSetPropertyAsText(g_sfeConsoleLblIntel[player], c_triggerControlPropertyText, pg, 
-            StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"00CCFF\">Inteligencia: " + IntToString(g_sfeHeroStates[player].intelligence) + 
+            StringToText("<b><c val=\"00CCFF\">Inteligencia: " + IntToString(g_sfeHeroStates[player].intelligence) + 
             "</c> <c val=\"AAAAAA\">(+" + FixedToString(g_sfeHeroStates[player].intelligence * 10.0, 0) + " Mana / +" + 
-            FixedToString(g_sfeHeroStates[player].intelligence * 0.2, 1) + " Mana/s)</c></s>"));
+            FixedToString(g_sfeHeroStates[player].intelligence * 0.2, 1) + " Mana/s)</c></b>"));
 
         DialogControlSetPropertyAsText(g_sfeConsoleLblStamina[player], c_triggerControlPropertyText, pg, 
-            StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"FFE400\">Stamina: " + IntToString(g_sfeHeroStates[player].stamina) + 
-            "</c> <c val=\"AAAAAA\">(+" + FixedToString(IntToFixed(g_sfeHeroStates[player].stamina) * 0.02, 2) + " Vel. Movimiento)</c></s>"));
+            StringToText("<b><c val=\"FFE400\">Stamina: " + IntToString(g_sfeHeroStates[player].stamina) + 
+            "</c> <c val=\"AAAAAA\">(+" + FixedToString(IntToFixed(g_sfeHeroStates[player].stamina) * 0.02, 2) + " Vel. Movimiento)</c></b>"));
 
         DialogControlSetPropertyAsText(g_sfeConsoleLblNeutron[player], c_triggerControlPropertyText, pg, 
-            StringToText("<s val=\"ModLeftSize15Bold\"><c val=\"FFAA00\">Neutron Armor Comprada: " + IntToString(g_sfeHeroStates[player].neutronArmor) + 
-            "</c> <c val=\"AAAAAA\">(+" + IntToString(g_sfeHeroStates[player].neutronArmor * 25) + " Blindaje Total)</c></s>"));
+            StringToText("<b><c val=\"FFAA00\">Neutron Armor Comprada: " + IntToString(g_sfeHeroStates[player].neutronArmor) + 
+            "</c> <c val=\"AAAAAA\">(+" + IntToString(g_sfeHeroStates[player].neutronArmor * 25) + " Blindaje Total)</c></b>"));
     }
 
     // Actualizar Textos de 500 Upgrades si la pestaña 3 está activa
     if (g_sfeConsoleActiveTab[player] == 3) {
         if (g_sfeUpgradeAutocastActive[player]) {
             DialogControlSetPropertyAsText(g_sfeConsoleBtnAutocast[player], c_triggerControlPropertyText, pg, 
-                StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"55FF55\">[AUTOCAST ACTIVO - CLICK PARA DESACTIVAR]</c></s>"));
+                StringToText("<b><c val=\"55FF55\">[AUTOCAST ACTIVO - CLICK PARA DESACTIVAR]</c></b>"));
         } else {
             DialogControlSetPropertyAsText(g_sfeConsoleBtnAutocast[player], c_triggerControlPropertyText, pg, 
-                StringToText("<s val=\"ModCenterSize16Bold\"><c val=\"FFAA00\">[AUTOCAST DESACTIVADO - CLICK PARA ACTIVAR]</c></s>"));
+                StringToText("<b><c val=\"FFAA00\">[AUTOCAST DESACTIVADO - CLICK PARA ACTIVAR]</c></b>"));
         }
 
         // Daño
         DialogControlSetPropertyAsText(g_sfeConsoleLblUpgDmg[player], c_triggerControlPropertyText, pg, 
-            StringToText("<s val=\"ModLeftSize14Bold\"><c val=\"FF5555\">Mejora de Daño de Armas: " + 
+            StringToText("<b><c val=\"FF5555\">Mejora de Daño de Armas: " + 
             IntToString(g_sfeUpgradeWeaponDamage[player]) + " / 500</c> <c val=\"AAAAAA\">(+" + 
-            IntToString(g_sfeUpgradeWeaponDamage[player] * 2) + " Dmg)</c></s>"));
+            IntToString(g_sfeUpgradeWeaponDamage[player] * 2) + " Dmg)</c></b>"));
         DialogControlSetPropertyAsText(g_sfeConsoleBtnBuyUpgDmg[player], c_triggerControlPropertyText, pg, 
-            StringToText("<s val=\"ModCenterSize13Bold\">Mejorar (" + IntToString(SFE_GetUpgradeCost(g_sfeUpgradeWeaponDamage[player])) + " min)</s>"));
+            StringToText("<b>Mejorar (" + IntToString(SFE_GetUpgradeCost(g_sfeUpgradeWeaponDamage[player])) + " min)</b>"));
 
         // Blindaje
         DialogControlSetPropertyAsText(g_sfeConsoleLblUpgArmor[player], c_triggerControlPropertyText, pg, 
-            StringToText("<s val=\"ModLeftSize14Bold\"><c val=\"55FF55\">Mejora de Blindaje: " + 
+            StringToText("<b><c val=\"55FF55\">Mejora de Blindaje: " + 
             IntToString(g_sfeUpgradeArmor[player]) + " / 500</c> <c val=\"AAAAAA\">(+" + 
-            FixedToString(IntToFixed(g_sfeUpgradeArmor[player]) * 0.5, 1) + " Arm)</c></s>"));
+            FixedToString(IntToFixed(g_sfeUpgradeArmor[player]) * 0.5, 1) + " Arm)</c></b>"));
         DialogControlSetPropertyAsText(g_sfeConsoleBtnBuyUpgArmor[player], c_triggerControlPropertyText, pg, 
-            StringToText("<s val=\"ModCenterSize13Bold\">Mejorar (" + IntToString(SFE_GetUpgradeCost(g_sfeUpgradeArmor[player])) + " min)</s>"));
+            StringToText("<b>Mejorar (" + IntToString(SFE_GetUpgradeCost(g_sfeUpgradeArmor[player])) + " min)</b>"));
 
         // Vida
         DialogControlSetPropertyAsText(g_sfeConsoleLblUpgLife[player], c_triggerControlPropertyText, pg, 
-            StringToText("<s val=\"ModLeftSize14Bold\"><c val=\"00CCFF\">Mejora de Vida/Escudos: " + 
+            StringToText("<b><c val=\"00CCFF\">Mejora de Vida/Escudos: " + 
             IntToString(g_sfeUpgradeLife[player]) + " / 500</c> <c val=\"AAAAAA\">(+" + 
-            IntToString(g_sfeUpgradeLife[player] * 15) + " HP)</c></s>"));
+            IntToString(g_sfeUpgradeLife[player] * 15) + " HP)</c></b>"));
         DialogControlSetPropertyAsText(g_sfeConsoleBtnBuyUpgLife[player], c_triggerControlPropertyText, pg, 
-            StringToText("<s val=\"ModCenterSize13Bold\">Mejorar (" + IntToString(SFE_GetUpgradeCost(g_sfeUpgradeLife[player])) + " min)</s>"));
+            StringToText("<b>Mejorar (" + IntToString(SFE_GetUpgradeCost(g_sfeUpgradeLife[player])) + " min)</b>"));
 
         // Energía
         DialogControlSetPropertyAsText(g_sfeConsoleLblUpgEnergy[player], c_triggerControlPropertyText, pg, 
-            StringToText("<s val=\"ModLeftSize14Bold\"><c val=\"CC88FF\">Mejora de Energia/Mana: " + 
+            StringToText("<b><c val=\"CC88FF\">Mejora de Energia/Mana: " + 
             IntToString(g_sfeUpgradeEnergy[player]) + " / 500</c> <c val=\"AAAAAA\">(+" + 
-            IntToString(g_sfeUpgradeEnergy[player] * 10) + " Max)</c></s>"));
+            IntToString(g_sfeUpgradeEnergy[player] * 10) + " Max)</c></b>"));
         DialogControlSetPropertyAsText(g_sfeConsoleBtnBuyUpgEnergy[player], c_triggerControlPropertyText, pg, 
-            StringToText("<s val=\"ModCenterSize13Bold\">Mejorar (" + IntToString(SFE_GetUpgradeCost(g_sfeUpgradeEnergy[player])) + " min)</s>"));
+            StringToText("<b>Mejorar (" + IntToString(SFE_GetUpgradeCost(g_sfeUpgradeEnergy[player])) + " min)</b>"));
 
         // Cadencia
         DialogControlSetPropertyAsText(g_sfeConsoleLblUpgSpeed[player], c_triggerControlPropertyText, pg, 
-            StringToText("<s val=\"ModLeftSize14Bold\"><c val=\"FFE400\">Mejora de Cadencia: " + 
+            StringToText("<b><c val=\"FFE400\">Mejora de Cadencia: " + 
             IntToString(g_sfeUpgradeAttackSpeed[player]) + " / 500</c> <c val=\"AAAAAA\">(+" + 
-            FixedToString(IntToFixed(g_sfeUpgradeAttackSpeed[player]) * 0.5, 1) + "% Spd)</c></s>"));
+            FixedToString(IntToFixed(g_sfeUpgradeAttackSpeed[player]) * 0.5, 1) + "% Spd)</c></b>"));
         DialogControlSetPropertyAsText(g_sfeConsoleBtnBuyUpgSpeed[player], c_triggerControlPropertyText, pg, 
-            StringToText("<s val=\"ModCenterSize13Bold\">Mejorar (" + IntToString(SFE_GetUpgradeCost(g_sfeUpgradeAttackSpeed[player])) + " min)</s>"));
+            StringToText("<b>Mejorar (" + IntToString(SFE_GetUpgradeCost(g_sfeUpgradeAttackSpeed[player])) + " min)</b>"));
     }
 }
 
@@ -797,10 +797,10 @@ bool gt_SFE_ConsoleClick_Func (bool testConds, bool runActions) {
         g_sfeShowIncomeText[p] = !g_sfeShowIncomeText[p];
         if (g_sfeShowIncomeText[p]) {
             DialogControlSetPropertyAsText(g_sfeConsoleBtnToggleIncomeText[p], c_triggerControlPropertyText, PlayerGroupSingle(p), 
-                StringToText("<s val=\"ModCenterSize14Bold\"><c val=\"00CCFF\">Flotantes de Recompensa: ON</c></s>"));
+                StringToText("<b><c val=\"00CCFF\">Flotantes de Recompensa: ON</c></b>"));
         } else {
             DialogControlSetPropertyAsText(g_sfeConsoleBtnToggleIncomeText[p], c_triggerControlPropertyText, PlayerGroupSingle(p), 
-                StringToText("<s val=\"ModCenterSize14Bold\"><c val=\"AAAAAA\">Flotantes de Recompensa: OFF</c></s>"));
+                StringToText("<b><c val=\"AAAAAA\">Flotantes de Recompensa: OFF</c></b>"));
         }
         return true;
     }

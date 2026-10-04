@@ -87,7 +87,7 @@ void SFE_CheckDropPods () {
 
                     // Notificación táctica
                     UIDisplayMessage(PlayerGroupSingle(p), c_messageAreaSubtitle,
-                        StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF4444\">[ALERTA DE DESEMBARCO] ¡Vaina hostil ha impactado en tus inmediaciones!</c></s>"));
+                        StringToText("<b><c val=\"FF4444\">[ALERTA DE DESEMBARCO] ¡Vaina hostil ha impactado en tus inmediaciones!</c></b>"));
 
                     // Desplegar tropas de asalto según dificultad
                     squadSize = 4;
@@ -248,7 +248,7 @@ void SFE_SpawnTimedHiveBoss (int bossIndex) {
 
     // Notificación en pantalla
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat,
-        StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"FF0044\">[AMENAZA TRIPARTITA] ¡Asalto Cronometrado de la Colmena!</c>\n<c val=\"FFFF00\">Comandante hostil al frente: " + bossName + "</c></s>"));
+        StringToText("<b><c val=\"FF0044\">[AMENAZA TRIPARTITA] ¡Asalto Cronometrado de la Colmena!</c>\n<c val=\"FFFF00\">Comandante hostil al frente: " + bossName + "</c></b>"));
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -273,7 +273,7 @@ void SFE_CheckNydusNetwork () {
 
             // Recompensa a los jugadores por destruir el Gusano Nydus
             UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat,
-                StringToText("<s val=\"ModCenterSize18Bold\"><c val=\"00FF7F\">[RED NYDUS] ¡Gusano Nydus destruido! (+350 Min / +150 XP para el escuadrón)</c></s>"));
+                StringToText("<b><c val=\"00FF7F\">[RED NYDUS] ¡Gusano Nydus destruido! (+350 Min / +150 XP para el escuadrón)</c></b>"));
 
             p = 1;
             while (p <= c_SFE_MAX_PLAYERS) {
@@ -335,7 +335,7 @@ void SFE_CheckNydusNetwork () {
         UnitSetPropertyFixed(g_sfeCurrentNydusWorm, c_unitPropLifeRegen, 5.0);
 
         UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle,
-            StringToText("<s val=\"ModCenterSize22Bold\"><c val=\"FF8800\">[RED NYDUS] ¡Un Gusano Nydus ha emergido en el cráter territorial! ¡Destrúyelo!</c></s>"));
+            StringToText("<b><c val=\"FF8800\">[RED NYDUS] ¡Un Gusano Nydus ha emergido en el cráter territorial! ¡Destrúyelo!</c></b>"));
     }
 }
 

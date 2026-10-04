@@ -58,16 +58,16 @@ void SFE_UpdateHeroPreview (int player, int heroId) {
         attrName = "INTELIGENCIA (Maná + Visión)";
     }
 
-    txtName = StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"FFE400\">" + g_sfeHeroes[heroId].name + "</c> <c val=\"AAAAAA\">(" + g_sfeHeroes[heroId].faction + ")</c></s>");
-    txtArchetype = StringToText("<s val=\"ModLeftSize18\"><c val=\"00FFEA\">Rol:</c> " + g_sfeHeroes[heroId].archetype + "  |  <c val=\"FFB700\">Atributo:</c> " + attrName + "</s>");
-    txtDesc = StringToText("<s val=\"ModLeftSize15\">" + g_sfeHeroes[heroId].description + "</s>");
+    txtName = StringToText("<b><c val=\"FFE400\">" + g_sfeHeroes[heroId].name + "</c> <c val=\"AAAAAA\">(" + g_sfeHeroes[heroId].faction + ")</c></b>");
+    txtArchetype = StringToText("<b><c val=\"00FFEA\">Rol:</c> " + g_sfeHeroes[heroId].archetype + "  |  <c val=\"FFB700\">Atributo:</c> " + attrName + "</b>");
+    txtDesc = StringToText("<b>" + g_sfeHeroes[heroId].description + "</b>");
     
-    txtStats = StringToText("<s val=\"ModLeftSize15\"><c val=\"55FF55\">Vida Base:</c> " + FixedToString(g_sfeHeroes[heroId].baseHp, 0) + 
+    txtStats = StringToText("<b><c val=\"55FF55\">Vida Base:</c> " + FixedToString(g_sfeHeroes[heroId].baseHp, 0) + 
         "   |   <c val=\"00CCFF\">Escudos:</c> " + FixedToString(g_sfeHeroes[heroId].baseShields, 0) + 
         "   |   <c val=\"CC88FF\">Energía:</c> " + FixedToString(g_sfeHeroes[heroId].baseEnergy, 0) + 
         "\n<c val=\"FF4444\">Daño Base:</c> " + FixedToString(g_sfeHeroes[heroId].baseDamage, 0) + 
         "   |   <c val=\"FFFF44\">Intervalo Ataque:</c> " + FixedToString(g_sfeHeroes[heroId].baseAttackInterval, 2) + "s" + 
-        "   |   <c val=\"AAAAAA\">Blindaje:</c> " + FixedToString(g_sfeHeroes[heroId].baseArmor, 0) + "</s>");
+        "   |   <c val=\"AAAAAA\">Blindaje:</c> " + FixedToString(g_sfeHeroes[heroId].baseArmor, 0) + "</b>");
 
     DialogControlSetPropertyAsText(g_sfePreviewName, c_triggerControlPropertyText, pg, txtName);
     DialogControlSetPropertyAsText(g_sfePreviewArchetype, c_triggerControlPropertyText, pg, txtArchetype);
@@ -133,7 +133,7 @@ void SFE_HeroSelectionRandom (int player) {
         secretIdx = RandomInt(c_HERO_SECRET_EVIL, c_HERO_SECRET_JONES);
         pickedHero = secretIdx;
         UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-            StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF00FF\">¡¡EVENTO ESPECIAL!! ¡Jugador " + IntToString(player) + " ha obtenido a " + g_sfeHeroes[secretIdx].name + " (1% Probabilidad)!</c></s>"));
+            StringToText("<b><c val=\"FF00FF\">¡¡EVENTO ESPECIAL!! ¡Jugador " + IntToString(player) + " ha obtenido a " + g_sfeHeroes[secretIdx].name + " (1% Probabilidad)!</c></b>"));
     } else {
         // Uno de los 12 héroes canónicos
         pickedHero = RandomInt(0, c_HERO_CANONICAL_COUNT - 1);
@@ -199,7 +199,7 @@ bool gt_SFE_HeroSelection_Timer_Func (bool testConds, bool runActions) {
 
     p = 1;
     g_sfeSelectSecondsRemaining = g_sfeSelectSecondsRemaining - 1;
-    timerText = StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF5555\">Tiempo restante para elegir:</c> " + IntToString(g_sfeSelectSecondsRemaining) + "s</s>");
+    timerText = StringToText("<b><c val=\"FF5555\">Tiempo restante para elegir:</c> " + IntToString(g_sfeSelectSecondsRemaining) + "s</b>");
     DialogControlSetPropertyAsText(g_sfeSelectTimerLabel, c_triggerControlPropertyText, PlayerGroupAll(), timerText);
 
     if (g_sfeSelectSecondsRemaining <= 0) {
@@ -240,14 +240,14 @@ void SFE_InitHeroSelectionUI () {
     DialogControlSetSize(DialogControlLastCreated(), PlayerGroupAll(), 1100, 45);
     DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTop, 0, 20);
     DialogControlSetPropertyAsText(DialogControlLastCreated(), c_triggerControlPropertyText, PlayerGroupAll(), 
-        StringToText("<s val=\"ModCenterSize28Bold\"><c val=\"00FFEA\">SPECIAL FORCES ELITE 5</c> — <c val=\"FFFFFF\">SELECCIÓN DE HÉROE</c></s>"));
+        StringToText("<b><c val=\"00FFEA\">SPECIAL FORCES ELITE 5</c> — <c val=\"FFFFFF\">SELECCIÓN DE HÉROE</c></b>"));
 
     // Etiqueta del temporizador
     g_sfeSelectTimerLabel = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeLabel);
     DialogControlSetSize(g_sfeSelectTimerLabel, PlayerGroupAll(), 600, 35);
     DialogControlSetPosition(g_sfeSelectTimerLabel, PlayerGroupAll(), c_anchorTop, 0, 68);
     DialogControlSetPropertyAsText(g_sfeSelectTimerLabel, c_triggerControlPropertyText, PlayerGroupAll(), 
-        StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"FF5555\">Tiempo restante para elegir:</c> 45s</s>"));
+        StringToText("<b><c val=\"FF5555\">Tiempo restante para elegir:</c> 45s</b>"));
 
     // Matriz 3 filas x 4 columnas para los 12 héroes canónicos
     i = 0;
@@ -261,7 +261,7 @@ void SFE_InitHeroSelectionUI () {
         DialogControlSetSize(g_sfeHeroButtons[i], PlayerGroupAll(), 130, 120);
         DialogControlSetPosition(g_sfeHeroButtons[i], PlayerGroupAll(), c_anchorTopLeft, btnX, btnY);
         DialogControlSetPropertyAsText(g_sfeHeroButtons[i], c_triggerControlPropertyText, PlayerGroupAll(), 
-            StringToText("<s val=\"ModCenterSize14Bold\">" + g_sfeHeroes[i].name + "\n<c val=\"AAAAAA\">(" + g_sfeHeroes[i].faction + ")</c></s>"));
+            StringToText("<b>" + g_sfeHeroes[i].name + "\n<c val=\"AAAAAA\">(" + g_sfeHeroes[i].faction + ")</c></b>"));
 
         i = i + 1;
     }
@@ -288,14 +288,14 @@ void SFE_InitHeroSelectionUI () {
     DialogControlSetSize(g_sfeBtnConfirm, PlayerGroupAll(), 230, 55);
     DialogControlSetPosition(g_sfeBtnConfirm, PlayerGroupAll(), c_anchorTopLeft, 630, 480);
     DialogControlSetPropertyAsText(g_sfeBtnConfirm, c_triggerControlPropertyText, PlayerGroupAll(), 
-        StringToText("<s val=\"ModCenterSize20Bold\"><c val=\"55FF55\">CONFIRMAR</c></s>"));
+        StringToText("<b><c val=\"55FF55\">CONFIRMAR</c></b>"));
 
     // Botón de Selección Aleatoria (con 1% de héroe secreto)
     g_sfeBtnRandom = DialogControlCreate(g_sfeSelectDialog, c_triggerControlTypeButton);
     DialogControlSetSize(g_sfeBtnRandom, PlayerGroupAll(), 230, 55);
     DialogControlSetPosition(g_sfeBtnRandom, PlayerGroupAll(), c_anchorTopLeft, 880, 480);
     DialogControlSetPropertyAsText(g_sfeBtnRandom, c_triggerControlPropertyText, PlayerGroupAll(), 
-        StringToText("<s val=\"ModCenterSize18Bold\"><c val=\"FFAA00\">ALEATORIO (1%)</c></s>"));
+        StringToText("<b><c val=\"FFAA00\">ALEATORIO (1%)</c></b>"));
 
     // Conectar Triggers de Interacción
     tClick = TriggerCreate("gt_SFE_HeroSelection_Click_Func");

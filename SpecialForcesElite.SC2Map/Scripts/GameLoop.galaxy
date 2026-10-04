@@ -67,7 +67,7 @@ void SFE_StartGameAfterDifficulty (int chosenDiff) {
 
     g_sfeCurrentDifficulty = chosenDiff;
 
-    diffNotice = StringToText("<s val=\"ModCenterSize22Bold\"><c val=\"FFE400\">DIFICULTAD ESTABLECIDA EN: </c><c val=\"00FFEA\">" + g_sfeDiffNames[chosenDiff] + "</c></s>");
+    diffNotice = StringToText("<b><c val=\"FFE400\">DIFICULTAD ESTABLECIDA EN: </c><c val=\"00FFEA\">" + g_sfeDiffNames[chosenDiff] + "</c></b>");
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, diffNotice);
 
     // Calcular minerales iniciales según dificultad
@@ -152,7 +152,7 @@ void SFE_InitDifficultySelection () {
     DialogControlSetSize(DialogControlLastCreated(), PlayerGroupAll(), 500, 35);
     DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTop, 0, 20);
     DialogControlSetPropertyAsText(DialogControlLastCreated(), c_triggerControlPropertyText, PlayerGroupAll(), 
-        StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"FFE400\">SELECCIONA LA DIFICULTAD</c></s>"));
+        StringToText("<b><c val=\"FFE400\">SELECCIONA LA DIFICULTAD</c></b>"));
 
     tClick = TriggerCreate("gt_SFE_DiffSelect_Click_Func");
 
@@ -164,7 +164,7 @@ void SFE_InitDifficultySelection () {
         DialogControlSetPosition(g_sfeDiffButtons[d], PlayerGroupAll(), c_anchorTop, 0, btnY);
         
         DialogControlSetPropertyAsText(g_sfeDiffButtons[d], c_triggerControlPropertyText, PlayerGroupAll(), 
-            StringToText("<s val=\"ModCenterSize16Bold\">" + g_sfeDiffNames[d] + "</s>"));
+            StringToText("<b>" + g_sfeDiffNames[d] + "</b>"));
 
         TriggerAddEventDialogControl(tClick, 1, g_sfeDiffButtons[d], c_triggerControlEventTypeClick);
         d = d + 1;

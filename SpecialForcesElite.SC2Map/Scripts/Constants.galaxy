@@ -9,9 +9,9 @@
 //--------------------------------------------------------------------------------------------------
 // Configuración de Jugadores
 //--------------------------------------------------------------------------------------------------
-const int c_SFE_MAX_PLAYERS        = 6;  // Hasta 6 jugadores cooperativos
-const int c_SFE_PLAYER_ALLIED_BASE = 14; // Base Aliada / Fortaleza Planetaria
-const int c_SFE_PLAYER_HOSTILE     = 15; // Invasores Zerg / Hostiles
+const int c_SFE_MAX_PLAYERS        = 1;  // Jugador activo
+const int c_SFE_PLAYER_ALLIED_BASE = 1;  // Base Aliada / Fortaleza Planetaria (propiedad del jugador)
+const int c_SFE_PLAYER_HOSTILE     = 2;  // Invasores Zerg / Hostiles (Computadora enemiga)
 const int c_SFE_PLAYER_NEUTRAL     = 0;
 
 //--------------------------------------------------------------------------------------------------

@@ -82,7 +82,7 @@ void SFE_TriggerBossMaarSpawn () {
     UnitSetPropertyFixed(u, c_unitPropLifeRegen, 15.0);
 
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-        StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"FF00FF\">¡ALERTA MAYOR! ¡EL HÍBRIDO MAAR HA DESPERTADO EN EL SECTOR CENTRAL-NORTE!</c></s>"));
+        StringToText("<b><c val=\"FF00FF\">¡ALERTA MAYOR! ¡EL HÍBRIDO MAAR HA DESPERTADO EN EL SECTOR CENTRAL-NORTE!</c></b>"));
 
     UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueReplace);
     UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueAddToEnd);
@@ -117,7 +117,7 @@ void SFE_TriggerBossDestroyerSpawn () {
     UnitSetPropertyFixed(u, c_unitPropLifeRegen, 25.0);
 
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-        StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"FF4400\">¡RITUAL COMPLETADO! ¡DESTROYER OF WORLDS HA SIDO INVOCADO EN EL CUADRANTE NW!</c></s>"));
+        StringToText("<b><c val=\"FF4400\">¡RITUAL COMPLETADO! ¡DESTROYER OF WORLDS HA SIDO INVOCADO EN EL CUADRANTE NW!</c></b>"));
 
     UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauNorthWest), c_orderQueueReplace);
     UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueAddToEnd);
@@ -153,7 +153,7 @@ void SFE_TriggerBossHybridsSpawn () {
     UnitSetPropertyFixed(u, c_unitPropLifeRegen, 20.0);
 
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-        StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"CC00FF\">¡ARTEFACTO ACTIVADO! ¡HÍBRIDOS ANCESTRALES DESPIERTAN EN EL SECTOR SE!</c></s>"));
+        StringToText("<b><c val=\"CC00FF\">¡ARTEFACTO ACTIVADO! ¡HÍBRIDOS ANCESTRALES DESPIERTAN EN EL SECTOR SE!</c></b>"));
 
     UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthEast), c_orderQueueReplace);
     UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueAddToEnd);
@@ -185,7 +185,7 @@ void SFE_TriggerBossChainDogSpawn () {
     UnitSetPropertyFixed(u, c_unitPropLifeRegen, 30.0);
 
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-        StringToText("<s val=\"ModCenterSize26Bold\"><c val=\"FF2222\">¡GUARDIÁN LIBERADO! ¡CHAINDOG HA ROTO SUS CADENAS EN LA ESTATUA CENTRAL!</c></s>"));
+        StringToText("<b><c val=\"FF2222\">¡GUARDIÁN LIBERADO! ¡CHAINDOG HA ROTO SUS CADENAS EN LA ESTATUA CENTRAL!</c></b>"));
 
     UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueReplace);
     UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint), c_orderQueueAddToEnd);
@@ -208,7 +208,7 @@ void SFE_TriggerHellGateIncursion () {
     pSpawn = g_sfeFinalHivePoint;
 
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-        StringToText("<s val=\"ModCenterSize28Bold\"><c val=\"FF0000\">¡¡PORTAL DEL INFIERNO DESATADO!! ¡INCURSIÓN MASIVA DE ÉLITE EN EL SECTOR NE!</c></s>"));
+        StringToText("<b><c val=\"FF0000\">¡¡PORTAL DEL INFIERNO DESATADO!! ¡INCURSIÓN MASIVA DE ÉLITE EN EL SECTOR NE!</c></b>"));
 
     k = 0;
     while (k < 12) {
@@ -269,7 +269,7 @@ void SFE_TriggerBossDiabloSpawn () {
     UnitSetPropertyFixed(u, c_unitPropLifeRegen, 40.0);
 
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-        StringToText("<s val=\"ModCenterSize28Bold\"><c val=\"FF0000\">¡¡AMENAZA DESTRUCTORA FINAL!! ¡DIABLO HA ENTRADO AL CAMPO DE BATALLA!</c></s>"));
+        StringToText("<b><c val=\"FF0000\">¡¡AMENAZA DESTRUCTORA FINAL!! ¡DIABLO HA ENTRADO AL CAMPO DE BATALLA!</c></b>"));
 
     UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthEast), c_orderQueueReplace);
     UnitIssueOrder(u, OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest), c_orderQueueAddToEnd);
@@ -589,7 +589,7 @@ bool gt_SFE_BossDied_Func (bool testConds, bool runActions) {
 
     if (dyingU == g_sfeBossMaarUnit) {
         UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-            StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"55FF55\">¡HÍBRIDO MAAR ELIMINADO! +2500 MINERALES PARA CADA JUGADOR</c></s>"));
+            StringToText("<b><c val=\"55FF55\">¡HÍBRIDO MAAR ELIMINADO! +2500 MINERALES PARA CADA JUGADOR</c></b>"));
         while (p <= c_SFE_MAX_PLAYERS) {
             PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 2500);
             SFE_BankRecordBossKill(p);
@@ -597,7 +597,7 @@ bool gt_SFE_BossDied_Func (bool testConds, bool runActions) {
         }
     } else if (dyingU == g_sfeBossDestroyerUnit) {
         UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-            StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"55FF55\">¡DESTROYER OF WORLDS ERRADICADO! +3500 MINERALES PARA CADA JUGADOR</c></s>"));
+            StringToText("<b><c val=\"55FF55\">¡DESTROYER OF WORLDS ERRADICADO! +3500 MINERALES PARA CADA JUGADOR</c></b>"));
         while (p <= c_SFE_MAX_PLAYERS) {
             PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 3500);
             SFE_BankRecordBossKill(p);
@@ -605,7 +605,7 @@ bool gt_SFE_BossDied_Func (bool testConds, bool runActions) {
         }
     } else if (dyingU == g_sfeBossChainDogUnit) {
         UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-            StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"55FF55\">¡CHAINDOG DERROTADO! +2000 MINERALES PARA CADA JUGADOR</c></s>"));
+            StringToText("<b><c val=\"55FF55\">¡CHAINDOG DERROTADO! +2000 MINERALES PARA CADA JUGADOR</c></b>"));
         while (p <= c_SFE_MAX_PLAYERS) {
             PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 2000);
             SFE_BankRecordBossKill(p);
@@ -613,7 +613,7 @@ bool gt_SFE_BossDied_Func (bool testConds, bool runActions) {
         }
     } else if (dyingU == g_sfeBossHybridsUnit) {
         UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-            StringToText("<s val=\"ModCenterSize24Bold\"><c val=\"55FF55\">¡HÍBRIDOS ANCESTRALES PURGADOS! +2500 MINERALES PARA CADA JUGADOR</c></s>"));
+            StringToText("<b><c val=\"55FF55\">¡HÍBRIDOS ANCESTRALES PURGADOS! +2500 MINERALES PARA CADA JUGADOR</c></b>"));
         while (p <= c_SFE_MAX_PLAYERS) {
             PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperAdd, 2500);
             SFE_BankRecordBossKill(p);
@@ -621,7 +621,7 @@ bool gt_SFE_BossDied_Func (bool testConds, bool runActions) {
         }
     } else if (dyingU == g_sfeBossDiabloUnit) {
         UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-            StringToText("<s val=\"ModCenterSize28Bold\"><c val=\"FFE400\">¡¡DIABLO HA SIDO DERROTADO EN TORMENT!! ¡HÉROE DIABLO DESBLOQUEADO!</c></s>"));
+            StringToText("<b><c val=\"FFE400\">¡¡DIABLO HA SIDO DERROTADO EN TORMENT!! ¡HÉROE DIABLO DESBLOQUEADO!</c></b>"));
         while (p <= c_SFE_MAX_PLAYERS) {
             SFE_BankRecordBossKill(p);
             // Si fue derrotado en Torment, desbloquearlo permanentemente
