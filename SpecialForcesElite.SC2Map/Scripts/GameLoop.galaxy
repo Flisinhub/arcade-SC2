@@ -18,6 +18,9 @@ include "Scripts/AlliedBase.galaxy"
 include "Scripts/TripartiteAssault.galaxy"
 include "Scripts/WaveSpawner.galaxy"
 include "Scripts/BossAI.galaxy"
+include "Scripts/PlateauDefenses.galaxy"
+include "Scripts/HeroAbilities.galaxy"
+include "Scripts/ObjectivesEngine.galaxy"
 
 // Diálogo de Selección de Dificultad (para el anfitrión - Jugador 1)
 int g_sfeDiffDialog;
@@ -115,6 +118,9 @@ void SFE_StartGameAfterDifficulty (int chosenDiff) {
     // Inicializar Sistema de Oleadas y Amenaza Tripartita
     SFE_InitWaveSpawner();
     SFE_InitTripartiteSystem();
+
+    // Inicializar Motor de Campaña Territorial y Objetivos
+    SFE_InitObjectivesEngine();
 
     // Inicializar Sistema de Jefes
     SFE_InitBossSystem();

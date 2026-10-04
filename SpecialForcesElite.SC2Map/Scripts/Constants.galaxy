@@ -184,6 +184,46 @@ point g_sfePlateauNorthWest;
 point g_sfePlateauSouthEast;
 point g_sfePlateauCenter;
 
+//--------------------------------------------------------------------------------------------------
+// Campaña Territorial y Cadena de Objetivos (Fase 3)
+//--------------------------------------------------------------------------------------------------
+const int c_OBJ_STAGE_OUTPOSTS     = 1; // Destruir los 3 reductos perimetrales
+const int c_OBJ_STAGE_PLATEAUS     = 2; // Conquistar las 4 mesetas y abatir mini-jefes
+const int c_OBJ_STAGE_HIVE_ASSAULT = 3; // Asedio a la Colmena Noreste y combate contra Kerrigan
+const int c_OBJ_STAGE_VICTORY      = 4; // Victoria final del escuadrón
+
+int g_sfeCurrentObjectiveStage;
+int g_sfeOutpostsDestroyedCount;
+bool g_sfeOutpostNorthDestroyed;
+bool g_sfeOutpostEastDestroyed;
+bool g_sfeOutpostWestDestroyed;
+
+// Mini-jefes de Meseta
+unit g_sfeMiniBossFrankenstein;
+unit g_sfeMiniBossRupturer;
+unit g_sfeMiniBossStank;
+bool g_sfeFrankensteinSpawned;
+bool g_sfeRupturerSpawned;
+bool g_sfeStankSpawned;
+bool g_sfeFrankensteinAlive;
+bool g_sfeRupturerAlive;
+bool g_sfeStankAlive;
+
+// Bastión Final y Reina de Espadas
+unit g_sfeFinalHiveUnit;
+unit g_sfeFinalBossKerrigan;
+bool g_sfeKerriganSpawned;
+bool g_sfeKerriganAlive;
+bool g_sfeFinalHiveDestroyed;
+bool g_sfeGameWon;
+
+// Defensas Tácticas en Mesetas
+int g_sfeDefensesCountPlateauSW;
+int g_sfeDefensesCountPlateauNW;
+int g_sfeDefensesCountPlateauSE;
+int g_sfeDefensesCountPlateauCenter;
+const int c_MAX_DEFENSES_PER_PLATEAU = 4;
+
 void SFE_InitDifficultyTables () {
     // M_inc: Multiplicador de ingreso por baja
     g_sfeDiffIncomeMultiplier[c_DIFF_CASUAL]  = 1.50;

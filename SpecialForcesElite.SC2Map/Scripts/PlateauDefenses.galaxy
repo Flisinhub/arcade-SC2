@@ -1,0 +1,216 @@
+//==================================================================================================
+// Special Forces Elite 5 - Plateau Tactical Defenses System
+// Permite desplegar estructuras defensivas (Torretas Vulcan, Misileras y Búnkeres)
+// exclusivamente sobre las 4 Mesetas Elevadas estratégicas en los cruces de caminos.
+//==================================================================================================
+
+#ifndef SFE_PLATEAUDEFENSES_INCLUDED
+#define SFE_PLATEAUDEFENSES_INCLUDED
+
+include "Scripts/Constants.galaxy"
+
+// Declaraciones de funciones
+int SFE_GetHeroCurrentPlateau (int player);
+string SFE_GetPlateauName (int plateauId);
+int SFE_GetPlateauDefenseCount (int plateauId);
+void SFE_IncrementPlateauDefenseCount (int plateauId);
+bool SFE_DeployPlateauDefense (int player, int defenseType);
+
+//--------------------------------------------------------------------------------------------------
+// Detectar si el héroe está situado sobre alguna de las 4 mesetas tácticas
+// Retorna: 1 (SW Base), 2 (NW Spawning), 3 (SE Hydralisk), 4 (Center Protoss), 0 (Ninguna)
+//--------------------------------------------------------------------------------------------------
+int SFE_GetHeroCurrentPlateau (int player) {
+    unit uHero;
+    point pos;
+    fixed d;
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS || !g_sfeHeroStates[player].isActive) {
+        return 0;
+    }
+
+    uHero = g_sfeHeroStates[player].heroUnit;
+    if (uHero == null || !UnitIsAlive(uHero)) {
+        return 0;
+    }
+
+    pos = UnitGetPosition(uHero);
+
+    // Meseta 1: Suroeste (Bifurcación principal salida base)
+    d = DistanceBetweenPoints(pos, g_sfePlateauSouthWest);
+    if (d <= 12.0) {
+        return 1;
+    }
+
+    // Meseta 2: Noroeste (Cruce de la ruta norte)
+    d = DistanceBetweenPoints(pos, g_sfePlateauNorthWest);
+    if (d <= 12.0) {
+        return 2;
+    }
+
+    // Meseta 3: Sureste (Cruce de la ruta sur)
+    d = DistanceBetweenPoints(pos, g_sfePlateauSouthEast);
+    if (d <= 12.0) {
+        return 3;
+    }
+
+    // Meseta 4: Central (Gran meseta de cruce de caminos)
+    d = DistanceBetweenPoints(pos, g_sfePlateauCenter);
+    if (d <= 14.0) {
+        return 4;
+    }
+
+    return 0;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Obtener Nombre Descriptivo de la Meseta
+//--------------------------------------------------------------------------------------------------
+string SFE_GetPlateauName (int plateauId) {
+    if (plateauId == 1) {
+        return "Meseta Suroeste (Salida Base)";
+    } else if (plateauId == 2) {
+        return "Meseta Noroeste (Cruce Norte)";
+    } else if (plateauId == 3) {
+        return "Meseta Sureste (Cruce Sur)";
+    } else if (plateauId == 4) {
+        return "Meseta Central (Cruce Mayor)";
+    }
+    return "Zona Fuera de Meseta";
+}
+
+//--------------------------------------------------------------------------------------------------
+// Obtener Número de Defensas Construidas en la Meseta
+//--------------------------------------------------------------------------------------------------
+int SFE_GetPlateauDefenseCount (int plateauId) {
+    if (plateauId == 1) {
+        return g_sfeDefensesCountPlateauSW;
+    } else if (plateauId == 2) {
+        return g_sfeDefensesCountPlateauNW;
+    } else if (plateauId == 3) {
+        return g_sfeDefensesCountPlateauSE;
+    } else if (plateauId == 4) {
+        return g_sfeDefensesCountPlateauCenter;
+    }
+    return 0;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Incrementar Contador de Defensas de la Meseta
+//--------------------------------------------------------------------------------------------------
+void SFE_IncrementPlateauDefenseCount (int plateauId) {
+    if (plateauId == 1) {
+        g_sfeDefensesCountPlateauSW = g_sfeDefensesCountPlateauSW + 1;
+    } else if (plateauId == 2) {
+        g_sfeDefensesCountPlateauNW = g_sfeDefensesCountPlateauNW + 1;
+    } else if (plateauId == 3) {
+        g_sfeDefensesCountPlateauSE = g_sfeDefensesCountPlateauSE + 1;
+    } else if (plateauId == 4) {
+        g_sfeDefensesCountPlateauCenter = g_sfeDefensesCountPlateauCenter + 1;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Desplegar Estructura Defensiva en la Meseta
+// Tipo 1: Torreta Vulcan Pesada (350 min)
+// Tipo 2: Torreta Misilera Goliath (400 min)
+// Tipo 3: Búnker Reforzado con Infantería (500 min)
+//--------------------------------------------------------------------------------------------------
+bool SFE_DeployPlateauDefense (int player, int defenseType) {
+    int plateauId;
+    int currentDefCount;
+    int minerals;
+    int cost;
+    unit uHero;
+    point hPos;
+    point spawnPos;
+    unit uCreated;
+    string defName;
+
+    if (player < 1 || player > c_SFE_MAX_PLAYERS || !g_sfeHeroStates[player].isActive) {
+        return false;
+    }
+
+    plateauId = SFE_GetHeroCurrentPlateau(player);
+    if (plateauId == 0) {
+        UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, 
+            StringToText("<b><c val=\"FF4444\">[ERROR DE DESPLIEGUE] Tu héroe debe situarse sobre una de las 4 Mesetas Elevadas.</c></b>"));
+        return false;
+    }
+
+    currentDefCount = SFE_GetPlateauDefenseCount(plateauId);
+    if (currentDefCount >= c_MAX_DEFENSES_PER_PLATEAU) {
+        UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, 
+            StringToText("<b><c val=\"FF4444\">[LÍMITE ALCANZADO] Esta meseta ya tiene el máximo de " + IntToString(c_MAX_DEFENSES_PER_PLATEAU) + " estructuras defensivas.</c></b>"));
+        return false;
+    }
+
+    if (defenseType == 1) {
+        cost = 350;
+        defName = "Torreta Vulcan Pesada";
+    } else if (defenseType == 2) {
+        cost = 400;
+        defName = "Torreta Misilera Goliath";
+    } else if (defenseType == 3) {
+        cost = 500;
+        defName = "Búnker Reforzado";
+    } else {
+        return false;
+    }
+
+    minerals = PlayerGetPropertyInt(player, c_playerPropMinerals);
+    if (minerals < cost) {
+        UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaSubtitle, 
+            StringToText("<b><c val=\"FF4444\">Minerales insuficientes (Requiere " + IntToString(cost) + " min).</c></b>"));
+        return false;
+    }
+
+    // Cobrar coste de construcción
+    PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, cost);
+
+    uHero = g_sfeHeroStates[player].heroUnit;
+    hPos = UnitGetPosition(uHero);
+    spawnPos = Point(PointGetX(hPos) + RandomFixed(-1.8, 1.8), PointGetY(hPos) + RandomFixed(-1.8, 1.8));
+
+    if (defenseType == 1) {
+        // Torreta Vulcan Pesada
+        UnitCreate(1, "AutoTurret", 0, c_SFE_PLAYER_ALLIED_BASE, spawnPos, 270.0);
+        uCreated = UnitLastCreated();
+        if (uCreated != null) {
+            UnitSetPropertyFixed(uCreated, c_unitPropLifeMax, 850.0);
+            UnitSetPropertyFixed(uCreated, c_unitPropLifePercent, 100.0);
+            UnitSetPropertyFixed(uCreated, c_unitPropLifeRegen, 6.0);
+            UnitBehaviorRemove(uCreated, "TimedLife", 1);
+        }
+    } else if (defenseType == 2) {
+        // Torreta Misilera Goliath
+        UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, spawnPos, 270.0);
+        uCreated = UnitLastCreated();
+        if (uCreated != null) {
+            UnitSetPropertyFixed(uCreated, c_unitPropLifeMax, 950.0);
+            UnitSetPropertyFixed(uCreated, c_unitPropLifePercent, 100.0);
+            UnitSetPropertyFixed(uCreated, c_unitPropLifeRegen, 6.0);
+        }
+    } else if (defenseType == 3) {
+        // Búnker Reforzado con Marines élite dentro
+        UnitCreate(1, "Bunker", 0, c_SFE_PLAYER_ALLIED_BASE, spawnPos, 270.0);
+        uCreated = UnitLastCreated();
+        if (uCreated != null) {
+            UnitSetPropertyFixed(uCreated, c_unitPropLifeMax, 1600.0);
+            UnitSetPropertyFixed(uCreated, c_unitPropLifePercent, 100.0);
+            UnitSetPropertyFixed(uCreated, c_unitPropLifeRegen, 10.0);
+            UnitCreate(4, "Marine", 0, c_SFE_PLAYER_ALLIED_BASE, spawnPos, 0.0);
+            UnitIssueOrder(UnitLastCreated(), OrderTargetingUnit(AbilityCommand("BunkerLoad", 0), uCreated), c_orderQueueReplace);
+        }
+    }
+
+    SFE_IncrementPlateauDefenseCount(plateauId);
+
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, 
+        StringToText("<b><c val=\"00FFEA\">¡" + defName + " desplegada con éxito en la " + SFE_GetPlateauName(plateauId) + "! (Defensas: " + 
+            IntToString(SFE_GetPlateauDefenseCount(plateauId)) + "/" + IntToString(c_MAX_DEFENSES_PER_PLATEAU) + ")</c></b>"));
+
+    return true;
+}
+
+#endif

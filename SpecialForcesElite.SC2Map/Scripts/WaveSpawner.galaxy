@@ -124,10 +124,12 @@ void SFE_InitWaveSpawner () {
     // 4. Bastión Supremo: Gran Colmena Zerg en la Esquina Superior Derecha
     UnitCreate(1, "Hive", 0, c_SFE_PLAYER_HOSTILE, g_sfeFinalHivePoint, 225.0);
     u = UnitLastCreated();
+    g_sfeFinalHiveUnit = u;
     if (u != null) {
         UnitSetPropertyFixed(u, c_unitPropLifeMax, 25000.0 * g_sfeDiffHostileStatMultiplier[g_sfeCurrentDifficulty]);
         UnitSetPropertyFixed(u, c_unitPropLifePercent, 100.0);
         UnitSetPropertyFixed(u, c_unitPropLifeRegen, 15.0);
+        UnitSetState(u, c_unitStateInvulnerable, true);
     }
     UnitCreate(2, "SporeCrawler", 0, c_SFE_PLAYER_HOSTILE, Point(160.0, 150.0), 225.0);
     UnitCreate(2, "SpineCrawler", 0, c_SFE_PLAYER_HOSTILE, Point(155.0, 160.0), 225.0);
@@ -231,6 +233,43 @@ void SFE_OrderHostilesToCore (unitgroup ug) {
         UnitIssueOrder(u, ordWp, c_orderQueueReplace);
         UnitIssueOrder(u, ordCore, c_orderQueueAddToEnd);
         i = i + 1;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Generar Tropas de Acoso Periódico desde los Reductos Activos (Cada 20 segundos)
+//--------------------------------------------------------------------------------------------------
+void SFE_SpawnOutpostHarassment () {
+    unitgroup ug;
+
+    // 1. Nido Noroeste (Spawning Pool) genera Zerglings y Banelings
+    if (g_sfeOutpostNorthAlive && g_sfeOutpostNorth != null && UnitIsAlive(g_sfeOutpostNorth)) {
+        ug = UnitGroupEmpty();
+        UnitCreate(4, "Zergling", 0, c_SFE_PLAYER_HOSTILE, Point(35.0, 105.0), 225.0);
+        UnitGroupAdd(ug, UnitLastCreated());
+        UnitCreate(2, "Baneling", 0, c_SFE_PLAYER_HOSTILE, Point(35.0, 105.0), 225.0);
+        UnitGroupAdd(ug, UnitLastCreated());
+        SFE_OrderHostilesAlongRoute(ug, 1);
+    }
+
+    // 2. Nido Sureste (Roach Warren) genera Cucarachas y Ravagers
+    if (g_sfeOutpostEastAlive && g_sfeOutpostEast != null && UnitIsAlive(g_sfeOutpostEast)) {
+        ug = UnitGroupEmpty();
+        UnitCreate(3, "Roach", 0, c_SFE_PLAYER_HOSTILE, Point(90.0, 35.0), 225.0);
+        UnitGroupAdd(ug, UnitLastCreated());
+        UnitCreate(1, "Ravager", 0, c_SFE_PLAYER_HOSTILE, Point(90.0, 35.0), 225.0);
+        UnitGroupAdd(ug, UnitLastCreated());
+        SFE_OrderHostilesAlongRoute(ug, 2);
+    }
+
+    // 3. Nido Central (Nexo Protoss Corrompido) genera Zealots y Stalkers
+    if (g_sfeOutpostWestAlive && g_sfeOutpostWest != null && UnitIsAlive(g_sfeOutpostWest)) {
+        ug = UnitGroupEmpty();
+        UnitCreate(2, "Zealot", 0, c_SFE_PLAYER_HOSTILE, Point(115.0, 135.0), 225.0);
+        UnitGroupAdd(ug, UnitLastCreated());
+        UnitCreate(2, "Stalker", 0, c_SFE_PLAYER_HOSTILE, Point(115.0, 135.0), 225.0);
+        UnitGroupAdd(ug, UnitLastCreated());
+        SFE_OrderHostilesAlongRoute(ug, 3);
     }
 }
 
@@ -432,6 +471,12 @@ bool gt_SFE_WaveLoop_Timer_Func (bool testConds, bool runActions) {
 
     // Actualizar bucle por segundo de la Amenaza Tripartita
     SFE_TripartiteTickSecond();
+
+    // Actualizar Motor de Objetivos de Campaña y Acoso de Reductos
+    SFE_ObjectivesTickSecond();
+    if (g_sfeWaveTimeRemaining % 20 == 0) {
+        SFE_SpawnOutpostHarassment();
+    }
 
     if (g_sfeWaveTimeRemaining <= 0) {
         // Desplegar oleada

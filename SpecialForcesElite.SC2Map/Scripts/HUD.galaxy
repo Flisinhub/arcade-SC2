@@ -20,12 +20,25 @@ int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnAddStr;
 int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnAddDex;
 int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnAddInt;
 int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnOpenShop;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnAbil1;
+int[c_SFE_MAX_PLAYERS + 1] g_sfeHudBtnAbil2;
 
 // Barra superior global de estado de la partida
 int g_sfeTopBarDialog;
 int g_sfeTopBarLblWave;
 int g_sfeTopBarLblBaseHp;
 int g_sfeTopBarLblDiff;
+
+// Panel de Misión Territorial y Objetivos Activos
+int g_sfeObjectiveDialog;
+int g_sfeObjectiveLblText;
+
+// Panel Contextual de Defensas en Mesetas Elevadas
+int[c_SFE_MAX_PLAYERS + 1] g_sfePlateauDefDialog;
+int[c_SFE_MAX_PLAYERS + 1] g_sfePlateauDefLblStatus;
+int[c_SFE_MAX_PLAYERS + 1] g_sfePlateauDefBtnVulcan;
+int[c_SFE_MAX_PLAYERS + 1] g_sfePlateauDefBtnMissile;
+int[c_SFE_MAX_PLAYERS + 1] g_sfePlateauDefBtnBunker;
 
 // Tienda de Mejoras Tecnológicas
 int[c_SFE_MAX_PLAYERS + 1] g_sfeShopDialog;
@@ -41,6 +54,16 @@ void SFE_UpdatePlayerHUD (int player);
 void SFE_UpdateTopBarHUD ();
 void SFE_OpenShop (int player);
 void SFE_CloseShop (int player);
+void SFE_TogglePlayerConsole (int player);
+text SFE_GetObjectiveCurrentText ();
+int SFE_GetHeroCurrentPlateau (int player);
+string SFE_GetPlateauName (int plateauId);
+int SFE_GetPlateauDefenseCount (int plateauId);
+bool SFE_DeployPlateauDefense (int player, int defenseType);
+void SFE_CastHeroAbility1 (int player);
+void SFE_CastHeroAbility2 (int player);
+string SFE_GetHeroAbility1Name (int heroId);
+string SFE_GetHeroAbility2Name (int heroId);
 
 //--------------------------------------------------------------------------------------------------
 // Actualizar Valores del HUD para un Jugador
@@ -53,6 +76,8 @@ void SFE_UpdatePlayerHUD (int player) {
     text txtInt;
     text txtPts;
     int hid;
+    int plateauId;
+    string defStatusStr;
 
     if (player < 1 || player > c_SFE_MAX_PLAYERS || !g_sfeHeroStates[player].isActive) {
         return;
@@ -85,10 +110,24 @@ void SFE_UpdatePlayerHUD (int player) {
     DialogControlSetPropertyAsText(g_sfeHudLblDexterity[player], c_triggerControlPropertyText, pg, txtDex);
     DialogControlSetPropertyAsText(g_sfeHudLblIntel[player], c_triggerControlPropertyText, pg, txtInt);
     DialogControlSetPropertyAsText(g_sfeHudLblPoints[player], c_triggerControlPropertyText, pg, txtPts);
+
+    // Actualizar nombres de habilidades activas
+    DialogControlSetPropertyAsText(g_sfeHudBtnAbil1[player], c_triggerControlPropertyText, pg, StringToText(SFE_GetHeroAbility1Name(hid)));
+    DialogControlSetPropertyAsText(g_sfeHudBtnAbil2[player], c_triggerControlPropertyText, pg, StringToText(SFE_GetHeroAbility2Name(hid)));
+
+    // Actualizar estado contextual de Defensas en Meseta
+    plateauId = SFE_GetHeroCurrentPlateau(player);
+    if (plateauId > 0) {
+        defStatusStr = "<b><c val=\"00FFEA\">" + SFE_GetPlateauName(plateauId) + " | Defensas: (" + IntToString(SFE_GetPlateauDefenseCount(plateauId)) + "/" + IntToString(c_MAX_DEFENSES_PER_PLATEAU) + ")</c></b>";
+        DialogControlSetPropertyAsText(g_sfePlateauDefLblStatus[player], c_triggerControlPropertyText, pg, StringToText(defStatusStr));
+        DialogSetVisible(g_sfePlateauDefDialog[player], pg, true);
+    } else {
+        DialogSetVisible(g_sfePlateauDefDialog[player], pg, false);
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
-// Actualizar Barra Superior de Estado Global
+// Actualizar Barra Superior de Estado Global y Objetivos
 //--------------------------------------------------------------------------------------------------
 void SFE_UpdateTopBarHUD () {
     text txtWave;
@@ -116,6 +155,11 @@ void SFE_UpdateTopBarHUD () {
     DialogControlSetPropertyAsText(g_sfeTopBarLblDiff, c_triggerControlPropertyText, PlayerGroupAll(), txtDiff);
     DialogControlSetPropertyAsText(g_sfeTopBarLblWave, c_triggerControlPropertyText, PlayerGroupAll(), txtWave);
     DialogControlSetPropertyAsText(g_sfeTopBarLblBaseHp, c_triggerControlPropertyText, PlayerGroupAll(), txtBase);
+
+    // Actualizar Panel de Objetivos de Misión
+    if (g_sfeObjectiveLblText != 0) {
+        DialogControlSetPropertyAsText(g_sfeObjectiveLblText, c_triggerControlPropertyText, PlayerGroupAll(), SFE_GetObjectiveCurrentText());
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -243,6 +287,36 @@ bool gt_SFE_HUD_Click_Func (bool testConds, bool runActions) {
         return true;
     }
 
+    // Botones de Habilidades de Combate
+    if (clickedCtrl == g_sfeHudBtnAbil1[player]) {
+        SFE_CastHeroAbility1(player);
+        return true;
+    }
+    if (clickedCtrl == g_sfeHudBtnAbil2[player]) {
+        SFE_CastHeroAbility2(player);
+        return true;
+    }
+
+    // Botones de Despliegue de Defensas en Mesetas
+    if (clickedCtrl == g_sfePlateauDefBtnVulcan[player]) {
+        if (SFE_DeployPlateauDefense(player, 1)) {
+            SFE_UpdatePlayerHUD(player);
+        }
+        return true;
+    }
+    if (clickedCtrl == g_sfePlateauDefBtnMissile[player]) {
+        if (SFE_DeployPlateauDefense(player, 2)) {
+            SFE_UpdatePlayerHUD(player);
+        }
+        return true;
+    }
+    if (clickedCtrl == g_sfePlateauDefBtnBunker[player]) {
+        if (SFE_DeployPlateauDefense(player, 3)) {
+            SFE_UpdatePlayerHUD(player);
+        }
+        return true;
+    }
+
     // Botones de la Tienda
     if (clickedCtrl == g_sfeShopBtnWeapons[player]) {
         SFE_ProcessShopPurchase(player, 1);
@@ -297,12 +371,29 @@ void SFE_InitHUD () {
 
     DialogSetVisible(g_sfeTopBarDialog, PlayerGroupAll(), true);
 
-    // 2. Paneles HUD y Tiendas para cada jugador
+    // 2. Panel de Misión Territorial y Objetivos Activos (Superior Derecha)
+    g_sfeObjectiveDialog = DialogCreate(380, 160, c_anchorTopRight, 20, 90, false);
+    DialogSetImage(g_sfeObjectiveDialog, "Assets\\Textures\\ui_glue_backgrounddialog.dds");
+
+    DialogControlCreate(g_sfeObjectiveDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(DialogControlLastCreated(), PlayerGroupAll(), 360, 25);
+    DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTop, 0, 10);
+    DialogControlSetPropertyAsText(DialogControlLastCreated(), c_triggerControlPropertyText, PlayerGroupAll(), 
+        StringToText("<b><c val=\"00FFEA\">MISIÓN TERRITORIAL - SFE5</c></b>"));
+
+    g_sfeObjectiveLblText = DialogControlCreate(g_sfeObjectiveDialog, c_triggerControlTypeLabel);
+    DialogControlSetSize(g_sfeObjectiveLblText, PlayerGroupAll(), 360, 115);
+    DialogControlSetPosition(g_sfeObjectiveLblText, PlayerGroupAll(), c_anchorTop, 0, 38);
+    DialogControlSetPropertyAsText(g_sfeObjectiveLblText, c_triggerControlPropertyText, PlayerGroupAll(), SFE_GetObjectiveCurrentText());
+
+    DialogSetVisible(g_sfeObjectiveDialog, PlayerGroupAll(), true);
+
+    // 3. Paneles HUD, Defensas y Tiendas para cada jugador
     while (p <= c_SFE_MAX_PLAYERS) {
         pg = PlayerGroupSingle(p);
 
-        // Panel HUD de Atributos (Superior Izquierda)
-        g_sfeHudDialog[p] = DialogCreate(380, 240, c_anchorTopLeft, 20, 90, false);
+        // Panel HUD de Atributos y Habilidades (Superior Izquierda)
+        g_sfeHudDialog[p] = DialogCreate(380, 280, c_anchorTopLeft, 20, 90, false);
         DialogSetImage(g_sfeHudDialog[p], "Assets\\Textures\\ui_glue_backgrounddialog.dds");
 
         g_sfeHudLblHeroInfo[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
@@ -339,17 +430,53 @@ void SFE_InitHUD () {
         DialogControlSetPosition(g_sfeHudBtnAddInt[p], pg, c_anchorTopLeft, 295, 114);
         DialogControlSetPropertyAsText(g_sfeHudBtnAddInt[p], c_triggerControlPropertyText, pg, StringToText("+ I"));
 
-        // Puntos disponibles y Botón de Tienda
+        // Fila Habilidades Activas
+        g_sfeHudBtnAbil1[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeHudBtnAbil1[p], pg, 175, 36);
+        DialogControlSetPosition(g_sfeHudBtnAbil1[p], pg, c_anchorTopLeft, 10, 158);
+        DialogControlSetPropertyAsText(g_sfeHudBtnAbil1[p], c_triggerControlPropertyText, pg, StringToText("Habilidad 1 [Q]"));
+
+        g_sfeHudBtnAbil2[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfeHudBtnAbil2[p], pg, 175, 36);
+        DialogControlSetPosition(g_sfeHudBtnAbil2[p], pg, c_anchorTopLeft, 195, 158);
+        DialogControlSetPropertyAsText(g_sfeHudBtnAbil2[p], c_triggerControlPropertyText, pg, StringToText("Habilidad 2 [E]"));
+
+        // Puntos disponibles y Botón de Tienda/Consola
         g_sfeHudLblPoints[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeLabel);
-        DialogControlSetSize(g_sfeHudLblPoints[p], pg, 230, 30);
-        DialogControlSetPosition(g_sfeHudLblPoints[p], pg, c_anchorTopLeft, 10, 160);
+        DialogControlSetSize(g_sfeHudLblPoints[p], pg, 220, 30);
+        DialogControlSetPosition(g_sfeHudLblPoints[p], pg, c_anchorTopLeft, 10, 202);
 
         g_sfeHudBtnOpenShop[p] = DialogControlCreate(g_sfeHudDialog[p], c_triggerControlTypeButton);
-        DialogControlSetSize(g_sfeHudBtnOpenShop[p], pg, 130, 36);
-        DialogControlSetPosition(g_sfeHudBtnOpenShop[p], pg, c_anchorTopLeft, 235, 157);
+        DialogControlSetSize(g_sfeHudBtnOpenShop[p], pg, 135, 36);
+        DialogControlSetPosition(g_sfeHudBtnOpenShop[p], pg, c_anchorTopLeft, 235, 198);
         DialogControlSetPropertyAsText(g_sfeHudBtnOpenShop[p], c_triggerControlPropertyText, pg, StringToText("<c val=\"FFE400\">CONSOLA [Alt+C]</c>"));
 
         DialogSetVisible(g_sfeHudDialog[p], pg, true);
+
+        // Diálogo Contextual de Defensas en Mesetas Elevadas (Inferior Centro)
+        g_sfePlateauDefDialog[p] = DialogCreate(540, 110, c_anchorBottom, 0, 120, false);
+        DialogSetImage(g_sfePlateauDefDialog[p], "Assets\\Textures\\ui_glue_backgrounddialog.dds");
+
+        g_sfePlateauDefLblStatus[p] = DialogControlCreate(g_sfePlateauDefDialog[p], c_triggerControlTypeLabel);
+        DialogControlSetSize(g_sfePlateauDefLblStatus[p], pg, 510, 25);
+        DialogControlSetPosition(g_sfePlateauDefLblStatus[p], pg, c_anchorTop, 0, 10);
+
+        g_sfePlateauDefBtnVulcan[p] = DialogControlCreate(g_sfePlateauDefDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfePlateauDefBtnVulcan[p], pg, 160, 38);
+        DialogControlSetPosition(g_sfePlateauDefBtnVulcan[p], pg, c_anchorBottomLeft, 15, 15);
+        DialogControlSetPropertyAsText(g_sfePlateauDefBtnVulcan[p], c_triggerControlPropertyText, pg, StringToText("Torreta Vulcan (350)"));
+
+        g_sfePlateauDefBtnMissile[p] = DialogControlCreate(g_sfePlateauDefDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfePlateauDefBtnMissile[p], pg, 160, 38);
+        DialogControlSetPosition(g_sfePlateauDefBtnMissile[p], pg, c_anchorBottom, 0, 15);
+        DialogControlSetPropertyAsText(g_sfePlateauDefBtnMissile[p], c_triggerControlPropertyText, pg, StringToText("Torreta Misil (400)"));
+
+        g_sfePlateauDefBtnBunker[p] = DialogControlCreate(g_sfePlateauDefDialog[p], c_triggerControlTypeButton);
+        DialogControlSetSize(g_sfePlateauDefBtnBunker[p], pg, 160, 38);
+        DialogControlSetPosition(g_sfePlateauDefBtnBunker[p], pg, c_anchorBottomRight, 15, 15);
+        DialogControlSetPropertyAsText(g_sfePlateauDefBtnBunker[p], c_triggerControlPropertyText, pg, StringToText("Búnker Reforzado (500)"));
+
+        DialogSetVisible(g_sfePlateauDefDialog[p], pg, false);
 
         // Diálogo de la Tienda de Mejoras
         g_sfeShopDialog[p] = DialogCreate(500, 380, c_anchorCenter, 0, 0, false);
@@ -399,6 +526,11 @@ void SFE_InitHUD () {
         TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnAddDex[p], c_triggerControlEventTypeClick);
         TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnAddInt[p], c_triggerControlEventTypeClick);
         TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnOpenShop[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnAbil1[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfeHudBtnAbil2[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfePlateauDefBtnVulcan[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfePlateauDefBtnMissile[p], c_triggerControlEventTypeClick);
+        TriggerAddEventDialogControl(tClick, p, g_sfePlateauDefBtnBunker[p], c_triggerControlEventTypeClick);
         TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnWeapons[p], c_triggerControlEventTypeClick);
         TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnArmor[p], c_triggerControlEventTypeClick);
         TriggerAddEventDialogControl(tClick, p, g_sfeShopBtnMedkit[p], c_triggerControlEventTypeClick);
