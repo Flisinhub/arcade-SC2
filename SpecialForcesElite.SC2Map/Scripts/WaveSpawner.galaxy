@@ -159,6 +159,33 @@ void SFE_OrderHostilesAlongRoute (unitgroup ug, int routeType) {
 }
 
 //--------------------------------------------------------------------------------------------------
+// Enviar Grupo de Unidades Hostiles Directo al Núcleo Aliado
+//--------------------------------------------------------------------------------------------------
+void SFE_OrderHostilesToCore (unitgroup ug) {
+    int i;
+    int count;
+    unit u;
+    order ordWp;
+    order ordCore;
+
+    count = UnitGroupCount(ug, c_unitCountAlive);
+    if (count <= 0) {
+        return;
+    }
+
+    ordWp = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfePlateauSouthWest);
+    ordCore = OrderTargetingPoint(AbilityCommand("attack", 0), g_sfeBaseCenterPoint);
+
+    i = 1;
+    while (i <= count) {
+        u = UnitGroupUnit(ug, i);
+        UnitIssueOrder(u, ordWp, c_orderQueueReplace);
+        UnitIssueOrder(u, ordCore, c_orderQueueAddToEnd);
+        i = i + 1;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
 // Desplegar Oleada Hostil a lo largo de las Rutas
 //--------------------------------------------------------------------------------------------------
 void SFE_SpawnWave (int waveNum) {
