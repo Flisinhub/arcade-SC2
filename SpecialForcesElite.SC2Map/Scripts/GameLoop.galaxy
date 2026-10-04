@@ -189,32 +189,32 @@ void SFE_SetupDiplomacyAndAlliances () {
     int p2;
 
     while (p1 <= c_SFE_MAX_PLAYERS) {
-        PlayerSetAlliance(p1, c_SFE_PLAYER_ALLIED_BASE, c_allianceIdPassive, true);
-        PlayerSetAlliance(p1, c_SFE_PLAYER_ALLIED_BASE, c_allianceIdVision, true);
-        PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, p1, c_allianceIdPassive, true);
-        PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, p1, c_allianceIdVision, true);
+        PlayerSetAlliance(p1, c_allianceIdPassive, c_SFE_PLAYER_ALLIED_BASE, true);
+        PlayerSetAlliance(p1, c_allianceIdVision, c_SFE_PLAYER_ALLIED_BASE, true);
+        PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdPassive, p1, true);
+        PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdVision, p1, true);
 
-        PlayerSetAlliance(p1, c_SFE_PLAYER_HOSTILE, c_allianceIdPassive, false);
-        PlayerSetAlliance(p1, c_SFE_PLAYER_HOSTILE, c_allianceIdVision, false);
-        PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, p1, c_allianceIdPassive, false);
-        PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, p1, c_allianceIdVision, false);
+        PlayerSetAlliance(p1, c_allianceIdPassive, c_SFE_PLAYER_HOSTILE, false);
+        PlayerSetAlliance(p1, c_allianceIdVision, c_SFE_PLAYER_HOSTILE, false);
+        PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_allianceIdPassive, p1, false);
+        PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_allianceIdVision, p1, false);
 
         p2 = 1;
         while (p2 <= c_SFE_MAX_PLAYERS) {
             if (p1 != p2) {
-                PlayerSetAlliance(p1, p2, c_allianceIdPassive, true);
-                PlayerSetAlliance(p1, p2, c_allianceIdVision, true);
-                PlayerSetAlliance(p1, p2, c_allianceIdSeekHelp, true);
+                PlayerSetAlliance(p1, c_allianceIdPassive, p2, true);
+                PlayerSetAlliance(p1, c_allianceIdVision, p2, true);
+                PlayerSetAlliance(p1, c_allianceIdSeekHelp, p2, true);
             }
             p2 = p2 + 1;
         }
         p1 = p1 + 1;
     }
 
-    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_SFE_PLAYER_HOSTILE, c_allianceIdPassive, false);
-    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_SFE_PLAYER_HOSTILE, c_allianceIdVision, false);
-    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_SFE_PLAYER_ALLIED_BASE, c_allianceIdPassive, false);
-    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_SFE_PLAYER_ALLIED_BASE, c_allianceIdVision, false);
+    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdPassive, c_SFE_PLAYER_HOSTILE, false);
+    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdVision, c_SFE_PLAYER_HOSTILE, false);
+    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_allianceIdPassive, c_SFE_PLAYER_ALLIED_BASE, false);
+    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_allianceIdVision, c_SFE_PLAYER_ALLIED_BASE, false);
 }
 
 //--------------------------------------------------------------------------------------------------

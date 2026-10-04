@@ -1,6 +1,6 @@
 //==================================================================================================
 // Special Forces Elite 5 (SFE5) — StarCraft II Arcade
-// FASE 1: NÚCLEO JUGABLE MÍNIMO (VERTICAL SLICE 1)
+// FASE 1: NÚCLEO JUGABLE MÍNIMO (VERTICAL SLICE 1) - REVISIÓN DIPLOMACIA Y BASE SANADORA
 //==================================================================================================
 
 // Constantes de Jugadores
@@ -19,40 +19,43 @@ point g_sfeSpawnEast;
 point g_sfeSpawnWest;
 
 timer g_sfeWaveTimer;
+timer g_sfeHealTimer;
 int   g_sfeCurrentWave;
 bool  g_sfeCoreAlive;
 
 //--------------------------------------------------------------------------------------------------
 // Inicialización de Diplomacia y Alianzas
+// Firma nativa de Galaxy: PlayerSetAlliance(sourcePlayer, allianceAspect, targetPlayer, value)
 //--------------------------------------------------------------------------------------------------
 void SFE_SetupDiplomacy () {
-    // Jugador 1 <-> Base Aliada (Amistosos y Visión mutua)
-    PlayerSetAlliance(c_SFE_PLAYER_USER, c_SFE_PLAYER_ALLIED_BASE, c_allianceIdPassive, true);
-    PlayerSetAlliance(c_SFE_PLAYER_USER, c_SFE_PLAYER_ALLIED_BASE, c_allianceIdVision, true);
-    PlayerSetAlliance(c_SFE_PLAYER_USER, c_SFE_PLAYER_ALLIED_BASE, c_allianceIdSeekHelp, true);
+    // Jugador 1 -> Base Aliada (Amistoso, Visión y Ayuda mutua)
+    PlayerSetAlliance(c_SFE_PLAYER_USER, c_allianceIdPassive, c_SFE_PLAYER_ALLIED_BASE, true);
+    PlayerSetAlliance(c_SFE_PLAYER_USER, c_allianceIdVision, c_SFE_PLAYER_ALLIED_BASE, true);
+    PlayerSetAlliance(c_SFE_PLAYER_USER, c_allianceIdSeekHelp, c_SFE_PLAYER_ALLIED_BASE, true);
 
-    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_SFE_PLAYER_USER, c_allianceIdPassive, true);
-    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_SFE_PLAYER_USER, c_allianceIdVision, true);
-    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_SFE_PLAYER_USER, c_allianceIdSeekHelp, true);
+    // Base Aliada -> Jugador 1
+    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdPassive, c_SFE_PLAYER_USER, true);
+    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdVision, c_SFE_PLAYER_USER, true);
+    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdSeekHelp, c_SFE_PLAYER_USER, true);
 
     // Jugador 1 <-> Hostiles (Enemigos)
-    PlayerSetAlliance(c_SFE_PLAYER_USER, c_SFE_PLAYER_HOSTILE, c_allianceIdPassive, false);
-    PlayerSetAlliance(c_SFE_PLAYER_USER, c_SFE_PLAYER_HOSTILE, c_allianceIdVision, false);
-    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_SFE_PLAYER_USER, c_allianceIdPassive, false);
-    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_SFE_PLAYER_USER, c_allianceIdVision, false);
+    PlayerSetAlliance(c_SFE_PLAYER_USER, c_allianceIdPassive, c_SFE_PLAYER_HOSTILE, false);
+    PlayerSetAlliance(c_SFE_PLAYER_USER, c_allianceIdVision, c_SFE_PLAYER_HOSTILE, false);
+    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_allianceIdPassive, c_SFE_PLAYER_USER, false);
+    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_allianceIdVision, c_SFE_PLAYER_USER, false);
 
     // Base Aliada <-> Hostiles (Enemigos)
-    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_SFE_PLAYER_HOSTILE, c_allianceIdPassive, false);
-    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_SFE_PLAYER_HOSTILE, c_allianceIdVision, false);
-    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_SFE_PLAYER_ALLIED_BASE, c_allianceIdPassive, false);
-    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_SFE_PLAYER_ALLIED_BASE, c_allianceIdVision, false);
+    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdPassive, c_SFE_PLAYER_HOSTILE, false);
+    PlayerSetAlliance(c_SFE_PLAYER_ALLIED_BASE, c_allianceIdVision, c_SFE_PLAYER_HOSTILE, false);
+    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_allianceIdPassive, c_SFE_PLAYER_ALLIED_BASE, false);
+    PlayerSetAlliance(c_SFE_PLAYER_HOSTILE, c_allianceIdVision, c_SFE_PLAYER_ALLIED_BASE, false);
 }
 
 //--------------------------------------------------------------------------------------------------
-// Creación de la Base Aliada y Defensas Centrales
+// Creación de la Base Aliada, Defensas y Unidad Médica de Soporte
 //--------------------------------------------------------------------------------------------------
 void SFE_SpawnBaseAndDefenses () {
-    unit uTurret;
+    unit uMedic;
 
     // Núcleo: Fortaleza Planetaria
     UnitCreate(1, "PlanetaryFortress", 0, c_SFE_PLAYER_ALLIED_BASE, g_sfeBasePoint, 270.0);
@@ -70,6 +73,19 @@ void SFE_SpawnBaseAndDefenses () {
     UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(100.0, 88.0), 90.0);
     UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(112.0, 100.0), 180.0);
     UnitCreate(1, "MissileTurret", 0, c_SFE_PLAYER_ALLIED_BASE, Point(88.0, 100.0), 0.0);
+
+    // Médicos de Campaña Aliados para curar al héroe automáticamente
+    UnitCreate(1, "Medic", 0, c_SFE_PLAYER_ALLIED_BASE, Point(96.0, 96.0), 45.0);
+    uMedic = UnitLastCreated();
+    if (uMedic != null) {
+        UnitSetPropertyFixed(uMedic, c_unitPropEnergyPercent, 100.0);
+    }
+
+    UnitCreate(1, "Medic", 0, c_SFE_PLAYER_ALLIED_BASE, Point(104.0, 96.0), 135.0);
+    uMedic = UnitLastCreated();
+    if (uMedic != null) {
+        UnitSetPropertyFixed(uMedic, c_unitPropEnergyPercent, 100.0);
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -89,6 +105,35 @@ void SFE_SpawnHeroMarine () {
 
     // Recursos iniciales para pruebas
     PlayerModifyPropertyInt(c_SFE_PLAYER_USER, c_playerPropMinerals, c_playerPropOperSetTo, 500);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Aura de Curación de la Base: Regenera vida al héroe si está cerca del núcleo
+//--------------------------------------------------------------------------------------------------
+bool gt_SFE_BaseHealTimer_Func (bool testConds, bool runActions) {
+    fixed dist;
+    fixed curLife;
+    fixed maxLife;
+    fixed newLife;
+
+    if (!runActions || !g_sfeCoreAlive || g_sfeHeroUnit == null || !UnitIsAlive(g_sfeHeroUnit)) {
+        return true;
+    }
+
+    dist = DistanceBetweenPoints(UnitGetPosition(g_sfeHeroUnit), g_sfeBasePoint);
+    if (dist <= 16.0) {
+        curLife = UnitGetPropertyFixed(g_sfeHeroUnit, c_unitPropLife, true);
+        maxLife = UnitGetPropertyFixed(g_sfeHeroUnit, c_unitPropLifeMax, true);
+        if (curLife < maxLife) {
+            newLife = curLife + 25.0;
+            if (newLife > maxLife) {
+                newLife = maxLife;
+            }
+            UnitSetPropertyFixed(g_sfeHeroUnit, c_unitPropLife, newLife);
+        }
+    }
+
+    return true;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -196,10 +241,11 @@ bool gt_SFE_UnitDied_Func (bool testConds, bool runActions) {
 void SFE_Phase1_Init () {
     trigger tWave;
     trigger tDeath;
+    trigger tHeal;
 
     // Coordenadas del Mapa (200x200)
     g_sfeBasePoint      = Point(100.0, 100.0);
-    g_sfeHeroSpawnPoint = Point(100.0, 95.0);
+    g_sfeHeroSpawnPoint = Point(100.0, 92.0);
     g_sfeSpawnNorth     = Point(100.0, 165.0);
     g_sfeSpawnSouth     = Point(100.0, 35.0);
     g_sfeSpawnEast      = Point(165.0, 100.0);
@@ -208,7 +254,7 @@ void SFE_Phase1_Init () {
     g_sfeCurrentWave    = 0;
     g_sfeCoreAlive      = false;
 
-    // Configuración diplomática
+    // Configuración diplomática exacta
     SFE_SetupDiplomacy();
 
     // Despliegue de entidades principales
@@ -219,11 +265,11 @@ void SFE_Phase1_Init () {
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
         StringToText("<s val=\"ModCenterSize22Bold\"><c val=\"FFE400\">SPECIAL FORCES ELITE 5 (SFE5)</c></s>"));
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-        StringToText("<c val=\"00FFEA\">[FASE 1 ACTIVA] Núcleo Jugable Inicial</c>"));
+        StringToText("<c val=\"00FFEA\">[FASE 1 ACTIVA] Núcleo Jugable</c>"));
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-        StringToText("<c val=\"FFFFFF\">Héroe: Marine de Élite. Defiende la Fortaleza Planetaria de las oleadas Zerg.</c>"));
+        StringToText("<c val=\"FFFFFF\">Héroe: Marine de Élite. Defiende la base. Retrocede a ella para curarte.</c>"));
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaChat, 
-        StringToText("<c val=\"AAAAAA\">La primera oleada atacará en 5 segundos. ¡Prepárate!</c>"));
+        StringToText("<c val=\"AAAAAA\">La primera oleada Zerg atacará en 5 segundos por el Norte.</c>"));
 
     // Temporizador de oleadas: Oleada 1 a los 5 segundos, luego cada 30 segundos
     g_sfeWaveTimer = TimerCreate();
@@ -231,6 +277,13 @@ void SFE_Phase1_Init () {
 
     tWave = TriggerCreate("gt_SFE_WaveTimer_Func");
     TriggerAddEventTimer(tWave, g_sfeWaveTimer);
+
+    // Temporizador de curación de la base (cada 1.0 segundo)
+    g_sfeHealTimer = TimerCreate();
+    TimerStart(g_sfeHealTimer, 1.0, true, c_timeGame);
+
+    tHeal = TriggerCreate("gt_SFE_BaseHealTimer_Func");
+    TriggerAddEventTimer(tHeal, g_sfeHealTimer);
 
     // Disparador de muertes y recompensas
     tDeath = TriggerCreate("gt_SFE_UnitDied_Func");
