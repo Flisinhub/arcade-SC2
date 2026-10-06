@@ -4,12 +4,12 @@
 // ============================================================================
 
 include "sfe5_framework/galaxy/CoreFramework.galaxy"
+include "sfe5_framework/galaxy/BankManager.galaxy"
 include "sfe5_framework/galaxy/DifficultyManager.galaxy"
 include "sfe5_framework/galaxy/EconomyEngine.galaxy"
 include "sfe5_framework/galaxy/BuffEngine.galaxy"
 include "sfe5_framework/galaxy/ObjectiveDirector.galaxy"
 include "sfe5_framework/galaxy/BossMechanics.galaxy"
-include "sfe5_framework/galaxy/BankManager.galaxy"
 include "sfe5_framework/galaxy/MapGenerator.galaxy"
 include "sfe5_framework/galaxy/ShopUI.galaxy"
 include "sfe5_framework/galaxy/GameFlow.galaxy"
