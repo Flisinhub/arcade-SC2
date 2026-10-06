@@ -67,3 +67,6 @@ fixed SFE5_Round(fixed val) {
 // Custom infinite upgrades
 int[MAX_PLAYERS + 1] g_PlayerBonusDamage;
 int[MAX_PLAYERS + 1] g_PlayerBonusArmor;
+
+// Hero Tracking
+string[MAX_PLAYERS + 1] g_PlayerHeroType;

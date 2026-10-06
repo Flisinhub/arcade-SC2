@@ -39,6 +39,10 @@ void SFE5_SpawnMiniBoss(int phase) {
     attackOrd = OrderTargetingPoint(AbilityCommand("attack", 0), Point(30.0, 30.0));
     UnitGroupIssueOrder(bossGroup, attackOrd, c_orderQueueReplace);
     
+    // Scale Mini-Boss HP based on phase and difficulty
+    UnitSetPropertyFixed(UnitGroupUnit(bossGroup, 1), c_unitPropLifeMax, UnitGetPropertyFixed(UnitGroupUnit(bossGroup, 1), c_unitPropLifeMax, c_unitPropCurrent) * SFE5_GetEnemyHpMultiplier() * IntToFixed(phase + 1));
+    UnitSetPropertyFixed(UnitGroupUnit(bossGroup, 1), c_unitPropLifePercent, 100.0);
+    
     UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("¡MINI-JEFE DE FASE " + IntToString(phase) + " HA APARECIDO!"));
 }
 
@@ -70,16 +74,23 @@ bool SFE5_StructureSpawnerLoop(bool testConds, bool runActions) {
 
         if (activeBuilding == "Bunker") {
             spawned = UnitCreate(2, "Zergling", 0, 15, sPos, 270.0);
-            UnitGroupIssueOrder(spawned, attackOrd, c_orderQueueReplace);
         } else if (activeBuilding == "RoachWarren") {
             spawned = UnitCreate(1, "Roach", 0, 15, sPos, 270.0);
-            UnitGroupIssueOrder(spawned, attackOrd, c_orderQueueReplace);
         } else if (activeBuilding == "HydraliskDen") {
             spawned = UnitCreate(1, "Hydralisk", 0, 15, sPos, 270.0);
-            UnitGroupIssueOrder(spawned, attackOrd, c_orderQueueReplace);
         } else if (activeBuilding == "Spire") {
             spawned = UnitCreate(1, "Mutalisk", 0, 15, sPos, 270.0);
+        }
+        
+        if (UnitGroupCount(spawned, c_unitCountAlive) > 0) {
             UnitGroupIssueOrder(spawned, attackOrd, c_orderQueueReplace);
+            // Apply difficulty HP multiplier
+            UnitSetPropertyFixed(UnitGroupUnit(spawned, 1), c_unitPropLifeMax, UnitGetPropertyFixed(UnitGroupUnit(spawned, 1), c_unitPropLifeMax, c_unitPropCurrent) * SFE5_GetEnemyHpMultiplier());
+            UnitSetPropertyFixed(UnitGroupUnit(spawned, 1), c_unitPropLifePercent, 100.0);
+            if (activeBuilding == "Bunker") {
+                UnitSetPropertyFixed(UnitGroupUnit(spawned, 2), c_unitPropLifeMax, UnitGetPropertyFixed(UnitGroupUnit(spawned, 2), c_unitPropLifeMax, c_unitPropCurrent) * SFE5_GetEnemyHpMultiplier());
+                UnitSetPropertyFixed(UnitGroupUnit(spawned, 2), c_unitPropLifePercent, 100.0);
+            }
         }
     }
     return true;
@@ -105,6 +116,7 @@ bool SFE5_PhaseProgressionLoop(bool testConds, bool runActions) {
             UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("¡INICIA LA FASE " + IntToString(g_CurrentPhase) + "!"));
         } else {
             UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("¡TODAS LAS FASES COMPLETADAS! VICTORIA INMINENTE!"));
+            SFE5_Victory();
         }
     }
     return true;
