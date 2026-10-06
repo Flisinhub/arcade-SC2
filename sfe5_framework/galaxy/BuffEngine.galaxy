@@ -1,0 +1,73 @@
+// ============================================================================
+// BuffEngine.galaxy
+// Tracks and enforces the 7-Tier Buff System, Ultimate Buffs, and Refunds
+// ============================================================================
+
+const int MAX_BUFF_TIERS = 7;
+
+// Validates and applies a buff to a unit, replacing the existing one in that tier
+void SFE5_ApplyBuff(unit target, int tier, string buffBehavior, int cost) {
+    if (tier < 1 || tier > MAX_BUFF_TIERS) { return; }
+    
+    string tagStr = IntToString(UnitGetTag(target));
+    string dataKey = tagStr + "_Tier" + IntToString(tier);
+    
+    // Check if there's an existing buff in this tier
+    if (DataTableValueExists(true, dataKey)) {
+        string oldBuff = DataTableGetString(true, dataKey);
+        // Remove old behavior
+        UnitBehaviorRemove(target, oldBuff, 1);
+        
+        // Note: Full refund is assumed to be handled by the UI/Economy system 
+        // before applying the new buff.
+    }
+    
+    // Apply new behavior and save to DataTable
+    UnitBehaviorAdd(target, buffBehavior, target, 1);
+    DataTableSetString(true, dataKey, buffBehavior);
+}
+
+// Sells a buff for a full refund
+void SFE5_SellBuff(int player, unit target, int tier, int refundAmount) {
+    if (tier < 1 || tier > MAX_BUFF_TIERS) { return; }
+    
+    string tagStr = IntToString(UnitGetTag(target));
+    string dataKey = tagStr + "_Tier" + IntToString(tier);
+    
+    if (DataTableValueExists(true, dataKey)) {
+        string oldBuff = DataTableGetString(true, dataKey);
+        UnitBehaviorRemove(target, oldBuff, 1);
+        DataTableValueRemove(true, dataKey);
+        
+        // Refund player (100% mineral refund for tier 1-7)
+        PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperAdd, refundAmount);
+        
+        // Sync local tracking arrays in EconomyEngine
+        // g_PlayerMinerals[player] += refundAmount;
+    }
+}
+
+// Clears all buffs on death (with partial refund based on difficulty)
+void SFE5_OnUnitDeath_ClearBuffs(int player, unit target, int totalBuffValue) {
+    string tagStr = IntToString(UnitGetTag(target));
+    int i;
+    
+    for (i = 1; i <= MAX_BUFF_TIERS; i += 1) {
+        string dataKey = tagStr + "_Tier" + IntToString(i);
+        if (DataTableValueExists(true, dataKey)) {
+            DataTableValueRemove(true, dataKey);
+        }
+    }
+    
+    // Refund logic: partial based on difficulty
+    fixed refundFraction = 1.0 - SFE5_GetDeathPenaltyFraction();
+    if (refundFraction > 0.0 && totalBuffValue > 0) {
+        int refundAmount = FixedToInt(IntToFixed(totalBuffValue) * refundFraction);
+        PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperAdd, refundAmount);
+    }
+}
+
+// Ultimate Buffs application
+void SFE5_ApplyUltimateBuff(unit target, string ultBehavior) {
+    UnitBehaviorAdd(target, ultBehavior, target, 1);
+}

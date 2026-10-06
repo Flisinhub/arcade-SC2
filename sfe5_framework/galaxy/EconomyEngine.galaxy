@@ -1,0 +1,91 @@
+// ============================================================================
+// EconomyEngine.galaxy
+// Handles Kill Payouts, Shared/Split Income, Trading, and Starting Minerals
+// ============================================================================
+
+const int INCOME_MODE_SHARED = 0;
+const int INCOME_MODE_SPLIT = 1;
+
+int g_CurrentIncomeMode = INCOME_MODE_SHARED;
+
+// Player minerals array
+int[MAX_PLAYERS + 1] g_PlayerMinerals;
+bool[MAX_PLAYERS + 1] g_PlayerPickedRandomHero;
+
+// Initializes starting minerals for all active players
+void SFE5_DistributeStartingMinerals() {
+    int i;
+    int baseAmount = 12000 / g_ActivePlayerCount;
+    int randomBonus = 15000 / g_ActivePlayerCount;
+    
+    for (i = 1; i <= MAX_PLAYERS; i += 1) {
+        if (g_PlayerIsActive[i]) {
+            g_PlayerMinerals[i] = baseAmount;
+            if (g_PlayerPickedRandomHero[i]) {
+                g_PlayerMinerals[i] += randomBonus;
+            }
+            // Update actual SC2 player property
+            PlayerModifyPropertyInt(i, c_playerPropMinerals, c_playerPropOperSetTo, g_PlayerMinerals[i]);
+        }
+    }
+}
+
+// Calculate the dynamic bounty for a kill
+int SFE5_CalculateKillPayout(int baseBounty, fixed rate, int flatEventBonus) {
+    fixed diffMult = SFE5_GetIncomeMultiplier();
+    // Formula: Base * DifficultyMultiplier * (rate * (12 - players))
+    fixed dynamicFactor = rate * IntToFixed(12 - g_ActivePlayerCount);
+    fixed rawPayout = IntToFixed(baseBounty) * diffMult * dynamicFactor;
+    
+    return FixedToInt(rawPayout) + flatEventBonus;
+}
+
+// Distributes income from a killed enemy
+void SFE5_AwardKillIncome(int killerPlayer, int baseBounty, fixed rate, int flatEventBonus) {
+    int finalPayout = SFE5_CalculateKillPayout(baseBounty, rate, flatEventBonus);
+    int i;
+    
+    if (g_CurrentIncomeMode == INCOME_MODE_SHARED) {
+        // Shared: Each active player receives the FULL calculated payout
+        for (i = 1; i <= MAX_PLAYERS; i += 1) {
+            if (g_PlayerIsActive[i]) {
+                PlayerModifyPropertyInt(i, c_playerPropMinerals, c_playerPropOperAdd, finalPayout);
+                g_PlayerMinerals[i] += finalPayout;
+            }
+        }
+    } else if (g_CurrentIncomeMode == INCOME_MODE_SPLIT) {
+        // Split: Only the killer receives the standard payout
+        if (killerPlayer >= 1 && killerPlayer <= MAX_PLAYERS && g_PlayerIsActive[killerPlayer]) {
+            PlayerModifyPropertyInt(killerPlayer, c_playerPropMinerals, c_playerPropOperAdd, finalPayout);
+            g_PlayerMinerals[killerPlayer] += finalPayout;
+        }
+    }
+}
+
+// Trade command handling (-m <amount>)
+void SFE5_ProcessTrade(int fromPlayer, int toPlayer, int amount) {
+    if (!g_PlayerIsActive[fromPlayer] || !g_PlayerIsActive[toPlayer] || fromPlayer == toPlayer) {
+        return;
+    }
+    
+    int currentMinerals = PlayerGetPropertyInt(fromPlayer, c_playerPropMinerals);
+    if (amount > 0 && currentMinerals >= amount) {
+        PlayerModifyPropertyInt(fromPlayer, c_playerPropMinerals, c_playerPropOperSubtract, amount);
+        PlayerModifyPropertyInt(toPlayer, c_playerPropMinerals, c_playerPropOperAdd, amount);
+        g_PlayerMinerals[fromPlayer] -= amount;
+        g_PlayerMinerals[toPlayer] += amount;
+        // Broadcast trade message or visual feedback here
+    }
+}
+
+// Revive Penalty
+void SFE5_ApplyDeathPenalty(int player) {
+    if (g_PlayerIsActive[player]) {
+        fixed penaltyFraction = SFE5_GetDeathPenaltyFraction();
+        int currentMinerals = PlayerGetPropertyInt(player, c_playerPropMinerals);
+        int lostMinerals = FixedToInt(IntToFixed(currentMinerals) * penaltyFraction);
+        
+        PlayerModifyPropertyInt(player, c_playerPropMinerals, c_playerPropOperSubtract, lostMinerals);
+        g_PlayerMinerals[player] -= lostMinerals;
+    }
+}

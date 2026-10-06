@@ -1,0 +1,80 @@
+// ============================================================================
+// DifficultyManager.galaxy
+// Handles the 6 difficulty tiers and their math multipliers
+// ============================================================================
+
+const int DIFF_CASUAL = 0;
+const int DIFF_NORMAL = 1;
+const int DIFF_HARD = 2;
+const int DIFF_BRUTAL = 3;
+const int DIFF_TORMENT = 4;
+const int DIFF_IMPOSSIBLE = 5;
+
+int g_CurrentDifficulty = DIFF_NORMAL;
+
+// Difficulty Data Struct
+struct DifficultyData {
+    fixed incomeMultiplier;
+    fixed deathPenaltyFraction;
+    fixed baseReviveTime;
+    fixed reviveTimePerLevel;
+};
+
+DifficultyData[6] g_DifficultySettings;
+
+void SFE5_InitDifficultyData() {
+    // Casual
+    g_DifficultySettings[DIFF_CASUAL].incomeMultiplier = 1.15;
+    g_DifficultySettings[DIFF_CASUAL].deathPenaltyFraction = 0.0;
+    g_DifficultySettings[DIFF_CASUAL].baseReviveTime = 15.0;
+    g_DifficultySettings[DIFF_CASUAL].reviveTimePerLevel = 0.3;
+    
+    // Normal
+    g_DifficultySettings[DIFF_NORMAL].incomeMultiplier = 1.0;
+    g_DifficultySettings[DIFF_NORMAL].deathPenaltyFraction = 0.25;
+    g_DifficultySettings[DIFF_NORMAL].baseReviveTime = 20.0;
+    g_DifficultySettings[DIFF_NORMAL].reviveTimePerLevel = 0.4;
+    
+    // Hard
+    g_DifficultySettings[DIFF_HARD].incomeMultiplier = 0.8;
+    g_DifficultySettings[DIFF_HARD].deathPenaltyFraction = 0.50;
+    g_DifficultySettings[DIFF_HARD].baseReviveTime = 30.0;
+    g_DifficultySettings[DIFF_HARD].reviveTimePerLevel = 0.6;
+    
+    // Brutal
+    g_DifficultySettings[DIFF_BRUTAL].incomeMultiplier = 0.7;
+    g_DifficultySettings[DIFF_BRUTAL].deathPenaltyFraction = 0.75;
+    g_DifficultySettings[DIFF_BRUTAL].baseReviveTime = 40.0;
+    g_DifficultySettings[DIFF_BRUTAL].reviveTimePerLevel = 0.9;
+    
+    // Torment
+    g_DifficultySettings[DIFF_TORMENT].incomeMultiplier = 0.6;
+    g_DifficultySettings[DIFF_TORMENT].deathPenaltyFraction = 1.0;
+    g_DifficultySettings[DIFF_TORMENT].baseReviveTime = 40.0;
+    g_DifficultySettings[DIFF_TORMENT].reviveTimePerLevel = 0.9;
+    
+    // Impossible
+    g_DifficultySettings[DIFF_IMPOSSIBLE].incomeMultiplier = 0.3;
+    g_DifficultySettings[DIFF_IMPOSSIBLE].deathPenaltyFraction = 1.0;
+    g_DifficultySettings[DIFF_IMPOSSIBLE].baseReviveTime = 40.0;
+    g_DifficultySettings[DIFF_IMPOSSIBLE].reviveTimePerLevel = 0.9;
+}
+
+void SFE5_SetDifficulty(int diffTier) {
+    if (diffTier >= DIFF_CASUAL && diffTier <= DIFF_IMPOSSIBLE) {
+        g_CurrentDifficulty = diffTier;
+    }
+}
+
+fixed SFE5_GetIncomeMultiplier() {
+    return g_DifficultySettings[g_CurrentDifficulty].incomeMultiplier;
+}
+
+fixed SFE5_GetDeathPenaltyFraction() {
+    return g_DifficultySettings[g_CurrentDifficulty].deathPenaltyFraction;
+}
+
+fixed SFE5_GetReviveDelay(int unitLevel) {
+    return g_DifficultySettings[g_CurrentDifficulty].baseReviveTime + 
+           (g_DifficultySettings[g_CurrentDifficulty].reviveTimePerLevel * IntToFixed(unitLevel));
+}

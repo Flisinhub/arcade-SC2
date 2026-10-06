@@ -1,0 +1,104 @@
+// ============================================================================
+// GameFlow.galaxy
+// Manages the Lobby: Hero Selection Dialog
+// ============================================================================
+
+int g_HeroDialog;
+int g_BtnMarine;
+int g_BtnGhost;
+int g_BtnMarauder;
+
+bool[MAX_PLAYERS + 1] g_PlayerHasPickedHero;
+int g_PlayersPickedCount = 0;
+
+// Uses standard Galaxy Native Dialogs
+void SFE5_BuildLobby() {
+    int dialog;
+    int i; // DECLARATION AT THE VERY TOP
+    
+    // Create the Hero Selection Dialog
+    // Anchor 4 is typically c_anchorCenter
+    dialog = DialogCreate(400, 300, 4, 0, 0, true);
+    g_HeroDialog = dialog;
+    
+    DialogSetTitle(dialog, StringToText("Select Hero"));
+    
+    // Create Buttons
+    g_BtnMarine = DialogControlCreate(dialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(g_BtnMarine, PlayerGroupAll(), 1, 0, 50); // 1 = Top
+    DialogControlSetSize(g_BtnMarine, PlayerGroupAll(), 200, 50);
+    DialogControlSetPropertyAsText(g_BtnMarine, c_triggerControlPropertyText, PlayerGroupAll(), StringToText("Marine"));
+    
+    g_BtnGhost = DialogControlCreate(dialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(g_BtnGhost, PlayerGroupAll(), 1, 0, 110);
+    DialogControlSetSize(g_BtnGhost, PlayerGroupAll(), 200, 50);
+    DialogControlSetPropertyAsText(g_BtnGhost, c_triggerControlPropertyText, PlayerGroupAll(), StringToText("Ghost"));
+    
+    g_BtnMarauder = DialogControlCreate(dialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(g_BtnMarauder, PlayerGroupAll(), 1, 0, 170);
+    DialogControlSetSize(g_BtnMarauder, PlayerGroupAll(), 200, 50);
+    DialogControlSetPropertyAsText(g_BtnMarauder, c_triggerControlPropertyText, PlayerGroupAll(), StringToText("Marauder"));
+    
+    // Show to all active players
+    DialogSetVisible(dialog, PlayerGroupAll(), true);
+    
+    // Ensure all players are marked as not picked
+    for (i = 1; i <= MAX_PLAYERS; i += 1) {
+        g_PlayerHasPickedHero[i] = false;
+    }
+}
+
+// Function to handle the actual selection
+void SFE5_SelectHero(int player, string heroType) {
+    point baseCenter;
+    
+    if (g_PlayerHasPickedHero[player]) { return; }
+    
+    g_PlayerHasPickedHero[player] = true;
+    g_PlayersPickedCount += 1;
+    
+    baseCenter = Point(30.0 + IntToFixed(player), 25.0);
+    
+    // Create Hero at Base
+    UnitCreate(1, heroType, 0, player, baseCenter, 270.0);
+    CameraPan(player, Point(30.0, 30.0), 0.0, 0.0, 0.0, false);
+    
+    // Hide dialog for this player
+    DialogSetVisible(g_HeroDialog, PlayerGroupSingle(player), false);
+    
+    if (g_PlayersPickedCount >= g_ActivePlayerCount) {
+        // Start the game!
+        SFE5_SetDifficulty(DIFF_NORMAL); // Defaulting to Normal for now
+        SFE5_DistributeStartingMinerals();
+        SFE5_InitObjectiveDirector();
+        SFE5_InitBossMechanics();
+        SFE5_ShowShopUI();
+    }
+}
+
+bool SFE5_OnDialogClicked(bool testConds, bool runActions) {
+    int control;
+    int player;
+    
+    control = EventDialogControl();
+    player = EventPlayer();
+    
+    if (control == g_BtnMarine) {
+        SFE5_SelectHero(player, "Marine");
+    } else if (control == g_BtnGhost) {
+        SFE5_SelectHero(player, "Ghost");
+    } else if (control == g_BtnMarauder) {
+        SFE5_SelectHero(player, "Marauder");
+    }
+    
+    return true;
+}
+
+void SFE5_InitGameFlow() {
+    trigger t;
+    t = TriggerCreate("SFE5_OnDialogClicked");
+    // Hook up the buttons to the click event
+    TriggerAddEventDialogControl(t, c_playerAny, g_BtnMarine, c_triggerControlEventTypeClick);
+    TriggerAddEventDialogControl(t, c_playerAny, g_BtnGhost, c_triggerControlEventTypeClick);
+    TriggerAddEventDialogControl(t, c_playerAny, g_BtnMarauder, c_triggerControlEventTypeClick);
+}

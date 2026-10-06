@@ -1,0 +1,127 @@
+// ============================================================================
+// ObjectiveDirector.galaxy
+// Manages Attack Waves, Drop Pods, and Map Spawners
+// ============================================================================
+
+int g_CurrentPhase = 1;
+bool g_DropPodsActive = false;
+bool g_NydusActive = false;
+
+// Region definitions
+region g_BaseRegion;
+const int MAX_CRATERS = 12;
+region[12] g_NydusCraters;
+
+string SFE5_GetPhaseBuilding(int phase) {
+    if (phase == 1) { return "Bunker"; }
+    if (phase == 2) { return "RoachWarren"; }
+    if (phase == 3) { return "HydraliskDen"; }
+    if (phase == 4) { return "Spire"; }
+    return "";
+}
+
+void SFE5_SpawnMiniBoss(int phase) {
+    string bossType;
+    point spawnPoint;
+    unitgroup bossGroup;
+    order attackOrd;
+    
+    // Spawn at the top right of the grid
+    spawnPoint = Point(120.0, 120.0); 
+    
+    if (phase == 1) { bossType = "Ultralisk"; }
+    else if (phase == 2) { bossType = "BroodLord"; }
+    else if (phase == 3) { bossType = "Ultralisk"; }
+    else if (phase == 4) { bossType = "BroodLord"; }
+    else { bossType = "Ultralisk"; }
+    
+    bossGroup = UnitCreate(1, bossType, 0, 15, spawnPoint, 270.0);
+    attackOrd = OrderTargetingPoint(AbilityCommand("attack", 0), Point(30.0, 30.0));
+    UnitGroupIssueOrder(bossGroup, attackOrd, c_orderQueueReplace);
+    
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("¡MINI-JEFE DE FASE " + IntToString(phase) + " HA APARECIDO!"));
+}
+
+// ==========================================
+// Periodic Structure Spawners (The Swarm)
+// ==========================================
+bool SFE5_StructureSpawnerLoop(bool testConds, bool runActions) {
+    unitgroup structures;
+    int count;
+    int i;
+    unit s;
+    point sPos;
+    unitgroup spawned;
+    order attackOrd;
+    string activeBuilding;
+
+    activeBuilding = SFE5_GetPhaseBuilding(g_CurrentPhase);
+    if (activeBuilding == "") { return true; }
+
+    attackOrd = OrderTargetingPoint(AbilityCommand("attack", 0), Point(30.0, 30.0));
+    
+    // Grab ONLY the buildings active for the current phase
+    structures = UnitGroup(activeBuilding, 15, RegionEntireMap(), UnitFilter(0, 0, 0, 0), 0);
+    count = UnitGroupCount(structures, c_unitCountAlive);
+
+    for (i = 1; i <= count; i += 1) {
+        s = UnitGroupUnit(structures, i);
+        sPos = UnitGetPosition(s);
+
+        if (activeBuilding == "Bunker") {
+            spawned = UnitCreate(2, "Zergling", 0, 15, sPos, 270.0);
+            UnitGroupIssueOrder(spawned, attackOrd, c_orderQueueReplace);
+        } else if (activeBuilding == "RoachWarren") {
+            spawned = UnitCreate(1, "Roach", 0, 15, sPos, 270.0);
+            UnitGroupIssueOrder(spawned, attackOrd, c_orderQueueReplace);
+        } else if (activeBuilding == "HydraliskDen") {
+            spawned = UnitCreate(1, "Hydralisk", 0, 15, sPos, 270.0);
+            UnitGroupIssueOrder(spawned, attackOrd, c_orderQueueReplace);
+        } else if (activeBuilding == "Spire") {
+            spawned = UnitCreate(1, "Mutalisk", 0, 15, sPos, 270.0);
+            UnitGroupIssueOrder(spawned, attackOrd, c_orderQueueReplace);
+        }
+    }
+    return true;
+}
+
+bool SFE5_PhaseProgressionLoop(bool testConds, bool runActions) {
+    string targetBuilding;
+    unitgroup structures;
+    int count;
+    
+    if (g_CurrentPhase > 4) { return true; }
+    
+    targetBuilding = SFE5_GetPhaseBuilding(g_CurrentPhase);
+    structures = UnitGroup(targetBuilding, 15, RegionEntireMap(), UnitFilter(0, 0, 0, 0), 0);
+    count = UnitGroupCount(structures, c_unitCountAlive);
+    
+    if (count == 0) {
+        // All structures for this phase are destroyed!
+        SFE5_SpawnMiniBoss(g_CurrentPhase);
+        g_CurrentPhase += 1;
+        
+        if (g_CurrentPhase <= 4) {
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("¡INICIA LA FASE " + IntToString(g_CurrentPhase) + "!"));
+        } else {
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("¡TODAS LAS FASES COMPLETADAS! VICTORIA INMINENTE!"));
+        }
+    }
+    return true;
+}
+
+// ==========================================
+// Initialization
+// ==========================================
+void SFE5_InitObjectiveDirector() {
+    trigger tSpawn;
+    trigger tPhase;
+    
+    tSpawn = TriggerCreate("SFE5_StructureSpawnerLoop");
+    // The enemy structures will spawn a wave every 20 seconds
+    TriggerAddEventTimePeriodic(tSpawn, 20.0, c_timeGame);
+    
+    tPhase = TriggerCreate("SFE5_PhaseProgressionLoop");
+    // Check for phase progression every 5 seconds
+    TriggerAddEventTimePeriodic(tPhase, 5.0, c_timeGame);
+}

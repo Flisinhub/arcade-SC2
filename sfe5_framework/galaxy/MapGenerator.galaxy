@@ -1,0 +1,94 @@
+// ============================================================================
+// MapGenerator.galaxy
+// Procedural Generation of the Base, Grid, Paths, and Enemy Structures
+// ============================================================================
+
+const int GRID_SIZE = 14;
+const fixed MAP_MIN_X = 0.0;
+const fixed MAP_MAX_X = 256.0;
+const fixed MAP_MIN_Y = 0.0;
+const fixed MAP_MAX_Y = 256.0;
+
+// Base topology
+void SFE5_ConstructBaseTopology() {
+    point basePoint = Point(30.0, 30.0);
+    
+    // Create Planetary Fortress for Player 1
+    UnitCreate(1, "PlanetaryFortress", 1, basePoint, 270.0);
+    
+    // Create 6 SCVs for the 6 players around the base
+    int i;
+    for (i = 1; i <= 6; i += 1) {
+        if (g_PlayerIsActive[i]) {
+            point startPoint = Point(30.0 + IntToFixed(i), 25.0);
+            UnitCreate(1, "SCV", i, startPoint, 270.0);
+        }
+    }
+    
+    // Define the Base Region (radius 30.0 around basePoint)
+    g_BaseRegion = RegionCircle(basePoint, 30.0);
+}
+
+void SFE5_GenerateMap() {
+    int x; int y;
+    fixed stepX = (MAP_MAX_X - MAP_MIN_X) / IntToFixed(GRID_SIZE);
+    fixed stepY = (MAP_MAX_Y - MAP_MIN_Y) / IntToFixed(GRID_SIZE);
+
+    // Generate Nydus Craters (Pick 12 random cells)
+    int nydusCount = 0;
+
+    for (x = 0; x < GRID_SIZE; x += 1) {
+        for (y = 0; y < GRID_SIZE; y += 1) {
+            // Skip the bottom-left area where the base is (x < 3, y < 3)
+            if (x < 3 && y < 3) { continue; }
+
+            fixed cellCenterX = MAP_MIN_X + (IntToFixed(x) * stepX) + (stepX / 2.0);
+            fixed cellCenterY = MAP_MIN_Y + (IntToFixed(y) * stepY) + (stepY / 2.0);
+            point cellPoint = Point(cellCenterX, cellCenterY);
+
+            // 1. Assign Nydus Craters
+            if (nydusCount < 12 && RandomInt(1, 100) <= 15) {
+                g_NydusCraters[nydusCount] = RegionCircle(cellPoint, 5.0);
+                // Create a visual indicator for the crater (e.g. Nydus Canal)
+                UnitCreate(1, "NydusCanal", 15, cellPoint, 270.0);
+                nydusCount += 1;
+                continue; // Skip spawning other structures here
+            }
+
+            // 2. Procedural Enemy Structures
+            int familyRoll = RandomInt(1, 100);
+            string structureToSpawn;
+            
+            if (familyRoll <= 20) {
+                // Empty cell / Pathing area
+                continue;
+            } else if (familyRoll <= 50) {
+                // 30% Infested
+                if (RandomInt(1, 2) == 1) { structureToSpawn = "Bunker"; }
+                else { structureToSpawn = "MissileTurret"; }
+            } else if (familyRoll <= 80) {
+                // 30% Tier 1 Zerg Defenses
+                int t1Roll = RandomInt(1, 3);
+                if (t1Roll == 1) { structureToSpawn = "SpineCrawler"; }
+                else if (t1Roll == 2) { structureToSpawn = "SporeCrawler"; }
+                else { structureToSpawn = "CreepTumor"; }
+            } else {
+                // 20% Tier 2 Zerg Defenses
+                int t2Roll = RandomInt(1, 3);
+                if (t2Roll == 1) { structureToSpawn = "SpineCrawlerWeapon"; } // Super Spine Crawler
+                else if (t2Roll == 2) { structureToSpawn = "SporeCannon"; } // Super Spore Crawler
+                else { structureToSpawn = "ImpalerColony"; }
+            }
+            
+            // Spawn the selected structure slightly offset to look natural
+            point spawnPoint = Point(cellCenterX + IntToFixed(RandomInt(-3, 3)), cellCenterY + IntToFixed(RandomInt(-3, 3)));
+            UnitCreate(1, structureToSpawn, 15, spawnPoint, IntToFixed(RandomInt(0, 360)));
+            
+            // 3. Create Pathing Blockers (Rocks) randomly to form mazes
+            if (RandomInt(1, 100) <= 10) {
+                point rockPoint = Point(cellCenterX + 8.0, cellCenterY + 8.0);
+                UnitCreate(1, "DestructibleRock2x4Vertical", 0, rockPoint, 270.0);
+            }
+        }
+    }
+}

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Desc>
+    <!-- ========================================== -->
+    <!-- SFE5 Player Console Main Frame (Alt+C)     -->
+    <!-- ========================================== -->
+    <Frame type="Frame" name="SFE5PlayerConsole" template="WindowTemplate">
+        <Anchor side="Top" relative="$parent" pos="Min" offset="100"/>
+        <Anchor side="Left" relative="$parent" pos="Min" offset="100"/>
+        <Width val="800"/>
+        <Height val="600"/>
+        <Visible val="false"/>
+        
+        <Frame type="Frame" name="TabContainer">
+            <!-- Tabs: Settings, Buffs, Stats, Rewards -->
+            <Frame type="Button" name="TabSettings">
+                <Anchor side="Top" relative="$parent" pos="Min" offset="10"/>
+                <Anchor side="Left" relative="$parent" pos="Min" offset="10"/>
+                <Width val="120"/>
+                <Height val="40"/>
+                <Text val="Settings"/>
+            </Frame>
+            
+            <Frame type="Button" name="TabBuffs">
+                <Anchor side="Top" relative="$parent" pos="Min" offset="10"/>
+                <Anchor side="Left" relative="$sibling" pos="Max" offset="5"/>
+                <Width val="120"/>
+                <Height val="40"/>
+                <Text val="Buffs"/>
+            </Frame>
+            
+            <Frame type="Button" name="TabStats">
+                <Anchor side="Top" relative="$parent" pos="Min" offset="10"/>
+                <Anchor side="Left" relative="$sibling" pos="Max" offset="5"/>
+                <Width val="120"/>
+                <Height val="40"/>
+                <Text val="Stats"/>
+            </Frame>
+            
+            <Frame type="Button" name="TabRewards">
+                <Anchor side="Top" relative="$parent" pos="Min" offset="10"/>
+                <Anchor side="Left" relative="$sibling" pos="Max" offset="5"/>
+                <Width val="120"/>
+                <Height val="40"/>
+                <Text val="Rewards"/>
+            </Frame>
+        </Frame>
+
+        <Frame type="Frame" name="ContentContainer">
+            <Anchor side="Top" relative="TabContainer" pos="Max" offset="10"/>
+            <Anchor side="Bottom" relative="$parent" pos="Max" offset="-10"/>
+            <Anchor side="Left" relative="$parent" pos="Min" offset="10"/>
+            <Anchor side="Right" relative="$parent" pos="Max" offset="-10"/>
+            
+            <!-- Dynamic content panels will be hooked up via Galaxy Script -->
+            <Frame type="Frame" name="PanelSettings" visible="true"/>
+            <Frame type="Frame" name="PanelBuffs" visible="false"/>
+            <Frame type="Frame" name="PanelStats" visible="false"/>
+            <Frame type="Frame" name="PanelRewards" visible="false"/>
+        </Frame>
+    </Frame>
+</Desc>
