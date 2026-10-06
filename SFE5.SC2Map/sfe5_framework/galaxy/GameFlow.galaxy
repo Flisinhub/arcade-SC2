@@ -100,35 +100,11 @@ bool SFE5_OnDialogClicked(bool testConds, bool runActions) {
 // ==========================================
 // Win, Loss, and Revive Logic
 // ==========================================
-void SFE5_Victory() {
-    int i;
-    UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("¡VICTORIA! Has defendido la base con exito."));
-    for (i = 1; i <= MAX_PLAYERS; i += 1) {
-        if (g_PlayerIsActive[i]) {
-            SFE5_SaveBanks(i);
-            GameOver(i, c_gameOverVictory, true, true);
-        }
-    }
-    GameOver(15, c_gameOverDefeat, true, true);
-}
-
-void SFE5_Defeat() {
-    int i;
-    UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("¡DERROTA! La Fortaleza Planetaria ha caido."));
-    for (i = 1; i <= MAX_PLAYERS; i += 1) {
-        if (g_PlayerIsActive[i]) {
-            SFE5_SaveBanks(i);
-            GameOver(i, c_gameOverDefeat, true, true);
-        }
-    }
-    GameOver(15, c_gameOverVictory, true, true);
-}
 
 bool SFE5_OnUnitDiedFlow(bool testConds, bool runActions) {
     unit victim;
     string unitType;
     int owner;
-    point baseCenter;
     
     victim = EventUnit();
     unitType = UnitGetType(victim);
@@ -136,16 +112,61 @@ bool SFE5_OnUnitDiedFlow(bool testConds, bool runActions) {
     
     // Check if it's the planetary fortress
     if (unitType == "PlanetaryFortress" && owner == 1) {
-        SFE5_Defeat();
+        g_GameIsLost = true;
         return true;
     }
     
     // Check if it's a player hero
     if (owner >= 1 && owner <= MAX_PLAYERS && unitType == g_PlayerHeroType[owner]) {
         UIDisplayMessage(PlayerGroupSingle(owner), c_messageAreaSubtitle, StringToText("Has muerto. Reviviendo en 10 segundos..."));
-        Wait(10.0, c_timeGame);
-        baseCenter = Point(30.0 + IntToFixed(owner), 25.0);
-        UnitCreate(1, g_PlayerHeroType[owner], 0, owner, baseCenter, 270.0);
+        g_PlayerReviveCountdown[owner] = 10; // Set countdown
+    }
+    
+    return true;
+}
+
+bool SFE5_GameStateLoop(bool testConds, bool runActions) {
+    int i;
+    point baseCenter;
+    
+    // Handle Game Over
+    if (g_GameIsLost) {
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("¡DERROTA! La Fortaleza Planetaria ha caido."));
+        for (i = 1; i <= MAX_PLAYERS; i += 1) {
+            if (g_PlayerIsActive[i]) {
+                SFE5_SaveBanks(i);
+                GameOver(i, c_gameOverDefeat, true, true);
+            }
+        }
+        GameOver(15, c_gameOverVictory, true, true);
+        TriggerEnable(TriggerGetCurrent(), false);
+        return true;
+    }
+    
+    if (g_GameIsWon) {
+        UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("¡VICTORIA! Has defendido la base con exito."));
+        for (i = 1; i <= MAX_PLAYERS; i += 1) {
+            if (g_PlayerIsActive[i]) {
+                SFE5_SaveBanks(i);
+                GameOver(i, c_gameOverVictory, true, true);
+            }
+        }
+        GameOver(15, c_gameOverDefeat, true, true);
+        TriggerEnable(TriggerGetCurrent(), false);
+        return true;
+    }
+    
+    // Handle Revives
+    for (i = 1; i <= MAX_PLAYERS; i += 1) {
+        if (g_PlayerReviveCountdown[i] > 0) {
+            g_PlayerReviveCountdown[i] -= 1;
+            if (g_PlayerReviveCountdown[i] == 0) {
+                baseCenter = Point(30.0 + IntToFixed(i), 25.0);
+                UnitCreate(1, g_PlayerHeroType[i], 0, i, baseCenter, 270.0);
+                CameraPan(i, baseCenter, 0.0, 0.0, 0.0, false);
+                UIDisplayMessage(PlayerGroupSingle(i), c_messageAreaSubtitle, StringToText("¡Has revivido!"));
+            }
+        }
     }
     
     return true;
@@ -154,13 +175,16 @@ bool SFE5_OnUnitDiedFlow(bool testConds, bool runActions) {
 void SFE5_InitGameFlow() {
     trigger t;
     trigger tDeath;
+    trigger tState;
     
     t = TriggerCreate("SFE5_OnDialogClicked");
-    // Hook up the buttons to the click event
     TriggerAddEventDialogControl(t, c_playerAny, g_BtnMarine, c_triggerControlEventTypeClick);
     TriggerAddEventDialogControl(t, c_playerAny, g_BtnGhost, c_triggerControlEventTypeClick);
     TriggerAddEventDialogControl(t, c_playerAny, g_BtnMarauder, c_triggerControlEventTypeClick);
     
     tDeath = TriggerCreate("SFE5_OnUnitDiedFlow");
     TriggerAddEventUnitDied(tDeath, null);
+    
+    tState = TriggerCreate("SFE5_GameStateLoop");
+    TriggerAddEventTimePeriodic(tState, 1.0, c_timeGame);
 }

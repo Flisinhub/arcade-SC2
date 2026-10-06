@@ -116,7 +116,7 @@ bool SFE5_PhaseProgressionLoop(bool testConds, bool runActions) {
             UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("¡INICIA LA FASE " + IntToString(g_CurrentPhase) + "!"));
         } else {
             UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("¡TODAS LAS FASES COMPLETADAS! VICTORIA INMINENTE!"));
-            SFE5_Victory();
+            g_GameIsWon = true;
         }
     }
     return true;

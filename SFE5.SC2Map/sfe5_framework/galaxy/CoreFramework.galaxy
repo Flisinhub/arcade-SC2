@@ -70,3 +70,8 @@ int[MAX_PLAYERS + 1] g_PlayerBonusArmor;
 
 // Hero Tracking
 string[MAX_PLAYERS + 1] g_PlayerHeroType;
+int[MAX_PLAYERS + 1] g_PlayerReviveCountdown;
+
+// End Game State
+bool g_GameIsWon = false;
+bool g_GameIsLost = false;
