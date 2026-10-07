@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<Catalog>
+    <CButton id="Blink"/>
+    <CButton id="Cancel2">
+        <Icon value="Assets\Textures\btn-command-cancel.dds"/>
+        <AlertIcon value="Assets\Textures\btn-command-cancel.dds"/>
+        <EditorCategories value="Race:Neutral"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="Upgrades">
+        <Icon value="Assets\Textures\btn-techupgrade-terran-dualfusionwelders.dds"/>
+        <AlertIcon value="Assets\Textures\btn-command-terran-buildstructure.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="UpgradeMechanical">
+        <Icon value="Assets\Textures\btn-unit-terran-hellion.dds"/>
+        <AlertIcon value="Assets\Textures\btn-command-terran-buildstructure.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="UpgradeInfantry">
+        <Icon value="Assets\Textures\btn-unit-terran-maraudermercenary.dds"/>
+        <AlertIcon value="Assets\Textures\btn-command-terran-buildstructure.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="UpgradeAir">
+        <Icon value="Assets\Textures\btn-unit-terran-wraith.dds"/>
+        <AlertIcon value="Assets\Textures\btn-command-terran-buildstructure.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="BuildMechanical">
+        <Icon value="Assets\Textures\btn-unit-terran-goliathmercenary.dds"/>
+        <AlertIcon value="Assets\Textures\btn-command-terran-buildstructure.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="BuildAir">
+        <Icon value="Assets\Textures\btn-unit-terran-vikingmercenary-fighter.dds"/>
+        <AlertIcon value="Assets\Textures\btn-command-terran-buildstructure.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="Diamondback"/>
+    <CButton id="DutchPlaceTurret"/>
+    <CButton id="G4Clusterbomb">
+        <Icon value="Assets\Textures\BTN-Ability-Terran-D8Charge.dds"/>
+        <AlertIcon value="Assets\Textures\BTN-Ability-Terran-D8Charge.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="Ghost"/>
+    <CButton id="GravitonPrison">
+        <Icon value="Assets\Textures\btn-ability-protoss-voidprison.dds"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="Hellion"/>
+    <CButton id="HireDevilDogs"/>
+    <CButton id="HireDuskWing"/>
+    <CButton id="HireHammerSecurities"/>
+    <CButton id="HireHelsAngels"/>
+    <CButton id="HireSiegeBreakers"/>
+    <CButton id="HireSpartanCompany"/>
+    <CButton id="Interceptor">
+        <Icon value="Assets\Textures\btn-unit-terran-wraith.dds"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="Irradiate"/>
+    <CButton id="Odin"/>
+    <CButton id="OdinBarrage"/>
+    <CButton id="PermanentlyCloakedGhost"/>
+    <CButton id="Raven"/>
+    <CButton id="Reaper"/>
+    <CButton id="ReflectiveShield">
+        <Icon value="Assets\Textures\btn-techupgrade-terran-combatshield-color.dds"/>
+        <EditorCategories value="Race:Terran"/>
+    </CButton>
+    <CButton id="ArtilleryTargeting">
+        <Icon value="Assets\Textures\btn-techupgrade-terran-attacksair.dds"/>
+        <EditorCategories value="Race:Terran"/>
+    </CButton>
+    <CButton id="ResearchConstrictingSlime">
+        <Icon value="Assets\Textures\btn-ability-zerg-sporecloud.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-punishergrenade.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="ResearchFlamingBetty">
+        <Icon value="Assets\Textures\btn-building-terran-autoturret.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-punishergrenade.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="ResearchNuclearStrike">
+        <Icon value="Assets\Textures\btn-ability-terran-nuclearstrike.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-nuclearstrike.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="ResearchG4Clusterbomb">
+        <Icon value="Assets\Textures\btn-techupgrade-terran-d-8charges.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-nuclearstrike.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="ResearchGravitonPrison">
+        <Icon value="Assets\Textures\btn-ability-protoss-voidprison.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-punishergrenade.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="ResearchReflectiveShield">
+        <Icon value="Assets\Textures\btn-techupgrade-terran-combatshield.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-punishergrenade.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="ResearchArtilleryTargeting">
+        <Icon value="Assets\Textures\btn-techupgrade-terran-multilocktargetingsystem.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-punishergrenade.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="ResearchSeekerMissile">
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="ResearchShockwave">
+        <Icon value="Assets\Textures\btn-ability-terran-emp.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-nuclearstrike.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="ResearchPassiveCloak">
+        <Icon value="Assets\Textures\btn-ability-terran-cloak.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-punishergrenade.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="BuildInfantry">
+        <Icon value="Assets\Textures\btn-unit-terran-marinemercenary.dds"/>
+        <AlertIcon value="Assets\Textures\btn-command-terran-buildstructure.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="ResearchQuadDamage">
+        <Icon value="Assets\Textures\btn-ability-protoss-prismaticbeam.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-punishergrenade.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="QuadDamage">
+        <Icon value="Assets\Textures\btn-ability-protoss-prismaticbeam.dds"/>
+        <EditorCategories value="Race:Terran"/>
+    </CButton>
+    <CButton id="ResearchShredderGrenade">
+        <Icon value="Assets\Textures\btn-ability-terran-tychustossgrenade.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-nuclearstrike.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="ResearchPointDefenseDrone">
+        <Icon value="Assets\Textures\btn-ability-terran-pointdefenselaser.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-nuclearstrike.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="ResearchRavenCapacity">
+        <Icon value="Assets\Textures\btn-border-queue-trainingslot02.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-nuclearstrike.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="ResearchOffensiveBattlecruiserCapabilities">
+        <Icon value="Assets\Textures\btn-ability-terran-yamatogun.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-nuclearstrike.dds"/>
+        <EditorCategories value="Race:Terran"/>
+        <TintRacially value="1"/>
+    </CButton>
+    <CButton id="ResearchStalkerTeleport"/>
+    <CButton id="Shockwave">
+        <Icon value="Assets\Textures\btn-ability-terran-emp-color.dds"/>
+        <AlertIcon value="Assets\Textures\btn-ability-terran-punishergrenade.dds"/>
+        <EditorCategories value="Race:Terran"/>
+    </CButton>
+    <CButton id="Stim"/>
+    <CButton id="UpgradeArmor">
+        <Icon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel3.dds"/>
+        <AlertIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel3.dds"/>
+        <EditorCategories value="Race:Terran"/>
+    </CButton>
+    <CButton id="TossGrenadeTychus"/>
+    <CButton id="UpgradeEnergy">
+        <Icon value="Assets\Textures\icon-energy-terran.dds"/>
+        <AlertIcon value="Assets\Textures\btn-upgrade-terran-infantryweaponslevel3.dds"/>
+    </CButton>
+    <CButton id="UpgradeWeapons">
+        <Icon value="Assets\Textures\btn-upgrade-terran-infantryweaponslevel3.dds"/>
+        <AlertIcon value="Assets\Textures\btn-upgrade-terran-infantryweaponslevel3.dds"/>
+    </CButton>
+    <CButton id="UpgradeLife">
+        <Icon value="Assets\Textures\icon-health-terran.dds"/>
+        <AlertIcon value="Assets\Textures\btn-upgrade-terran-infantryweaponslevel3.dds"/>
+    </CButton>
+    <CButton id="Wraith"/>
+    <CButton id="YamatoGun"/>
+</Catalog>

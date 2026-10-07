@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<Catalog>
+    <CWater id="Agria">
+        <State index="0">
+            <Height value="10.300000"/>
+            <Color value="0.098039,0.349020,0.498039,0.300000"/>
+            <UvRate value="-0.000000,-0.001000,0.000000,0.000000"/>
+            <RefractionDistortion value="0.020000"/>
+        </State>
+    </CWater>
+    <CWater id="BelShir">
+        <FramesPerSec value="0.000000"/>
+        <State index="0">
+            <Height value="7.500000"/>
+            <Color value="0.000000,0.192157,0.392157,0.500000"/>
+            <UvRate value="-0.000680,-0.000733,0.000000,0.000000"/>
+            <ReflectionDistortion value="0.323000"/>
+        </State>
+    </CWater>
+    <CWater id="Haven">
+        <FramesPerSec value="0.000000"/>
+        <State index="0">
+            <Height value="4.000000"/>
+            <Color value="0.098039,0.349020,0.498039,0.300000"/>
+            <UvRate value="-0.000000,-0.001000,0.000000,0.000000"/>
+            <RefractionDistortion value="0.020000"/>
+        </State>
+    </CWater>
+    <CWater id="Xil">
+        <FramesPerSec value="0.000000"/>
+        <State index="0">
+            <Height value="5.500000"/>
+            <Color value="0.000000,0.196078,0.392157,0.500000"/>
+            <ColorFallOff value="0.058000"/>
+            <Specularity value="73.599998"/>
+            <SpecularScaler value="0.050000"/>
+            <UvRate value="-0.000680,-0.000733,0.000000,0.000000"/>
+            <MeshRoughness value="1.000000"/>
+            <TextureRoughness value="1.000000"/>
+            <ReflectionDistortion value="0.184000"/>
+            <RefractionDistortion value="0.020000"/>
+            <MinReflection value="0.193000"/>
+        </State>
+        <ReceiveShadows value="1"/>
+    </CWater>
+</Catalog>

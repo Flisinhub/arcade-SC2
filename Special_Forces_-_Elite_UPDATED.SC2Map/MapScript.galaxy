@@ -1,0 +1,1433 @@
+//==================================================================================================
+// 
+// Generated Map Script
+// 
+// Name:   Special Forces: Elite
+// Author: mikelat
+// 
+//==================================================================================================
+include "TriggerLibs/NativeLib"
+
+// Custom Forward Declarations
+void CustomUI_Init();
+void PlayerConsole_Init();
+void Waves_Init();
+
+//--------------------------------------------------------------------------------------------------
+// Library Initialization
+//--------------------------------------------------------------------------------------------------
+void InitLibs () {
+    libNtve_InitLib();
+}
+
+//--------------------------------------------------------------------------------------------------
+// Global Variables
+//--------------------------------------------------------------------------------------------------
+int gv_inKerriDeaths;
+playergroup gv_pgEliteForces;
+playergroup gv_pgAdded;
+
+void InitGlobals () {
+    gv_inKerriDeaths = 0;
+    gv_pgEliteForces = PlayerGroupEmpty();
+    gv_pgAdded = PlayerGroupEmpty();
+}
+
+//--------------------------------------------------------------------------------------------------
+// Global Function Declarations
+//--------------------------------------------------------------------------------------------------
+void gf_GiveRandomBuff (unit lp_unit);
+void gf_EnableSpawnBuilding (unit lp_building, string lp_behaviour);
+
+//--------------------------------------------------------------------------------------------------
+// Trigger Variables
+//--------------------------------------------------------------------------------------------------
+trigger gt_Init;
+trigger gt_EnemyTraits;
+trigger gt_PlayerSetup;
+trigger gt_SpawnUnits;
+trigger gt_UnitCreatedSelect;
+trigger gt_SwitchtoInfUps;
+trigger gt_SwitchtoMechUps;
+trigger gt_SwitchtoAirUps;
+trigger gt_SwitchtoMainOF;
+trigger gt_PlayerLeaves;
+trigger gt_ReCalculatePlayers;
+trigger gt_Nomoreupgrades;
+trigger gt_Defeat;
+trigger gt_Victory;
+trigger gt_DeathInfChamber;
+trigger gt_DeathSpawningPool;
+trigger gt_DeathRoach;
+trigger gt_DeathHydralisk;
+trigger gt_DeathSpire;
+trigger gt_DeathGreaterSpire;
+trigger gt_DeathUltra;
+trigger gt_BuffSpawns;
+trigger gt_ConstantAttack;
+trigger gt_SomethingDestroyed;
+
+//--------------------------------------------------------------------------------------------------
+// Global Functions
+//--------------------------------------------------------------------------------------------------
+void gf_GiveRandomBuff (unit lp_unit) {
+    int auto79405EB7_val;
+
+    // Variable Declarations
+    int lv_rand;
+
+    // Variable Initialization
+    lv_rand = 0;
+
+    // Implementation
+    lv_rand = RandomInt(0, 6);
+    auto79405EB7_val = lv_rand;
+    if (auto79405EB7_val == 0) {
+        UnitBehaviorAddPlayer(lp_unit, "AttackBuff", 15, 1);
+    }
+    else if (auto79405EB7_val == 1) {
+        UnitBehaviorAddPlayer(lp_unit, "HealthBuff", 15, 1);
+    }
+    else if (auto79405EB7_val == 2) {
+        UnitBehaviorAddPlayer(lp_unit, "SpeedBuff", 15, 1);
+    }
+    else if (auto79405EB7_val == 3) {
+        UnitBehaviorAddPlayer(lp_unit, "AttackBuff", 15, 1);
+        UnitBehaviorAddPlayer(lp_unit, "HealthBuff", 15, 1);
+    }
+    else if (auto79405EB7_val == 4) {
+        UnitBehaviorAddPlayer(lp_unit, "SpeedBuff", 15, 1);
+        UnitBehaviorAddPlayer(lp_unit, "HealthBuff", 15, 1);
+    }
+    else if (auto79405EB7_val == 5) {
+        UnitBehaviorAddPlayer(lp_unit, "AttackBuff", 15, 1);
+        UnitBehaviorAddPlayer(lp_unit, "SpeedBuff", 15, 1);
+    }
+    else if (auto79405EB7_val == 6) {
+        UnitBehaviorAddPlayer(lp_unit, "HealthBuff", 15, 1);
+        UnitBehaviorAddPlayer(lp_unit, "AttackBuff", 15, 1);
+        UnitBehaviorAddPlayer(lp_unit, "SpeedBuff", 15, 1);
+    }
+    else {
+    }
+}
+
+void gf_EnableSpawnBuilding (unit lp_building, string lp_behaviour) {
+    // Implementation
+    UnitSetState(lp_building, c_unitStateInvulnerable, false);
+    UnitBehaviorAddPlayer(lp_building, lp_behaviour, 15, 1);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Init
+//--------------------------------------------------------------------------------------------------
+bool gt_Init_Func (bool testConds, bool runActions) {
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerExecute(gt_PlayerSetup, true, true);
+    // TriggerExecute(gt_SpawnUnits, true, false); // Disabled old spawn logic
+    TriggerExecute(gt_EnemyTraits, true, false);
+    // gf_EnableSpawnBuilding(UnitFromId(278), "CreateInfTerran"); // Will enable after hero selection
+    CustomUI_Init(); // Initialize our new menus
+    HelpPanelAddTip(PlayerGroupAll(), libNtve_gf_FormatTipTitle(StringExternal("Param/Value/20898EA6"), 0), StringExternal("Param/Value/38FE1685"), StringExternal("Param/Value/41CD7C17"), "Assets\\Textures\\ui_btn_generic_exclemation.dds");
+    HelpPanelAddTip(PlayerGroupAll(), libNtve_gf_FormatTipTitle(StringExternal("Param/Value/C146C32D"), 0), StringExternal("Param/Value/05685C27"), StringExternal("Param/Value/FBA01ECF"), "Assets\\Textures\\ui_btn_generic_mousepointer.dds");
+    Wait(15.0, c_timeGame);
+    TipAlertPanelClear(PlayerGroupAll());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_Init_Init () {
+    gt_Init = TriggerCreate("gt_Init_Func");
+    TriggerAddEventMapInit(gt_Init);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Enemy Traits
+//--------------------------------------------------------------------------------------------------
+bool gt_EnemyTraits_Func (bool testConds, bool runActions) {
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    UnitGroupLoopBegin(UnitGroup(null, 15, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterStructure) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0));
+    while (!UnitGroupLoopDone()) {
+        gf_GiveRandomBuff(UnitGroupLoopCurrent());
+        UnitGroupLoopStep();
+    }
+    UnitGroupLoopEnd();
+    UnitGroupLoopBegin(UnitGroup("SpineCrawler", 15, RegionFromId(1), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0));
+    while (!UnitGroupLoopDone()) {
+        UnitBehaviorAddPlayer(UnitGroupLoopCurrent(), "HealthBuff", 15, 1);
+        UnitGroupLoopStep();
+    }
+    UnitGroupLoopEnd();
+    UnitGroupLoopBegin(UnitGroup("SpineCrawler", 15, RegionFromId(3), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0));
+    while (!UnitGroupLoopDone()) {
+        UnitBehaviorAddPlayer(UnitGroupLoopCurrent(), "AttackBuff", 15, 1);
+        UnitGroupLoopStep();
+    }
+    UnitGroupLoopEnd();
+    UnitGroupLoopBegin(UnitGroup("SpineCrawler", 15, RegionFromId(2), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0));
+    while (!UnitGroupLoopDone()) {
+        UnitBehaviorAddPlayer(UnitGroupLoopCurrent(), "SpeedBuff", 15, 1);
+        UnitGroupLoopStep();
+    }
+    UnitGroupLoopEnd();
+    UnitGroupLoopBegin(UnitGroup("SporeCrawler", 15, RegionFromId(1), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0));
+    while (!UnitGroupLoopDone()) {
+        UnitBehaviorAddPlayer(UnitGroupLoopCurrent(), "HealthBuff", 15, 1);
+        UnitGroupLoopStep();
+    }
+    UnitGroupLoopEnd();
+    UnitGroupLoopBegin(UnitGroup("SporeCrawler", 15, RegionFromId(3), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0));
+    while (!UnitGroupLoopDone()) {
+        UnitBehaviorAddPlayer(UnitGroupLoopCurrent(), "AttackBuff", 15, 1);
+        UnitGroupLoopStep();
+    }
+    UnitGroupLoopEnd();
+    UnitGroupLoopBegin(UnitGroup("SporeCrawler", 15, RegionFromId(2), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0));
+    while (!UnitGroupLoopDone()) {
+        UnitBehaviorAddPlayer(UnitGroupLoopCurrent(), "SpeedBuff", 15, 1);
+        UnitGroupLoopStep();
+    }
+    UnitGroupLoopEnd();
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_EnemyTraits_Init () {
+    gt_EnemyTraits = TriggerCreate("gt_EnemyTraits_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Player Setup
+//--------------------------------------------------------------------------------------------------
+bool gt_PlayerSetup_Func (bool testConds, bool runActions) {
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    libNtve_gf_DisplayBossBar(1, "Assets\\Textures\\btn-building-terran-planetaryfortress.dds", StringExternal("Param/Value/08C28801"), 20000, PlayerGroupAll());
+    libNtve_gf_MoveBossBar(1, c_anchorTopLeft, 0, 50);
+    libNtve_gf_SetBossBarBoss(1, UnitFromId(3), true);
+    TriggerExecute(gt_ReCalculatePlayers, true, true);
+    libNtve_gf_SetPlayerGroupAlliance(gv_pgEliteForces, 2);
+    libNtve_gf_SetAlliance(15, 14, 5);
+    
+    PlayerGroupLoopBegin(PlayerGroupAll());
+    while (!PlayerGroupLoopDone()) {
+        PlayerModifyPropertyInt(PlayerGroupLoopCurrent(), c_playerPropMinerals, c_playerPropOperSetTo, 1000);
+        PlayerGroupLoopStep();
+    }
+    PlayerGroupLoopEnd();
+
+    UISetFrameVisible(PlayerGroupAll(), c_syncFrameTypeSupply, false);
+    PlayerGroupLoopBegin(PlayerGroupAll());
+    while (!PlayerGroupLoopDone()) {
+        CameraPan(PlayerGroupLoopCurrent(), PointFromId(259), 0.0, -1, 10, false);
+        PlayerGroupLoopStep();
+    }
+    PlayerGroupLoopEnd();
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_PlayerSetup_Init () {
+    gt_PlayerSetup = TriggerCreate("gt_PlayerSetup_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Spawn Units
+//--------------------------------------------------------------------------------------------------
+bool gt_SpawnUnits_Func (bool testConds, bool runActions) {
+    string auto3B4AD34D_val;
+    int autoBFF40A57_val;
+
+    // Variable Declarations
+    int lv_intRand;
+
+    // Variable Initialization
+    lv_intRand = 0;
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    PlayerGroupLoopBegin(gv_pgEliteForces);
+    while (!PlayerGroupLoopDone()) {
+        PlayerModifyPropertyInt(PlayerGroupLoopCurrent(), c_playerPropMinerals, c_playerPropOperSetTo, 1000);
+        auto3B4AD34D_val = GameAttributePlayerValue("1", PlayerGroupLoopCurrent());
+        if (auto3B4AD34D_val == "0004") {
+            lv_intRand = RandomInt(0, 2);
+        }
+        else if (auto3B4AD34D_val == "0001") {
+            lv_intRand = 0;
+        }
+        else if (auto3B4AD34D_val == "0007") {
+            lv_intRand = 1;
+        }
+        else if (auto3B4AD34D_val == "0003") {
+            lv_intRand = 2;
+        }
+        else {
+        }
+        autoBFF40A57_val = lv_intRand;
+        if (autoBFF40A57_val == 0) {
+            UnitIssueOrder(libNtve_gf_ClosestUnitToPoint(PointFromId(259), UnitGroup("EliteRD", PlayerGroupLoopCurrent(), RegionEntireMap(), UnitFilter(0, (1 << (c_targetFilterHidden - 32)), 0, 0), 0)), Order(AbilityCommand("EliteForcesSummon", 0)), c_orderQueueReplace);
+        }
+        else if (autoBFF40A57_val == 1) {
+            UnitIssueOrder(libNtve_gf_ClosestUnitToPoint(PointFromId(259), UnitGroup("EliteRD", PlayerGroupLoopCurrent(), RegionEntireMap(), UnitFilter(0, (1 << (c_targetFilterHidden - 32)), 0, 0), 0)), Order(AbilityCommand("EliteForcesSummon", 2)), c_orderQueueReplace);
+        }
+        else if (autoBFF40A57_val == 2) {
+            UnitIssueOrder(libNtve_gf_ClosestUnitToPoint(PointFromId(259), UnitGroup("EliteRD", PlayerGroupLoopCurrent(), RegionEntireMap(), UnitFilter(0, (1 << (c_targetFilterHidden - 32)), 0, 0), 0)), Order(AbilityCommand("EliteForcesSummon", 5)), c_orderQueueReplace);
+        }
+        else {
+        }
+        UnitRemove(libNtve_gf_ClosestUnitToPoint(PointFromId(259), UnitGroup("EliteRD", PlayerGroupLoopCurrent(), RegionEntireMap(), UnitFilter(0, (1 << (c_targetFilterHidden - 32)), 0, 0), 0)));
+        UnitGroupLoopBegin(UnitGroup(null, PlayerGroupLoopCurrent(), RegionEntireMap(), UnitFilter((1 << c_targetFilterStructure), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0));
+        while (!UnitGroupLoopDone()) {
+            UnitSetPosition(UnitGroupLoopCurrent(), PointFromId(259), false);
+            UnitGroupLoopStep();
+        }
+        UnitGroupLoopEnd();
+        PlayerGroupLoopStep();
+    }
+    PlayerGroupLoopEnd();
+    Wait(2.0, c_timeGame);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_SpawnUnits_Init () {
+    gt_SpawnUnits = TriggerCreate("gt_SpawnUnits_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Unit Created Select
+//--------------------------------------------------------------------------------------------------
+bool gt_UnitCreatedSelect_Func (bool testConds, bool runActions) {
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    PlayerGroupLoopBegin(gv_pgEliteForces);
+    while (!PlayerGroupLoopDone()) {
+        if ((PlayerGroupHasPlayer(gv_pgAdded, PlayerGroupLoopCurrent()) == false) && (UnitGroupCount(UnitGroup(null, PlayerGroupLoopCurrent(), RegionEntireMap(), UnitFilter((1 << c_targetFilterHeroic), 0, (1 << c_targetFilterStructure) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)) | (1 << (c_targetFilterInvulnerable - 32))), 0), c_unitCountAlive) > 0)) {
+            PlayerGroupAdd(gv_pgAdded, PlayerGroupLoopCurrent());
+            UnitClearSelection(PlayerGroupLoopCurrent());
+            UnitControlGroupAddUnit(PlayerGroupLoopCurrent(), 1, libNtve_gf_ClosestUnitToPoint(PointFromId(259), UnitGroup(null, PlayerGroupLoopCurrent(), RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterStructure), 0), 0)));
+            UnitSelect(libNtve_gf_ClosestUnitToPoint(PointFromId(259), UnitGroup(null, PlayerGroupLoopCurrent(), RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterStructure), 0), 0)), PlayerGroupLoopCurrent(), true);
+            if ((UnitGroupCount(UnitGroup("HelsAngelFighter", PlayerGroupLoopCurrent(), RegionEntireMap(), UnitFilter((1 << c_targetFilterHeroic), 0, (1 << c_targetFilterStructure) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32)) | (1 << (c_targetFilterInvulnerable - 32))), 0), c_unitCountAlive) > 0)) {
+                UnitIssueOrder(libNtve_gf_ClosestUnitToPoint(PointFromId(259), UnitGroup("HelsAngelFighter", PlayerGroupLoopCurrent(), RegionEntireMap(), UnitFilter(0, 0, 0, 0), 0)), Order(AbilityCommand("WreckingCrewAssaultMode", 0)), c_orderQueueReplace);
+            }
+            else {
+            }
+        }
+        else {
+            if ((PlayerGroupCount(gv_pgAdded) == PlayerGroupCount(gv_pgEliteForces))) {
+                TriggerEnable(TriggerGetCurrent(), false);
+            }
+            else {
+            }
+        }
+        PlayerGroupLoopStep();
+    }
+    PlayerGroupLoopEnd();
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_UnitCreatedSelect_Init () {
+    gt_UnitCreatedSelect = TriggerCreate("gt_UnitCreatedSelect_Func");
+    TriggerAddEventTimePeriodic(gt_UnitCreatedSelect, 0.1, c_timeGame);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Switch to Inf Ups
+//--------------------------------------------------------------------------------------------------
+bool gt_SwitchtoInfUps_Func (bool testConds, bool runActions) {
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    UnitClearSelection(EventPlayer());
+    UnitSelect(libNtve_gf_ClosestUnitToPoint(PointFromId(259), UnitGroup("EliteOrbitalFortress22", EventPlayer(), RegionEntireMap(), UnitFilter((1 << c_targetFilterStructure), 0, 0, 0), 0)), EventPlayer(), true);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_SwitchtoInfUps_Init () {
+    gt_SwitchtoInfUps = TriggerCreate("gt_SwitchtoInfUps_Func");
+    TriggerAddEventButtonPressed(gt_SwitchtoInfUps, c_playerAny, "UpgradeInfantry");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Switch to Mech Ups
+//--------------------------------------------------------------------------------------------------
+bool gt_SwitchtoMechUps_Func (bool testConds, bool runActions) {
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    UnitClearSelection(EventPlayer());
+    UnitSelect(libNtve_gf_ClosestUnitToPoint(PointFromId(259), UnitGroup("EliteOrbitalFortress222", EventPlayer(), RegionEntireMap(), UnitFilter((1 << c_targetFilterStructure), 0, 0, 0), 0)), EventPlayer(), true);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_SwitchtoMechUps_Init () {
+    gt_SwitchtoMechUps = TriggerCreate("gt_SwitchtoMechUps_Func");
+    TriggerAddEventButtonPressed(gt_SwitchtoMechUps, c_playerAny, "UpgradeMechanical");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Switch to Air Ups
+//--------------------------------------------------------------------------------------------------
+bool gt_SwitchtoAirUps_Func (bool testConds, bool runActions) {
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    UnitClearSelection(EventPlayer());
+    UnitSelect(libNtve_gf_ClosestUnitToPoint(PointFromId(259), UnitGroup("EliteOrbitalFortress2222", EventPlayer(), RegionEntireMap(), UnitFilter((1 << c_targetFilterStructure), 0, 0, 0), 0)), EventPlayer(), true);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_SwitchtoAirUps_Init () {
+    gt_SwitchtoAirUps = TriggerCreate("gt_SwitchtoAirUps_Func");
+    TriggerAddEventButtonPressed(gt_SwitchtoAirUps, c_playerAny, "UpgradeAir");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Switch to Main OF
+//--------------------------------------------------------------------------------------------------
+bool gt_SwitchtoMainOF_Func (bool testConds, bool runActions) {
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    UnitClearSelection(EventPlayer());
+    UnitSelect(libNtve_gf_ClosestUnitToPoint(PointFromId(259), UnitGroup("EliteOrbitalFortress2", EventPlayer(), RegionEntireMap(), UnitFilter((1 << c_targetFilterStructure), 0, 0, 0), 0)), EventPlayer(), true);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_SwitchtoMainOF_Init () {
+    gt_SwitchtoMainOF = TriggerCreate("gt_SwitchtoMainOF_Func");
+    TriggerAddEventUnitAbility(gt_SwitchtoMainOF, null, AbilityCommand("BarracksTechLabResearch2", 7), c_unitAbilStageAll, false);
+    TriggerAddEventUnitAbility(gt_SwitchtoMainOF, null, AbilityCommand("BarracksTechLabResearch2", 4), c_unitAbilStageAll, false);
+    TriggerAddEventUnitAbility(gt_SwitchtoMainOF, null, AbilityCommand("BarracksTechLabResearch2", 3), c_unitAbilStageAll, false);
+    TriggerAddEventUnitAbility(gt_SwitchtoMainOF, null, AbilityCommand("BarracksTechLabResearch2", 8), c_unitAbilStageAll, false);
+    TriggerAddEventUnitAbility(gt_SwitchtoMainOF, null, AbilityCommand("BarracksTechLabResearch2", 9), c_unitAbilStageAll, false);
+    TriggerAddEventUnitAbility(gt_SwitchtoMainOF, null, AbilityCommand("BarracksTechLabResearch2", 5), c_unitAbilStageAll, false);
+    TriggerAddEventUnitAbility(gt_SwitchtoMainOF, null, AbilityCommand("BarracksTechLabResearch2", 14), c_unitAbilStageAll, false);
+    TriggerAddEventUnitAbility(gt_SwitchtoMainOF, null, AbilityCommand("BarracksTechLabResearch2", 13), c_unitAbilStageAll, false);
+    TriggerAddEventUnitAbility(gt_SwitchtoMainOF, null, AbilityCommand("BarracksTechLabResearch2", 12), c_unitAbilStageAll, false);
+    TriggerAddEventUnitAbility(gt_SwitchtoMainOF, null, AbilityCommand("BarracksTechLabResearch2", 11), c_unitAbilStageAll, false);
+    TriggerAddEventUnitAbility(gt_SwitchtoMainOF, null, AbilityCommand("BarracksTechLabResearch2", 10), c_unitAbilStageAll, false);
+    TriggerAddEventUnitAbility(gt_SwitchtoMainOF, null, AbilityCommand("BarracksTechLabResearch2", 6), c_unitAbilStageAll, false);
+    TriggerAddEventUnitAbility(gt_SwitchtoMainOF, null, AbilityCommand("BarracksTechLabResearch2", 1), c_unitAbilStageAll, false);
+    TriggerAddEventUnitAbility(gt_SwitchtoMainOF, null, AbilityCommand("BarracksTechLabResearch2", 2), c_unitAbilStageAll, false);
+    TriggerAddEventUnitAbility(gt_SwitchtoMainOF, null, AbilityCommand("BarracksTechLabResearch2", 0), c_unitAbilStageAll, false);
+    TriggerAddEventButtonPressed(gt_SwitchtoMainOF, c_playerAny, "Cancel2");
+    TriggerAddEventUnitSelected(gt_SwitchtoMainOF, UnitRefFromUnit(UnitFromId(3)), c_playerAny, true);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Player Leaves
+//--------------------------------------------------------------------------------------------------
+bool gt_PlayerLeaves_Func (bool testConds, bool runActions) {
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerExecute(gt_ReCalculatePlayers, true, false);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_PlayerLeaves_Init () {
+    gt_PlayerLeaves = TriggerCreate("gt_PlayerLeaves_Func");
+    TriggerAddEventPlayerLeft(gt_PlayerLeaves, c_playerAny, c_gameResultVictory);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Re-Calculate Players
+//--------------------------------------------------------------------------------------------------
+bool gt_ReCalculatePlayers_Func (bool testConds, bool runActions) {
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    gv_pgEliteForces = PlayerGroupEmpty();
+    PlayerGroupLoopBegin(PlayerGroupAll());
+    while (!PlayerGroupLoopDone()) {
+        if (((PlayerType(PlayerGroupLoopCurrent()) == c_playerTypeUser) && (PlayerStatus(PlayerGroupLoopCurrent()) == c_playerStatusActive))) {
+            libNtve_gf_ShareVisionofUnit(UnitFromId(3), true, PlayerGroupLoopCurrent());
+            libNtve_gf_SetAlliance(PlayerGroupLoopCurrent(), 15, 5);
+            PlayerGroupAdd(gv_pgEliteForces, PlayerGroupLoopCurrent());
+        }
+        else {
+            if ((PlayerType(PlayerGroupLoopCurrent()) == c_playerTypeNone)) {
+                UnitGroupLoopBegin(UnitGroup(null, PlayerGroupLoopCurrent(), RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0));
+                while (!UnitGroupLoopDone()) {
+                    UnitRemove(UnitGroupLoopCurrent());
+                    UnitGroupLoopStep();
+                }
+                UnitGroupLoopEnd();
+            }
+            else {
+            }
+        }
+        PlayerGroupLoopStep();
+    }
+    PlayerGroupLoopEnd();
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_ReCalculatePlayers_Init () {
+    gt_ReCalculatePlayers = TriggerCreate("gt_ReCalculatePlayers_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: No more upgrades
+//--------------------------------------------------------------------------------------------------
+bool gt_Nomoreupgrades_Func (bool testConds, bool runActions) {
+    // Conditions
+    if (testConds) {
+        if (!((UnitGroupCount(UnitGroup("EliteOrbitalFortress", c_playerAny, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive) == 0))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    UnitGroupLoopBegin(UnitGroup("EliteOrbitalFortress2", c_playerAny, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0));
+    while (!UnitGroupLoopDone()) {
+        UnitRemove(UnitGroupLoopCurrent());
+        UnitGroupLoopStep();
+    }
+    UnitGroupLoopEnd();
+    TriggerEnable(TriggerGetCurrent(), false);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_Nomoreupgrades_Init () {
+    gt_Nomoreupgrades = TriggerCreate("gt_Nomoreupgrades_Func");
+    TriggerAddEventUnitDied(gt_Nomoreupgrades, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Defeat
+//--------------------------------------------------------------------------------------------------
+bool gt_Defeat_Func (bool testConds, bool runActions) {
+    // Conditions
+    if (testConds) {
+        if (!((UnitGroupCount(UnitGroup(null, 1, RegionEntireMap(), UnitFilter((1 << c_targetFilterHeroic), 0, (1 << c_targetFilterStructure) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive) == 0))) {
+            return false;
+        }
+
+        if (!((UnitGroupCount(UnitGroup(null, 2, RegionEntireMap(), UnitFilter((1 << c_targetFilterHeroic), 0, (1 << c_targetFilterStructure) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive) == 0))) {
+            return false;
+        }
+
+        if (!((UnitGroupCount(UnitGroup(null, 3, RegionEntireMap(), UnitFilter((1 << c_targetFilterHeroic), 0, (1 << c_targetFilterStructure) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive) == 0))) {
+            return false;
+        }
+
+        if (!((UnitGroupCount(UnitGroup(null, 4, RegionEntireMap(), UnitFilter((1 << c_targetFilterHeroic), 0, (1 << c_targetFilterStructure) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive) == 0))) {
+            return false;
+        }
+
+        if (!((UnitGroupCount(UnitGroup(null, 5, RegionEntireMap(), UnitFilter((1 << c_targetFilterHeroic), 0, (1 << c_targetFilterStructure) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive) == 0))) {
+            return false;
+        }
+
+        if (!((UnitGroupCount(UnitGroup(null, 6, RegionEntireMap(), UnitFilter((1 << c_targetFilterHeroic), 0, (1 << c_targetFilterStructure) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive) == 0))) {
+            return false;
+        }
+
+        if (!((UnitGroupCount(UnitGroup("EliteOrbitalFortress", c_playerAny, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive) == 0))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    DialogCreate(800, 400, c_anchorCenter, 0, 0, true);
+    DialogSetImageVisible(DialogLastCreated(), false);
+    libNtve_gf_CreateDialogItemLabel(DialogLastCreated(), 800, 400, c_anchorCenter, 0, 0, StringExternal("Param/Value/998F3DB0"), Color(100.00, 0.00, 0.00), false, 100.0);
+    libNtve_gf_SetDialogItemStyle(DialogControlLastCreated(), "ModCenterSize64Bold", PlayerGroupAll());
+    DialogSetVisible(DialogLastCreated(), PlayerGroupAll(), true);
+    Wait(5.0, c_timeGame);
+    PlayerGroupLoopBegin(gv_pgEliteForces);
+    while (!PlayerGroupLoopDone()) {
+        GameOver(PlayerGroupLoopCurrent(), c_gameOverDefeat, true, true);
+        PlayerGroupLoopStep();
+    }
+    PlayerGroupLoopEnd();
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_Defeat_Init () {
+    gt_Defeat = TriggerCreate("gt_Defeat_Func");
+    TriggerAddEventUnitDied(gt_Defeat, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Victory
+//--------------------------------------------------------------------------------------------------
+bool gt_Victory_Func (bool testConds, bool runActions) {
+    // Conditions
+    if (testConds) {
+        if (!((UnitGroupCount(UnitGroup(null, 15, RegionEntireMap(), UnitFilter((1 << c_targetFilterStructure), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive) == 0))) {
+            return false;
+        }
+
+        if (!((UnitGroupCount(UnitGroup(null, 15, RegionEntireMap(), UnitFilter((1 << c_targetFilterHeroic), 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive) == 0))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    DialogCreate(800, 400, c_anchorCenter, 0, 0, true);
+    DialogSetImageVisible(DialogLastCreated(), false);
+    libNtve_gf_CreateDialogItemLabel(DialogLastCreated(), 800, 400, c_anchorCenter, 0, 0, StringExternal("Param/Value/3983F821"), Color(22*100/255,128*100/255,0), false, 100.0);
+    libNtve_gf_SetDialogItemStyle(DialogControlLastCreated(), "ModCenterSize64Bold", PlayerGroupAll());
+    DialogSetVisible(DialogLastCreated(), PlayerGroupAll(), true);
+    Wait(5.0, c_timeGame);
+    PlayerGroupLoopBegin(gv_pgEliteForces);
+    while (!PlayerGroupLoopDone()) {
+        GameOver(PlayerGroupLoopCurrent(), c_gameOverVictory, true, true);
+        PlayerGroupLoopStep();
+    }
+    PlayerGroupLoopEnd();
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_Victory_Init () {
+    gt_Victory = TriggerCreate("gt_Victory_Func");
+    TriggerAddEventTimePeriodic(gt_Victory, 2.0, c_timeGame);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Death Inf Chamber
+//--------------------------------------------------------------------------------------------------
+bool gt_DeathInfChamber_Func (bool testConds, bool runActions) {
+    // Conditions
+    if (testConds) {
+        if (!((TriggerGetExecCount(TriggerGetCurrent()) == 0))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    Wait(15.0, c_timeGame);
+    gf_EnableSpawnBuilding(UnitFromId(456), "CreateSuperInfTerran");
+    Wait(25.0, c_timeGame);
+    gf_EnableSpawnBuilding(UnitFromId(53), "CreateLings");
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_DeathInfChamber_Init () {
+    gt_DeathInfChamber = TriggerCreate("gt_DeathInfChamber_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Death Spawning Pool
+//--------------------------------------------------------------------------------------------------
+bool gt_DeathSpawningPool_Func (bool testConds, bool runActions) {
+    // Conditions
+    if (testConds) {
+        if (!((UnitGroupCount(UnitGroup("SpawningPool", 15, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive) == 0))) {
+            return false;
+        }
+
+        if (!((TriggerGetExecCount(TriggerGetCurrent()) == 0))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    Wait(15.0, c_timeGame);
+    gf_EnableSpawnBuilding(UnitFromId(373), "CreateSuperLings");
+    Wait(25.0, c_timeGame);
+    gf_EnableSpawnBuilding(UnitFromId(65), "CreateRoaches");
+    gf_EnableSpawnBuilding(UnitFromId(295), "CreateMutas");
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_DeathSpawningPool_Init () {
+    gt_DeathSpawningPool = TriggerCreate("gt_DeathSpawningPool_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Death Roach
+//--------------------------------------------------------------------------------------------------
+bool gt_DeathRoach_Func (bool testConds, bool runActions) {
+    // Conditions
+    if (testConds) {
+        if (!((UnitGroupCount(UnitGroup("RoachWarren", 15, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive) == 0))) {
+            return false;
+        }
+
+        if (!((TriggerGetExecCount(TriggerGetCurrent()) == 0))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    Wait(15.0, c_timeGame);
+    gf_EnableSpawnBuilding(UnitFromId(374), "CreateSuperRoaches");
+    Wait(25.0, c_timeGame);
+    gf_EnableSpawnBuilding(UnitFromId(437), "CreateHydras");
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_DeathRoach_Init () {
+    gt_DeathRoach = TriggerCreate("gt_DeathRoach_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Death Hydralisk
+//--------------------------------------------------------------------------------------------------
+bool gt_DeathHydralisk_Func (bool testConds, bool runActions) {
+    // Conditions
+    if (testConds) {
+        if (!((UnitGroupCount(UnitGroup("HydraliskDen", 15, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive) == 0))) {
+            return false;
+        }
+
+        if (!((TriggerGetExecCount(TriggerGetCurrent()) == 0))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    Wait(15.0, c_timeGame);
+    gf_EnableSpawnBuilding(UnitFromId(390), "CreateSuperHydras");
+    Wait(25.0, c_timeGame);
+    gf_EnableSpawnBuilding(UnitFromId(315), "CreateUltras");
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_DeathHydralisk_Init () {
+    gt_DeathHydralisk = TriggerCreate("gt_DeathHydralisk_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Death Spire
+//--------------------------------------------------------------------------------------------------
+bool gt_DeathSpire_Func (bool testConds, bool runActions) {
+    // Conditions
+    if (testConds) {
+        if (!((UnitGroupCount(UnitGroup("Spire", 15, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive) == 0))) {
+            return false;
+        }
+
+        if (!((TriggerGetExecCount(TriggerGetCurrent()) == 0))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    Wait(15.0, c_timeGame);
+    gf_EnableSpawnBuilding(UnitFromId(372), "CreateSuperMutas");
+    Wait(25.0, c_timeGame);
+    gf_EnableSpawnBuilding(UnitFromId(435), "CreateBroodlords");
+    gf_EnableSpawnBuilding(UnitFromId(435), "CreateCorruptor");
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_DeathSpire_Init () {
+    gt_DeathSpire = TriggerCreate("gt_DeathSpire_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Death Greater Spire
+//--------------------------------------------------------------------------------------------------
+bool gt_DeathGreaterSpire_Func (bool testConds, bool runActions) {
+    // Conditions
+    if (testConds) {
+        if (!((UnitGroupCount(UnitGroup("GreaterSpire", 15, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive) == 0))) {
+            return false;
+        }
+
+        if (!((TriggerGetExecCount(TriggerGetCurrent()) == 0))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    Wait(25.0, c_timeGame);
+    gf_EnableSpawnBuilding(UnitFromId(375), "CreateSuperBroodlords");
+    gf_EnableSpawnBuilding(UnitFromId(375), "CreateSuperCorruptor");
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_DeathGreaterSpire_Init () {
+    gt_DeathGreaterSpire = TriggerCreate("gt_DeathGreaterSpire_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Death Ultra
+//--------------------------------------------------------------------------------------------------
+bool gt_DeathUltra_Func (bool testConds, bool runActions) {
+    // Conditions
+    if (testConds) {
+        if (!((UnitGroupCount(UnitGroup("UltraliskCavern", 15, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0), c_unitCountAlive) == 0))) {
+            return false;
+        }
+
+        if (!((TriggerGetExecCount(TriggerGetCurrent()) == 0))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    Wait(25.0, c_timeGame);
+    gf_EnableSpawnBuilding(UnitFromId(378), "CreateSuperUltras");
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_DeathUltra_Init () {
+    gt_DeathUltra = TriggerCreate("gt_DeathUltra_Func");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Buff Spawns
+//--------------------------------------------------------------------------------------------------
+bool gt_BuffSpawns_Func (bool testConds, bool runActions) {
+    // Conditions
+    if (testConds) {
+        if (!((((gv_inKerriDeaths > 5) && (UnitGetType(EventUnitCreatedUnit()) == "KerriganChar")) || ((UnitGetType(EventUnitCreatedUnit()) == "Corruptor") && (libNtve_gf_UnitGroupIsDead(libNtve_gf_ConvertUnitToUnitGroup(UnitFromId(375))) == true)) || ((UnitGetType(EventUnitCreatedUnit()) == "BroodLord") && (libNtve_gf_UnitGroupIsDead(libNtve_gf_ConvertUnitToUnitGroup(UnitFromId(375))) == true)) || ((UnitGetType(EventUnitCreatedUnit()) == "Omegalisk") && (libNtve_gf_UnitGroupIsDead(libNtve_gf_ConvertUnitToUnitGroup(UnitFromId(378))) == true)) || ((UnitGetType(EventUnitCreatedUnit()) == "Hydralisk") && (libNtve_gf_UnitGroupIsDead(libNtve_gf_ConvertUnitToUnitGroup(UnitFromId(390))) == true)) || ((UnitGetType(EventUnitCreatedUnit()) == "Roach") && (libNtve_gf_UnitGroupIsDead(libNtve_gf_ConvertUnitToUnitGroup(UnitFromId(374))) == true)) || ((UnitGetType(EventUnitCreatedUnit()) == "Zergling") && (libNtve_gf_UnitGroupIsDead(libNtve_gf_ConvertUnitToUnitGroup(UnitFromId(373))) == true)) || ((UnitGetType(EventUnitCreatedUnit()) == "InfestedCivilian") && (libNtve_gf_UnitGroupIsDead(libNtve_gf_ConvertUnitToUnitGroup(UnitFromId(456))) == true))))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    gf_GiveRandomBuff(EventUnitCreatedUnit());
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_BuffSpawns_Init () {
+    gt_BuffSpawns = TriggerCreate("gt_BuffSpawns_Func");
+    TriggerAddEventUnitCreated(gt_BuffSpawns, null, null, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Constant Attack
+//--------------------------------------------------------------------------------------------------
+bool gt_ConstantAttack_Func (bool testConds, bool runActions) {
+    // Conditions
+    if (testConds) {
+        if (!((UnitGetOwner(EventUnit()) == 15))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    UnitIssueOrder(EventUnitCreatedUnit(), OrderTargetingPoint(AbilityCommand("attack", 0), PointFromId(259)), c_orderQueueReplace);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_ConstantAttack_Init () {
+    gt_ConstantAttack = TriggerCreate("gt_ConstantAttack_Func");
+    TriggerAddEventUnitCreated(gt_ConstantAttack, null, null, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger: Something Destroyed
+//--------------------------------------------------------------------------------------------------
+bool gt_SomethingDestroyed_Func (bool testConds, bool runActions) {
+    string auto9B719DF4_val;
+
+    // Variable Declarations
+    int lv_intMoney;
+
+    // Variable Initialization
+    lv_intMoney = 0;
+
+    // Conditions
+    if (testConds) {
+        if (!(((UnitTypeTestAttribute(UnitGetType(EventUnit()), c_unitAttributeStructure) == true) || (UnitTypeTestAttribute(UnitGetType(EventUnit()), c_unitAttributeHeroic) == true)))) {
+            return false;
+        }
+
+        if (!((UnitGetOwner(EventUnit()) == 15))) {
+            return false;
+        }
+    }
+
+    // Actions
+    if (!runActions) {
+        return true;
+    }
+
+    TriggerEnable(TriggerGetCurrent(), false);
+    auto9B719DF4_val = UnitGetType(EventUnit());
+    if (auto9B719DF4_val == "Omegalisk") {
+        lv_intMoney = 250;
+    }
+    else if (auto9B719DF4_val == "CreepTumorBurrowed") {
+        lv_intMoney = 25;
+    }
+    else if (auto9B719DF4_val == "SporeCrawler") {
+        lv_intMoney = 100;
+    }
+    else if (auto9B719DF4_val == "SpineCrawler") {
+        lv_intMoney = 100;
+    }
+    else if (auto9B719DF4_val == "EvolutionChamber") {
+        TriggerExecute(gt_DeathInfChamber, true, false);
+        lv_intMoney = 200;
+    }
+    else if (auto9B719DF4_val == "SpawningPool") {
+        TriggerExecute(gt_DeathSpawningPool, true, false);
+        lv_intMoney = 300;
+    }
+    else if (auto9B719DF4_val == "Spire") {
+        TriggerExecute(gt_DeathSpire, true, false);
+        lv_intMoney = 400;
+    }
+    else if (auto9B719DF4_val == "RoachWarren") {
+        TriggerExecute(gt_DeathRoach, true, false);
+        lv_intMoney = 400;
+    }
+    else if (auto9B719DF4_val == "HydraliskDen") {
+        TriggerExecute(gt_DeathHydralisk, true, false);
+        lv_intMoney = 500;
+    }
+    else if (auto9B719DF4_val == "GreaterSpire") {
+        TriggerExecute(gt_DeathGreaterSpire, true, false);
+        lv_intMoney = 500;
+    }
+    else if (auto9B719DF4_val == "Hatchery") {
+        lv_intMoney = 500;
+    }
+    else if (auto9B719DF4_val == "UltraliskCavern") {
+        TriggerExecute(gt_DeathUltra, true, false);
+        lv_intMoney = 750;
+    }
+    else if (auto9B719DF4_val == "Lair") {
+        lv_intMoney = 1000;
+    }
+    else if (auto9B719DF4_val == "Hive") {
+        lv_intMoney = 1500;
+    }
+    else if (auto9B719DF4_val == "KerriganChar") {
+        gv_inKerriDeaths = (gv_inKerriDeaths + 1);
+        lv_intMoney = 2500;
+    }
+    else {
+    }
+    if ((lv_intMoney > 0)) {
+        TriggerExecute(gt_ReCalculatePlayers, true, true);
+        TextTagCreate((StringExternal("Param/Value/DBDCB531") + IntToText(lv_intMoney)), 35, UnitGetPosition(EventUnit()), 0.4, true, false, PlayerGroupAll());
+        TextTagSetColor(TextTagLastCreated(), c_textTagColorText, Color(0.00, 50.20, 75.29));
+        TextTagSetTime(TextTagLastCreated(), c_textTagTimeDuration, 10.0);
+        TextTagSetVelocity(TextTagLastCreated(), 1.0, 90.0);
+        PlayerGroupLoopBegin(gv_pgEliteForces);
+        while (!PlayerGroupLoopDone()) {
+            PlayerModifyPropertyInt(PlayerGroupLoopCurrent(), c_playerPropMinerals, c_playerPropOperAdd, lv_intMoney);
+            PlayerGroupLoopStep();
+        }
+        PlayerGroupLoopEnd();
+    }
+    else {
+    }
+    Wait(0.3, c_timeGame);
+    TriggerEnable(TriggerGetCurrent(), true);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+void gt_SomethingDestroyed_Init () {
+    gt_SomethingDestroyed = TriggerCreate("gt_SomethingDestroyed_Func");
+    TriggerAddEventUnitDied(gt_SomethingDestroyed, null);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Trigger Initialization
+//--------------------------------------------------------------------------------------------------
+void InitTriggers () {
+    gt_Init_Init();
+    gt_EnemyTraits_Init();
+    gt_PlayerSetup_Init();
+    gt_SpawnUnits_Init();
+    gt_UnitCreatedSelect_Init();
+    gt_SwitchtoInfUps_Init();
+    gt_SwitchtoMechUps_Init();
+    gt_SwitchtoAirUps_Init();
+    gt_SwitchtoMainOF_Init();
+    gt_PlayerLeaves_Init();
+    gt_ReCalculatePlayers_Init();
+    gt_Nomoreupgrades_Init();
+    gt_Defeat_Init();
+    gt_Victory_Init();
+    gt_DeathInfChamber_Init();
+    gt_DeathSpawningPool_Init();
+    gt_DeathRoach_Init();
+    gt_DeathHydralisk_Init();
+    gt_DeathSpire_Init();
+    gt_DeathGreaterSpire_Init();
+    gt_DeathUltra_Init();
+    gt_BuffSpawns_Init();
+    gt_ConstantAttack_Init();
+    gt_SomethingDestroyed_Init();
+}
+
+//--------------------------------------------------------------------------------------------------
+// Map Initialization
+//--------------------------------------------------------------------------------------------------
+void InitMap () {
+    InitLibs();
+    InitGlobals();
+    InitTriggers();
+}
+
+
+//--------------------------------------------------------------------------------------------------
+// Custom UI Variables
+//--------------------------------------------------------------------------------------------------
+int gv_DifficultyDialog;
+int gv_BtnEasy;
+int gv_BtnNormal;
+int gv_BtnHard;
+int gv_BtnElite;
+
+int gv_HeroDialog;
+int gv_BtnMarine;
+int gv_BtnViking;
+int gv_BtnGoliath;
+int gv_BtnWarhound;
+int gv_BtnRaynor;
+int gv_BtnKerrigan;
+int gv_BtnArtanis;
+int gv_BtnStetmann;
+
+trigger gt_OnDifficultyVote;
+trigger gt_OnHeroSelect;
+
+//--------------------------------------------------------------------------------------------------
+// Custom Triggers
+//--------------------------------------------------------------------------------------------------
+bool gt_OnDifficultyVote_Func(bool testConds, bool runActions) {
+    int btn = EventDialogControl();
+    if (!runActions) { return true; }
+    
+    if (btn != gv_BtnEasy && btn != gv_BtnNormal && btn != gv_BtnHard && btn != gv_BtnElite) { return true; }
+    
+    // Very simple logic: just hide dialog and show hero select when any button is clicked (for testing)
+    DialogSetVisible(gv_DifficultyDialog, PlayerGroupAll(), false);
+    DialogSetVisible(gv_HeroDialog, PlayerGroupAll(), true);
+    return true;
+}
+
+bool gt_OnHeroSelect_Func(bool testConds, bool runActions) {
+    int btn = EventDialogControl();
+    int p = EventPlayer();
+    string heroType = "WarPig"; // Default Marine
+    
+    if (!runActions) { return true; }
+    
+    if (btn == gv_BtnMarine) { heroType = "WarPig"; }
+    else if (btn == gv_BtnViking) { heroType = "HelsAngelFighter"; }
+    else if (btn == gv_BtnGoliath) { heroType = "SpartanCompany"; }
+    else if (btn == gv_BtnWarhound) { heroType = "Warhound"; } // New hero!
+    else if (btn == gv_BtnRaynor) { heroType = "JimRaynor"; }
+    else if (btn == gv_BtnKerrigan) { heroType = "PrimalKerrigan"; }
+    else if (btn == gv_BtnArtanis) { heroType = "ArtanisTank"; }
+    else if (btn == gv_BtnStetmann) { heroType = "EgonStetmann"; }
+    else { return true; }
+    
+    // Spawn hero
+    UnitCreate(1, heroType, 0, p, PointFromId(259), 270.0);
+    // Hide dialog for player
+    DialogSetVisible(gv_HeroDialog, PlayerGroupSingle(p), false);
+    
+    // Start Zerg Spawns (simple version: enable the first building)
+    gf_EnableSpawnBuilding(UnitFromId(278), "CreateInfTerran");
+    return true;
+}
+
+void CustomUI_Init() {
+    // Difficulty Dialog
+    gv_DifficultyDialog = DialogCreate(500, 400, c_anchorCenter, 0, 0, true);
+    DialogSetVisible(gv_DifficultyDialog, PlayerGroupAll(), true);
+    
+    gv_BtnEasy = DialogControlCreate(gv_DifficultyDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnEasy, PlayerGroupAll(), c_anchorTop, 0, 50);
+    DialogControlSetSize(gv_BtnEasy, PlayerGroupAll(), 200, 50);
+    
+    gv_BtnNormal = DialogControlCreate(gv_DifficultyDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnNormal, PlayerGroupAll(), c_anchorTop, 0, 110);
+    DialogControlSetSize(gv_BtnNormal, PlayerGroupAll(), 200, 50);
+    
+    gv_BtnHard = DialogControlCreate(gv_DifficultyDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnHard, PlayerGroupAll(), c_anchorTop, 0, 170);
+    DialogControlSetSize(gv_BtnHard, PlayerGroupAll(), 200, 50);
+    
+    gv_BtnElite = DialogControlCreate(gv_DifficultyDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnElite, PlayerGroupAll(), c_anchorTop, 0, 230);
+    DialogControlSetSize(gv_BtnElite, PlayerGroupAll(), 200, 50);
+
+    libNtve_gf_SetDialogItemText(gv_BtnEasy, StringToText("Easy"), PlayerGroupAll());
+    libNtve_gf_SetDialogItemText(gv_BtnNormal, StringToText("Normal"), PlayerGroupAll());
+    libNtve_gf_SetDialogItemText(gv_BtnHard, StringToText("Hard"), PlayerGroupAll());
+    libNtve_gf_SetDialogItemText(gv_BtnElite, StringToText("Elite"), PlayerGroupAll());
+
+    
+    // Hero Dialog
+    gv_HeroDialog = DialogCreate(600, 500, c_anchorCenter, 0, 0, true);
+    DialogSetVisible(gv_HeroDialog, PlayerGroupAll(), false);
+    
+    gv_BtnMarine = DialogControlCreate(gv_HeroDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnMarine, PlayerGroupAll(), c_anchorTop, 0, 50);
+    DialogControlSetSize(gv_BtnMarine, PlayerGroupAll(), 200, 50);
+    
+    gv_BtnViking = DialogControlCreate(gv_HeroDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnViking, PlayerGroupAll(), c_anchorTop, 0, 110);
+    DialogControlSetSize(gv_BtnViking, PlayerGroupAll(), 200, 50);
+    
+    gv_BtnGoliath = DialogControlCreate(gv_HeroDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnGoliath, PlayerGroupAll(), c_anchorTop, 0, 170);
+    DialogControlSetSize(gv_BtnGoliath, PlayerGroupAll(), 200, 50);
+    
+    gv_BtnWarhound = DialogControlCreate(gv_HeroDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnWarhound, PlayerGroupAll(), c_anchorTop, 0, 230);
+    DialogControlSetSize(gv_BtnWarhound, PlayerGroupAll(), 200, 50);
+
+    gv_BtnRaynor = DialogControlCreate(gv_HeroDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnRaynor, PlayerGroupAll(), c_anchorTop, 210, 50);
+    DialogControlSetSize(gv_BtnRaynor, PlayerGroupAll(), 200, 50);
+    libNtve_gf_SetDialogItemText(gv_BtnRaynor, StringToText("Jim Raynor (Ranged DPS)"), PlayerGroupAll());
+
+    gv_BtnKerrigan = DialogControlCreate(gv_HeroDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnKerrigan, PlayerGroupAll(), c_anchorTop, 210, 110);
+    DialogControlSetSize(gv_BtnKerrigan, PlayerGroupAll(), 200, 50);
+    libNtve_gf_SetDialogItemText(gv_BtnKerrigan, StringToText("Primal Kerrigan (Melee DPS)"), PlayerGroupAll());
+
+    gv_BtnArtanis = DialogControlCreate(gv_HeroDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnArtanis, PlayerGroupAll(), c_anchorTop, 210, 170);
+    DialogControlSetSize(gv_BtnArtanis, PlayerGroupAll(), 200, 50);
+    libNtve_gf_SetDialogItemText(gv_BtnArtanis, StringToText("Artanis (Tank)"), PlayerGroupAll());
+
+    gv_BtnStetmann = DialogControlCreate(gv_HeroDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnStetmann, PlayerGroupAll(), c_anchorTop, 210, 230);
+    DialogControlSetSize(gv_BtnStetmann, PlayerGroupAll(), 200, 50);
+    libNtve_gf_SetDialogItemText(gv_BtnStetmann, StringToText("Egon Stetmann (Support)"), PlayerGroupAll());
+
+    libNtve_gf_SetDialogItemText(gv_BtnMarine, StringToText("WarPig (Marine)"), PlayerGroupAll());
+    libNtve_gf_SetDialogItemText(gv_BtnViking, StringToText("Hels Angel (Viking)"), PlayerGroupAll());
+    libNtve_gf_SetDialogItemText(gv_BtnGoliath, StringToText("Spartan (Goliath)"), PlayerGroupAll());
+    libNtve_gf_SetDialogItemText(gv_BtnWarhound, StringToText("Warhound (Mech)"), PlayerGroupAll());
+    
+    // Triggers
+    gt_OnDifficultyVote = TriggerCreate("gt_OnDifficultyVote_Func");
+    TriggerAddEventDialogControl(gt_OnDifficultyVote, c_playerAny, c_invalidDialogControlId, c_triggerControlEventTypeClick);
+    
+    gt_OnHeroSelect = TriggerCreate("gt_OnHeroSelect_Func");
+    TriggerAddEventDialogControl(gt_OnHeroSelect, c_playerAny, c_invalidDialogControlId, c_triggerControlEventTypeClick);
+    PlayerConsole_Init();
+    Waves_Init();
+}
+
+//--------------------------------------------------------------------------------------------------
+// Player Console Variables
+//--------------------------------------------------------------------------------------------------
+int gv_GamebarDialog;
+int gv_BtnOpenConsole;
+
+int gv_PlayerConsoleDialog;
+int gv_BtnBuffT1; // Optical Lens
+int gv_BtnBuffT3; // Momentum
+int gv_BtnStatStr; // Strength
+int gv_BtnStatDex; // Dexterity
+int gv_BtnStatInt; // Intelligence
+int gv_BtnStatSta; // Stamina
+
+trigger gt_ToggleConsole;
+trigger gt_PurchaseBuff;
+
+//--------------------------------------------------------------------------------------------------
+// Player Console Triggers
+//--------------------------------------------------------------------------------------------------
+bool gt_ToggleConsole_Func(bool testConds, bool runActions) {
+    int p = EventPlayer();
+    if (!runActions) { return true; }
+    
+    // Toggle visibility
+    if (DialogIsVisible(gv_PlayerConsoleDialog, p)) {
+        DialogSetVisible(gv_PlayerConsoleDialog, PlayerGroupSingle(p), false);
+    } else {
+        DialogSetVisible(gv_PlayerConsoleDialog, PlayerGroupSingle(p), true);
+    }
+    return true;
+}
+
+bool gt_PurchaseBuff_Func(bool testConds, bool runActions) {
+    int btn = EventDialogControl();
+    int p = EventPlayer();
+    string buffType = "";
+    int cost = 0;
+    unitgroup ug;
+    
+    if (!runActions) { return true; }
+    
+    // Determine what was clicked
+    if (btn == gv_BtnBuffT1) { buffType = "BuffTier1_OpticalLens"; cost = 500; }
+    else if (btn == gv_BtnBuffT3) { buffType = "BuffTier3_Momentum"; cost = 1000; }
+    else if (btn == gv_BtnStatStr) { buffType = "Stat_Strength"; cost = 250; }
+    else if (btn == gv_BtnStatDex) { buffType = "Stat_Dexterity"; cost = 250; }
+    else if (btn == gv_BtnStatInt) { buffType = "Stat_Intelligence"; cost = 250; }
+    else if (btn == gv_BtnStatSta) { buffType = "Stat_Stamina"; cost = 250; }
+    else { return true; } // Not a purchase button
+    
+    // Iterate over selected units
+    ug = UnitGroupSelected(p);
+    UnitGroupLoopBegin(ug);
+    while (!UnitGroupLoopDone()) {
+        if (PlayerGetPropertyInt(p, c_playerPropMinerals) >= cost) {
+            // Deduct minerals
+            PlayerModifyPropertyInt(p, c_playerPropMinerals, c_playerPropOperSubtract, cost);
+            // Apply buff (duration -1 means infinite/permanent)
+            UnitBehaviorAddPlayer(UnitGroupLoopCurrent(), buffType, p, 1);
+            // Play a sound or visual effect here optionally
+        } else {
+            // Not enough minerals, break or notify
+            UIDisplayMessage(PlayerGroupSingle(p), c_messageAreaSubtitle, StringToText("Not enough minerals for " + buffType));
+            break;
+        }
+        UnitGroupLoopStep();
+    }
+    UnitGroupLoopEnd();
+    
+    return true;
+}
+
+void PlayerConsole_Init() {
+    // 1. Gamebar
+    gv_GamebarDialog = DialogCreate(150, 50, c_anchorTopRight, 20, 150, true);
+    DialogSetVisible(gv_GamebarDialog, PlayerGroupAll(), true);
+    
+    gv_BtnOpenConsole = DialogControlCreate(gv_GamebarDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnOpenConsole, PlayerGroupAll(), c_anchorCenter, 0, 0);
+    DialogControlSetSize(gv_BtnOpenConsole, PlayerGroupAll(), 150, 50);
+    // Button text set later via GameStrings? For simplicity we can't easily do it without native wrapper, but SC2 native allows it:
+    // We will use the text property if possible, but SC2 vanilla DialogControlCreate doesn't take text. We rely on standard tooltip/text.
+    // Actually, setting text natively in Galaxy:
+    // libNtve_gf_SetDialogItemText(gv_BtnOpenConsole, StringToText("Player Console (Alt+C)"), PlayerGroupAll());
+    
+    // 2. Console Dialog
+    gv_PlayerConsoleDialog = DialogCreate(600, 400, c_anchorRight, 50, 0, true);
+    DialogSetVisible(gv_PlayerConsoleDialog, PlayerGroupAll(), false);
+    
+    // Buffs
+    gv_BtnBuffT1 = DialogControlCreate(gv_PlayerConsoleDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnBuffT1, PlayerGroupAll(), c_anchorTopLeft, 50, 50);
+    DialogControlSetSize(gv_BtnBuffT1, PlayerGroupAll(), 200, 50);
+    
+    gv_BtnBuffT3 = DialogControlCreate(gv_PlayerConsoleDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnBuffT3, PlayerGroupAll(), c_anchorTopLeft, 50, 110);
+    DialogControlSetSize(gv_BtnBuffT3, PlayerGroupAll(), 200, 50);
+    
+    // Stats
+    gv_BtnStatStr = DialogControlCreate(gv_PlayerConsoleDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnStatStr, PlayerGroupAll(), c_anchorTopRight, 50, 50);
+    DialogControlSetSize(gv_BtnStatStr, PlayerGroupAll(), 200, 50);
+    
+    gv_BtnStatDex = DialogControlCreate(gv_PlayerConsoleDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnStatDex, PlayerGroupAll(), c_anchorTopRight, 50, 110);
+    DialogControlSetSize(gv_BtnStatDex, PlayerGroupAll(), 200, 50);
+    
+    gv_BtnStatInt = DialogControlCreate(gv_PlayerConsoleDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnStatInt, PlayerGroupAll(), c_anchorTopRight, 50, 170);
+    DialogControlSetSize(gv_BtnStatInt, PlayerGroupAll(), 200, 50);
+    
+    gv_BtnStatSta = DialogControlCreate(gv_PlayerConsoleDialog, c_triggerControlTypeButton);
+    DialogControlSetPosition(gv_BtnStatSta, PlayerGroupAll(), c_anchorTopRight, 50, 230);
+    DialogControlSetSize(gv_BtnStatSta, PlayerGroupAll(), 200, 50);
+    
+    // Triggers
+    
+    // Text bindings
+    libNtve_gf_SetDialogItemText(gv_BtnOpenConsole, StringToText("Player Console (Alt+C)"), PlayerGroupAll());
+    libNtve_gf_SetDialogItemText(gv_BtnBuffT1, StringToText("Buff: Optical Lens (500)"), PlayerGroupAll());
+    libNtve_gf_SetDialogItemText(gv_BtnBuffT3, StringToText("Buff: Momentum (1000)"), PlayerGroupAll());
+    libNtve_gf_SetDialogItemText(gv_BtnStatStr, StringToText("Stat: Strength (250)"), PlayerGroupAll());
+    libNtve_gf_SetDialogItemText(gv_BtnStatDex, StringToText("Stat: Dexterity (250)"), PlayerGroupAll());
+    libNtve_gf_SetDialogItemText(gv_BtnStatInt, StringToText("Stat: Intelligence (250)"), PlayerGroupAll());
+    libNtve_gf_SetDialogItemText(gv_BtnStatSta, StringToText("Stat: Stamina (250)"), PlayerGroupAll());
+
+    gt_ToggleConsole = TriggerCreate("gt_ToggleConsole_Func");
+    TriggerAddEventDialogControl(gt_ToggleConsole, c_playerAny, gv_BtnOpenConsole, c_triggerControlEventTypeClick);
+    
+    gt_PurchaseBuff = TriggerCreate("gt_PurchaseBuff_Func");
+    TriggerAddEventDialogControl(gt_PurchaseBuff, c_playerAny, gv_BtnBuffT1, c_triggerControlEventTypeClick);
+    TriggerAddEventDialogControl(gt_PurchaseBuff, c_playerAny, gv_BtnBuffT3, c_triggerControlEventTypeClick);
+    TriggerAddEventDialogControl(gt_PurchaseBuff, c_playerAny, gv_BtnStatStr, c_triggerControlEventTypeClick);
+    TriggerAddEventDialogControl(gt_PurchaseBuff, c_playerAny, gv_BtnStatDex, c_triggerControlEventTypeClick);
+    TriggerAddEventDialogControl(gt_PurchaseBuff, c_playerAny, gv_BtnStatInt, c_triggerControlEventTypeClick);
+    TriggerAddEventDialogControl(gt_PurchaseBuff, c_playerAny, gv_BtnStatSta, c_triggerControlEventTypeClick);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Wave System
+//--------------------------------------------------------------------------------------------------
+trigger gt_DropPods;
+trigger gt_TimedWaves;
+int gv_WaveCounter;
+
+bool gt_DropPods_Func(bool testConds, bool runActions) {
+    int p;
+    unitgroup ug;
+    unit targetHero = null;
+    point dropPoint;
+    
+    if (!runActions) { return true; }
+    
+    // Pick a random player 1 to 14
+    p = RandomInt(1, 14);
+    ug = UnitGroup(null, p, RegionEntireMap(), UnitFilter((1 << c_targetFilterHeroic), 0, (1 << c_targetFilterStructure) | (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+    if (UnitGroupCount(ug, c_unitCountAlive) > 0) {
+        targetHero = UnitGroupUnit(ug, 1);
+        dropPoint = UnitGetPosition(targetHero);
+        
+        // Ensure not inside base (Base is Point 259)
+        if (DistanceBetweenPoints(dropPoint, PointFromId(259)) > 20.0) {
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("Warning: Zerg Drop Pod incoming!"));
+            
+            UnitCreate(4, "Zergling", 0, 15, dropPoint, 270.0);
+            UnitGroupIssueOrder(UnitLastCreatedGroup(), OrderTargetingPoint(AbilityCommand("attack", 0), PointFromId(259)), c_orderQueueReplace);
+            
+            UnitCreate(1, "Roach", 0, 15, dropPoint, 270.0);
+            UnitGroupIssueOrder(UnitLastCreatedGroup(), OrderTargetingPoint(AbilityCommand("attack", 0), PointFromId(259)), c_orderQueueReplace);
+        }
+    }
+    return true;
+}
+
+bool gt_TimedWaves_Func(bool testConds, bool runActions) {
+    // Top right corner / Hive area usually has Point 1 or 2 or 3 in the map. Let's use a coordinate (150, 150) or just find the Hive.
+    // I will use PointFromId(3) which is usually the far corner, or we can just spawn them near the Greater Spire.
+    // For safety, I'll use a known location: PointFromId(1) is top left, 2 is top right, 3 is middle right usually in SFE.
+    // Let's spawn at PointFromId(1) for now.
+    point spawnPoint = UnitGetPosition(UnitFromId(278)); 
+    point attackPoint = PointFromId(259);
+    
+    if (!runActions) { return true; }
+    
+    gv_WaveCounter = gv_WaveCounter + 1;
+    
+    UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("A massive Zerg wave is approaching!"));
+    
+    if (gv_WaveCounter % 2 == 0) {
+        // Boss Wave
+        if (gv_WaveCounter == 2) {
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("Boss: Green Viper!"));
+            UnitCreate(1, "ViperGreen", 0, 15, spawnPoint, 270.0);
+            UnitGroupIssueOrder(UnitLastCreatedGroup(), OrderTargetingPoint(AbilityCommand("attack", 0), attackPoint), c_orderQueueReplace);
+        } else {
+            UIDisplayMessage(PlayerGroupAll(), c_messageAreaSubtitle, StringToText("Boss: Gastly Overseer!"));
+            UnitCreate(1, "GastlyOverseer", 0, 15, spawnPoint, 270.0);
+            UnitGroupIssueOrder(UnitLastCreatedGroup(), OrderTargetingPoint(AbilityCommand("attack", 0), attackPoint), c_orderQueueReplace);
+        }
+        
+        UnitCreate(10, "Hydralisk", 0, 15, spawnPoint, 270.0);
+        UnitGroupIssueOrder(UnitLastCreatedGroup(), OrderTargetingPoint(AbilityCommand("attack", 0), attackPoint), c_orderQueueReplace);
+    } else {
+        // Normal Wave
+        UnitCreate(15, "Zergling", 0, 15, spawnPoint, 270.0);
+        UnitGroupIssueOrder(UnitLastCreatedGroup(), OrderTargetingPoint(AbilityCommand("attack", 0), attackPoint), c_orderQueueReplace);
+        
+        UnitCreate(5, "Roach", 0, 15, spawnPoint, 270.0);
+        UnitGroupIssueOrder(UnitLastCreatedGroup(), OrderTargetingPoint(AbilityCommand("attack", 0), attackPoint), c_orderQueueReplace);
+    }
+    
+    return true;
+}
+
+void Waves_Init() {
+    gv_WaveCounter = 0;
+    
+    gt_DropPods = TriggerCreate("gt_DropPods_Func");
+    TriggerAddEventTimePeriodic(gt_DropPods, 45.0, c_timeGame);
+    
+    gt_TimedWaves = TriggerCreate("gt_TimedWaves_Func");
+    TriggerAddEventTimePeriodic(gt_TimedWaves, 180.0, c_timeGame);
+}

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<Catalog>
+    <CRequirementConst id="10">
+        <Value value="10"/>
+    </CRequirementConst>
+    <CRequirementConst id="100">
+        <Value value="100"/>
+    </CRequirementConst>
+    <CRequirementConst id="5">
+        <Value value="5"/>
+    </CRequirementConst>
+    <CRequirementConst id="50">
+        <Value value="50"/>
+    </CRequirementConst>
+    <CRequirementCountUnit id="CountUnitEvolutionChamberCompleteOnly">
+        <Count Link="EvolutionChamber" State="CompleteOnly"/>
+    </CRequirementCountUnit>
+    <CRequirementCountUpgrade id="CountUpgradeArtilleryTargetingCompleteOnly4148612580TechTreeCheat">
+        <Count Link="ArtilleryTargeting" State="CompleteOnly"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeArtilleryTargetingQueuedOrBetter">
+        <Count Link="ArtilleryTargeting" State="QueuedOrBetter"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeClusterBombQueuedOrBetter">
+        <Count Link="ClusterBomb" State="QueuedOrBetter"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeCombatShieldCompleteOnly2839830718TechTreeCheat">
+        <Count Link="CombatShield" State="CompleteOnly"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeCombatShieldQueuedOrBetter">
+        <Count Link="CombatShield" State="QueuedOrBetter"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeFlamingBettyCompleteOnly87455078TechTreeCheat">
+        <Count Link="FlamingBetty" State="CompleteOnly"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeFlamingBettyQueuedOrBetterTechTreeCheat">
+        <Count Link="FlamingBetty" State="QueuedOrBetter"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeGravitonPrisonCompleteOnly570141066TechTreeCheat">
+        <Count Link="GravitonPrison" State="CompleteOnly"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeGravitonPrisonQueuedOrBetterTechTreeCheat">
+        <Count Link="GravitonPrison" State="QueuedOrBetter"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeHunterSeekerCompleteOnly2418878204TechTreeCheat">
+        <Count Link="HunterSeeker" State="CompleteOnly"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeInterceptorLimit6QueuedOrBetterTechTreeCheat">
+        <Count Link="InterceptorLimit6" State="QueuedOrBetter"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeOdinNuke2CompleteOnly361325049TechTreeCheat">
+        <Count Link="OdinNuke2" State="CompleteOnly"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeOdinNuke2QueuedOrBetterTechTreeCheat">
+        <Count Link="OdinNuke2" State="QueuedOrBetter"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeOdinNukeCompleteOnly1330060644TechTreeCheat">
+        <Count Link="OdinNuke" State="CompleteOnly"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeOdinNukeQueuedOrBetter">
+        <Count Link="OdinNuke" State="QueuedOrBetter"/>
+        <Flags index="TechTreeCheat" value="0"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeOffensiveBattlecruiserCapabilitiesCompleteOnly1077391733TechTreeCheat">
+        <Count Link="OffensiveBattlecruiserCapabilities" State="CompleteOnly"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeOffensiveBattlecruiserCapabilitiesQueuedOrBetterTechTreeCheat">
+        <Count Link="OffensiveBattlecruiserCapabilities" State="QueuedOrBetter"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradePassiveCloakCompleteOnly1028982313">
+        <Count Link="PassiveCloak" State="CompleteOnly"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradePassiveCloakQueuedOrBetter">
+        <Count Link="PassiveCloak" State="QueuedOrBetter"/>
+        <Flags index="TechTreeCheat" value="0"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradePointDefenseDroneCompleteOnly4258817689TechTreeCheat">
+        <Count Link="PointDefenseDrone" State="CompleteOnly"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradePointDefenseDroneQueuedOrBetterTechTreeCheat">
+        <Count Link="PointDefenseDrone" State="QueuedOrBetter"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeQuadDamageCompleteOnly1278784526TechTreeCheat">
+        <Count Link="QuadDamage" State="CompleteOnly"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeQuadDamageQueuedOrBetter">
+        <Count Link="QuadDamage" State="QueuedOrBetter"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeShockwaveCompleteOnly893923979TechTreeCheat">
+        <Count Link="Shockwave" State="CompleteOnly"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeShockwaveQueuedOrBetterTechTreeCheat">
+        <Count Link="Shockwave" State="QueuedOrBetter"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeShredderGrenadeCompleteOnly2494540360TechTreeCheat">
+        <Count Link="ShredderGrenade" State="CompleteOnly"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeShredderGrenadeQueuedOrBetterTechTreeCheat">
+        <Count Link="ShredderGrenade" State="QueuedOrBetter"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeUpgradeArQueuedOrBetterTechTreeCheat">
+        <Count Link="UpgradeAr" State="QueuedOrBetter"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeUpgradeLifeQueuedOrBetterTechTreeCheat">
+        <Count Link="UpgradeLife" State="QueuedOrBetter"/>
+    </CRequirementCountUpgrade>
+    <CRequirementCountUpgrade id="CountUpgradeUpgradeWeaponsQueuedOrBetterTechTreeCheat">
+        <Count Link="UpgradeWeapons" State="QueuedOrBetter"/>
+    </CRequirementCountUpgrade>
+    <CRequirementGT id="GTCountUnitEvolutionChamberCompleteOnly3">
+        <OperandArray index="0" value="CountUnitEvolutionChamberCompleteOnly"/>
+        <OperandArray index="1" value="3"/>
+    </CRequirementGT>
+    <CRequirementLT id="LT1538368987CountUnitInterceptorQueuedOrBetterAtUnit6">
+        <OperandArray index="0" value="CountUnitInterceptorQueuedOrBetterAtUnit"/>
+        <OperandArray index="1" value="6"/>
+    </CRequirementLT>
+    <CRequirementLT id="LT2345953344CountUnitInterceptorQueuedOrBetterAtUnit4">
+        <OperandArray index="0" value="CountUnitInterceptorQueuedOrBetterAtUnit"/>
+        <OperandArray index="1" value="4"/>
+    </CRequirementLT>
+    <CRequirementLT id="LTCountUpgradeUpgradeArQueuedOrBetterTechTreeCheat100">
+        <OperandArray index="0" value="CountUpgradeUpgradeArQueuedOrBetterTechTreeCheat"/>
+        <OperandArray index="1" value="100"/>
+    </CRequirementLT>
+    <CRequirementLT id="LTCountUpgradeUpgradeLifeQueuedOrBetterTechTreeCheat100">
+        <OperandArray index="0" value="CountUpgradeUpgradeLifeQueuedOrBetterTechTreeCheat"/>
+        <OperandArray index="1" value="100"/>
+    </CRequirementLT>
+    <CRequirementLT id="LTCountUpgradeUpgradeWeaponsQueuedOrBetterTechTreeCheat100">
+        <OperandArray index="0" value="CountUpgradeUpgradeWeaponsQueuedOrBetterTechTreeCheat"/>
+        <OperandArray index="1" value="100"/>
+    </CRequirementLT>
+    <CRequirementLTE id="LTECountUnitEvolutionChamberCompleteOnly3">
+        <OperandArray index="0" value="CountUnitEvolutionChamberCompleteOnly"/>
+        <OperandArray index="1" value="3"/>
+    </CRequirementLTE>
+    <CRequirementNot id="NotCountUpgradeArtilleryTargetingQueuedOrBetter">
+        <OperandArray index="0" value="CountUpgradeArtilleryTargetingQueuedOrBetter"/>
+    </CRequirementNot>
+    <CRequirementNot id="NotCountUpgradeClusterBombQueuedOrBetter">
+        <OperandArray index="0" value="CountUpgradeClusterBombQueuedOrBetter"/>
+    </CRequirementNot>
+    <CRequirementNot id="NotCountUpgradeCombatShieldQueuedOrBetter">
+        <OperandArray index="0" value="CountUpgradeCombatShieldQueuedOrBetter"/>
+    </CRequirementNot>
+    <CRequirementNot id="NotCountUpgradeFlamingBettyQueuedOrBetterTechTreeCheat">
+        <OperandArray index="0" value="CountUpgradeFlamingBettyQueuedOrBetterTechTreeCheat"/>
+    </CRequirementNot>
+    <CRequirementNot id="NotCountUpgradeGravitonPrisonQueuedOrBetterTechTreeCheat">
+        <OperandArray index="0" value="CountUpgradeGravitonPrisonQueuedOrBetterTechTreeCheat"/>
+    </CRequirementNot>
+    <CRequirementNot id="NotCountUpgradeInterceptorLimit6QueuedOrBetterTechTreeCheat">
+        <OperandArray index="0" value="CountUpgradeInterceptorLimit6QueuedOrBetterTechTreeCheat"/>
+    </CRequirementNot>
+    <CRequirementNot id="NotCountUpgradeOdinNuke2QueuedOrBetterTechTreeCheat">
+        <OperandArray index="0" value="CountUpgradeOdinNuke2QueuedOrBetterTechTreeCheat"/>
+    </CRequirementNot>
+    <CRequirementNot id="NotCountUpgradeOdinNukeQueuedOrBetter">
+        <OperandArray index="0" value="CountUpgradeOdinNukeQueuedOrBetter"/>
+    </CRequirementNot>
+    <CRequirementNot id="NotCountUpgradeOffensiveBattlecruiserCapabilitiesQueuedOrBetterTechTreeCheat">
+        <OperandArray index="0" value="CountUpgradeOffensiveBattlecruiserCapabilitiesQueuedOrBetterTechTreeCheat"/>
+    </CRequirementNot>
+    <CRequirementNot id="NotCountUpgradePassiveCloakQueuedOrBetter">
+        <OperandArray index="0" value="CountUpgradePassiveCloakQueuedOrBetter"/>
+    </CRequirementNot>
+    <CRequirementNot id="NotCountUpgradePointDefenseDroneQueuedOrBetterTechTreeCheat">
+        <OperandArray index="0" value="CountUpgradePointDefenseDroneQueuedOrBetterTechTreeCheat"/>
+    </CRequirementNot>
+    <CRequirementNot id="NotCountUpgradeQuadDamageQueuedOrBetter">
+        <OperandArray index="0" value="CountUpgradeQuadDamageQueuedOrBetter"/>
+    </CRequirementNot>
+    <CRequirementNot id="NotCountUpgradeShockwaveQueuedOrBetterTechTreeCheat">
+        <OperandArray index="0" value="CountUpgradeShockwaveQueuedOrBetterTechTreeCheat"/>
+    </CRequirementNot>
+    <CRequirementNot id="NotCountUpgradeShredderGrenadeQueuedOrBetterTechTreeCheat">
+        <OperandArray index="0" value="CountUpgradeShredderGrenadeQueuedOrBetterTechTreeCheat"/>
+    </CRequirementNot>
+</Catalog>

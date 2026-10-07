@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Regions>
+    <region id="1">
+        <name value="Health Buff"/>
+        <color value="255,255,0,0"/>
+        <shape type="rect">
+            <quad value="107.327,15.2897,150.0366,162.7045"/>
+        </shape>
+        <shape type="rect">
+            <quad value="13.7387,89.3625,109.943,145.583"/>
+        </shape>
+        <shape type="rect">
+            <quad value="83.9416,49.9384,110.1894,90.2446"/>
+        </shape>
+    </region>
+    <region id="2">
+        <name value="Speed Buff"/>
+        <color value="255,0,0,255"/>
+        <shape type="rect">
+            <quad value="17.1354,114.1967,66.0332,145.6286"/>
+        </shape>
+        <shape type="circle">
+            <center value="114.1132,139.8107"/>
+            <radius value="18.4086"/>
+        </shape>
+        <shape type="rect">
+            <quad value="127.3203,73.603,149.9211,139.1"/>
+        </shape>
+    </region>
+    <region id="3">
+        <name value="Damage Buff"/>
+        <color value="255,0,255,0"/>
+        <shape type="rect">
+            <quad value="65.8132,92.1008,129.1506,144.9968"/>
+        </shape>
+        <shape type="circle">
+            <center value="99.0173,74.0644"/>
+            <radius value="12.9746"/>
+        </shape>
+        <shape type="rect">
+            <quad value="124.1418,34.9965,147.069,70.1516"/>
+        </shape>
+    </region>
+</Regions>

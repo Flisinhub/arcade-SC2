@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<Catalog>
+    <CModel id="BlinkOriginModel">
+        <Model value="Assets\Effects\Protoss\BlinkIn\BlinkIn.m3"/>
+    </CModel>
+    <CModel id="WarhoundMercenary" parent="Unit">
+        <Model value="Assets\Units\Terran\Warhound_Mercenary\Warhound_Mercenary.m3"/>
+    </CModel>
+    <CModel id="WarhoundMercenaryPortrait" parent="Portrait">
+        <Model value="Assets\Portraits\Terran\Warhound_Mercenary_Portrait\Warhound_Mercenary_Portrait.m3"/>
+    </CModel>
+    <CModel id="GastlyOverseer" parent="Unit">
+        <Model value="Assets\Units\Zerg\Gastly_Overseer\Gastly_Overseer.m3"/>
+    </CModel>
+    <CModel id="GastlyOverseerDeath" parent="UnitDeath">
+        <Model value="Assets\Units\Zerg\Gastly_Overseer_Death\Gastly_Overseer_Death.m3"/>
+    </CModel>
+    <CModel id="GastlyOverseerPortrait" parent="Portrait">
+        <Model value="Assets\Portraits\Zerg\Gastly_Overseer_Portrait\Gastly_Overseer_Portrait.m3"/>
+    </CModel>
+    <CModel id="ViperGreen" parent="Unit">
+        <Model value="Assets\Units\Zerg\Viper_GreenEvolution\Viper_EX1A_DS.m3"/>
+    </CModel>
+    <CModel id="ViperGreenDeath" parent="UnitDeath">
+        <Model value="Assets\Units\Zerg\Viper_GreenEvolution\Viper_EX1A_DS_Deathragdoll.m3"/>
+    </CModel>
+    <CModel id="ViperGreenPortrait" parent="Portrait">
+        <Model value="Assets\Units\Zerg\Viper_GreenEvolution\Viper_EX1A_DS_Portrait.m3"/>
+    </CModel>
+</Catalog>

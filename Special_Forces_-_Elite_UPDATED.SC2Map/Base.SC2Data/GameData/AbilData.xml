@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<Catalog>
+    <CAbilResearch id="BarracksTechLabResearch2">
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Structures"/>
+        <InfoArray index="Research1" Upgrade="ClusterBomb">
+            <Resource index="Minerals" value="1000"/>
+            <Button DefaultButtonFace="ResearchG4Clusterbomb" Requirements="LearnG4Clusterbomb"/>
+        </InfoArray>
+        <InfoArray index="Research2" Upgrade="CombatShield">
+            <Resource index="Minerals" value="500"/>
+            <Button DefaultButtonFace="ReflectiveShield" State="Restricted" Requirements="LearnReflectiveShield"/>
+        </InfoArray>
+        <InfoArray index="Research3" Upgrade="ShredderGrenade">
+            <Resource index="Minerals" value="750"/>
+            <Button DefaultButtonFace="ResearchShredderGrenade" State="Restricted" Requirements="LearnShredderGrenade"/>
+        </InfoArray>
+        <InfoArray index="Research4" Upgrade="PassiveCloak">
+            <Resource index="Minerals" value="1000"/>
+            <Button DefaultButtonFace="ResearchPassiveCloak" State="Restricted" Requirements="LearnPassiveCloak"/>
+        </InfoArray>
+        <InfoArray index="Research5" Upgrade="OdinNuke">
+            <Resource index="Minerals" value="1500"/>
+            <Button DefaultButtonFace="ResearchNuclearStrike" State="Restricted" Requirements="LearnOdinNuke"/>
+        </InfoArray>
+        <InfoArray index="Research6" Upgrade="QuadDamage">
+            <Resource index="Minerals" value="1000"/>
+            <Button DefaultButtonFace="QuadDamage" State="Restricted" Requirements="LearnQuadDamage"/>
+        </InfoArray>
+        <InfoArray index="Research7" Upgrade="Shockwave">
+            <Resource index="Minerals" value="750"/>
+            <Button DefaultButtonFace="ResearchShockwave" State="Restricted" Requirements="LearnShockwave"/>
+        </InfoArray>
+        <InfoArray index="Research8" Upgrade="ArtilleryTargeting">
+            <Resource index="Minerals" value="1250"/>
+            <Button DefaultButtonFace="ArtilleryTargeting" Requirements="LearnArtilleryTargeting"/>
+        </InfoArray>
+        <InfoArray index="Research9" Upgrade="OdinNuke2">
+            <Resource index="Minerals" value="500"/>
+            <Button DefaultButtonFace="ResearchConstrictingSlime" Requirements="LearnConstrictingSlime"/>
+        </InfoArray>
+        <InfoArray index="Research10" Upgrade="HunterSeeker">
+            <Resource index="Minerals" value="1500"/>
+            <Button DefaultButtonFace="ResearchSeekerMissile" Requirements="LearnHunterSeekerMissiles"/>
+        </InfoArray>
+        <InfoArray index="Research11" Upgrade="PointDefenseDrone">
+            <Resource index="Minerals" value="1000"/>
+            <Button DefaultButtonFace="ResearchPointDefenseDrone" Requirements="LearnPointDefenseDrone"/>
+        </InfoArray>
+        <InfoArray index="Research12" Upgrade="FlamingBetty">
+            <Resource index="Minerals" value="750"/>
+            <Button DefaultButtonFace="ResearchFlamingBetty" Requirements="LearnFlamingBetty"/>
+        </InfoArray>
+        <InfoArray index="Research13" Upgrade="GravitonPrison">
+            <Resource index="Minerals" value="1000"/>
+            <Button DefaultButtonFace="GravitonPrison" Requirements="LearnGravitonPrison"/>
+        </InfoArray>
+        <InfoArray index="Research14" Upgrade="InterceptorLimit6">
+            <Resource index="Minerals" value="1500"/>
+            <Button DefaultButtonFace="ResearchRavenCapacity" Requirements="LearnRavenCapacity"/>
+        </InfoArray>
+        <InfoArray index="Research15" Upgrade="OffensiveBattlecruiserCapabilities">
+            <Resource index="Minerals" value="2000"/>
+            <Button DefaultButtonFace="ResearchOffensiveBattlecruiserCapabilities" Requirements="LearnOffensiveBattlecruiserCapabilities"/>
+        </InfoArray>
+    </CAbilResearch>
+    <CAbilEffectTarget id="Blink">
+        <Cost index="0">
+            <Vital index="Energy" value="25"/>
+            <Cooldown TimeUse="0"/>
+        </Cost>
+        <CmdButtonArray index="Execute" Requirements=""/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="BonesTossGrenade">
+        <CmdButtonArray index="Execute" Requirements="UseShredderGrenade"/>
+        <Cost index="0">
+            <Cooldown TimeUse="40"/>
+        </Cost>
+    </CAbilEffectTarget>
+    <CAbilMorph id="BurrowRoachUp">
+        <Flags index="AutoCastOn" value="1"/>
+    </CAbilMorph>
+    <CAbilArmMagazine id="CarrierHangar">
+        <InfoArray index="Ammo1" Time="15">
+            <Button Requirements="ArmInterceptor4"/>
+            <Flags index="AutoBuildOn" value="1"/>
+        </InfoArray>
+    </CAbilArmMagazine>
+    <CAbilEffectTarget id="D8Charge">
+        <Cost index="0">
+            <Cooldown TimeUse="50"/>
+        </Cost>
+        <CmdButtonArray index="Execute" State="Available"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="DukesRevengeMissilePods">
+        <CmdButtonArray index="Execute" Requirements="UseOffensiveBattlecruiserCapabilities"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="DukesRevengeYamato">
+        <CmdButtonArray index="Execute" Requirements="UseOffensiveBattlecruiserCapabilities"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="DutchPlaceTurret">
+        <Cost index="0">
+            <Cooldown TimeUse="75"/>
+        </Cost>
+        <CmdButtonArray index="Execute" Requirements="UseFlamingBetty"/>
+    </CAbilEffectTarget>
+    <CAbilResearch id="EngineeringBayResearch2">
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Structures"/>
+        <InfoArray index="Research1" Upgrade="UpgradeWeapons">
+            <Resource index="Minerals" value="50"/>
+            <Charge CountMax="1"/>
+            <Button DefaultButtonFace="UpgradeWeapons" Requirements="LearnWeaponUpgrade"/>
+        </InfoArray>
+        <InfoArray index="Research2" Upgrade="UpgradeAr">
+            <Resource index="Minerals" value="50"/>
+            <Charge CountMax="1"/>
+            <Button DefaultButtonFace="UpgradeArmor" Requirements="LearnArmorUpgrade"/>
+        </InfoArray>
+        <InfoArray index="Research3" Upgrade="UpgradeLife">
+            <Resource index="Minerals" value="50"/>
+            <Charge CountMax="1"/>
+            <Button DefaultButtonFace="UpgradeLife" Requirements="LearnLifeUpgrade"/>
+        </InfoArray>
+    </CAbilResearch>
+    <CAbilEffectTarget id="GravitonPrison">
+        <TargetFilters index="0" value="Air,Visible;Player,Ally,Neutral,Structure,Missile,Item,Stasis,Dead,Hidden,Invulnerable"/>
+        <Cost index="0">
+            <Vital index="Energy" value="0"/>
+            <Cooldown TimeUse="15"/>
+        </Cost>
+        <CmdButtonArray index="Execute" Requirements="UseGravitonPrison"/>
+    </CAbilEffectTarget>
+    <CAbilEffectInstant id="HybridFAoEStun">
+        <Cost index="0">
+            <Cooldown TimeUse="45"/>
+        </Cost>
+        <CmdButtonArray index="Execute" Requirements="UseConstrictingSlime"/>
+        <Flags index="BestUnit" value="1"/>
+    </CAbilEffectInstant>
+    <CAbilEffectTarget id="Irradiate">
+        <Cost index="0">
+            <Vital index="Energy" value="50"/>
+        </Cost>
+        <TargetFilters index="0" value="-;Ally,Neutral,Structure,RawResource,HarvestableResource,Item,Dead,Hidden,Invulnerable"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="OdinNuclearStrike">
+        <Cost index="0">
+            <Vital index="Energy" value="200"/>
+            <Cooldown TimeUse="0"/>
+        </Cost>
+        <Marker Link="Abil/OdinNuclearStrike"/>
+        <CursorEffect index="0" value="NukeDamage"/>
+        <CalldownEffect value=""/>
+        <CmdButtonArray index="Execute" Requirements="UseOdinNuke"/>
+    </CAbilEffectTarget>
+    <CAbilInteract id="OrbitalShareControl">
+        <CmdButtonArray index="Designate" DefaultButtonFace="Designate"/>
+        <Flags index="AutoCast" value="1"/>
+        <Flags index="ShareControl" value="1"/>
+        <Flags index="ShareVision" value="1"/>
+        <Range value="9"/>
+        <AutoCastRange value="9"/>
+    </CAbilInteract>
+    <CAbilEffectTarget id="PhaseShift">
+        <Cost index="0">
+            <Vital index="Energy" value="0"/>
+        </Cost>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="PlacePointDefenseDrone">
+        <Cost index="0">
+            <Vital index="Energy" value="150"/>
+        </Cost>
+        <CmdButtonArray index="Execute" Requirements="UsePointDefenseDrone"/>
+    </CAbilEffectTarget>
+    <CAbilEffectInstant id="PsionicShockwave">
+        <Cost>
+            <Vital index="Energy" value="150"/>
+            <Charge Link="Abil/PsionicShockwave"/>
+            <Cooldown Link="Abil/PsionicShockwave" TimeUse="5"/>
+        </Cost>
+        <CmdButtonArray index="Execute" Requirements="UseShockwave"/>
+        <Flags index="BestUnit" value="1"/>
+    </CAbilEffectInstant>
+    <CAbilEffectTarget id="RaynorSnipe">
+        <Effect index="0" value="SnipeSet2"/>
+        <FinishTime index="0" value="2.5"/>
+        <Cost index="0">
+            <Vital index="Energy" value="100"/>
+            <Cooldown TimeUse="3"/>
+        </Cost>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="SeekerMissile">
+        <TargetFilters index="0" value="Visible;Self,Ally,Neutral,Structure,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CAbilEffectTarget>
+    <CAbilEffectTarget id="Snipe">
+        <Effect index="0" value="SnipeSet"/>
+        <Cost index="0">
+            <Vital index="Energy" value="50"/>
+        </Cost>
+        <TargetFilters index="0" value="Biological,Visible;Self,Player,Ally,Neutral,Structure,Destructible,Stasis,Dead,Hidden,Invulnerable"/>
+    </CAbilEffectTarget>
+    <CAbilInteract id="OrbitalDisableWeapon">
+        <CmdButtonArray index="Designate" DefaultButtonFace="Designate"/>
+        <Flags index="AutoCast" value="1"/>
+        <Range value="4.5"/>
+        <TargetFilters value="-;Self,Enemy,Structure,Missile,Dead"/>
+        <AutoCastRange value="4.5"/>
+    </CAbilInteract>
+    <CAbilTrain id="EliteForcesSummon">
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Units"/>
+        <InfoArray index="Train1" Effect="MercGroundDrop">
+            <Charge Link="KelMorianMercs"/>
+            <Cooldown Link="KelMorianMercs"/>
+            <Button DefaultButtonFace="HireKelmorianMiners" State="Restricted"/>
+            <Unit value="WarPig"/>
+        </InfoArray>
+        <InfoArray index="Train2" Effect="MercGroundDrop">
+            <Charge Link="DevilDogs"/>
+            <Cooldown Link="DevilDogs"/>
+            <Button DefaultButtonFace="HireDevilDogs" State="Restricted"/>
+            <Unit value="DevilDog"/>
+        </InfoArray>
+        <InfoArray index="Train3" Effect="MercGroundDrop">
+            <Charge Link="SpartanCompany"/>
+            <Cooldown Link="SpartanCompany"/>
+            <Button DefaultButtonFace="HireSpartanCompany" State="Restricted"/>
+            <Unit value="SpartanCompany"/>
+        </InfoArray>
+        <InfoArray index="Train4" Effect="MercGroundDrop">
+            <Charge Link="HammerSecurities"/>
+            <Cooldown Link="HammerSecurities"/>
+            <Button DefaultButtonFace="HireHammerSecurities" State="Restricted"/>
+            <Unit value="HammerSecurity"/>
+        </InfoArray>
+        <InfoArray index="Train5" Effect="MercGroundDrop">
+            <Charge Link="SiegeBreakers"/>
+            <Cooldown Link="SiegeBreakers"/>
+            <Button DefaultButtonFace="HireSiegeBreakers" State="Restricted"/>
+            <Unit value="SiegeBreaker"/>
+        </InfoArray>
+        <InfoArray index="Train6" Effect="MercAirDrop">
+            <Charge Link="HelsAngels"/>
+            <Cooldown Link="HelsAngels"/>
+            <Button DefaultButtonFace="HireHelsAngels" State="Restricted"/>
+            <Unit value="HelsAngelFighter"/>
+        </InfoArray>
+        <InfoArray index="Train7" Effect="MercAirDrop">
+            <Charge Link="DuskWing"/>
+            <Cooldown Link="DuskWing"/>
+            <Button DefaultButtonFace="HireDuskWing" State="Restricted"/>
+            <Unit value="DuskWing"/>
+        </InfoArray>
+        <InfoArray index="Train8" Effect="MercAirDrop">
+            <Cooldown Link="DukesRevenge"/>
+            <Button DefaultButtonFace="HireDukesRevenge"/>
+            <Unit value="DukesRevenge"/>
+        </InfoArray>
+        <InfoArray index="Train9" Effect="MercAirDrop">
+            <Button DefaultButtonFace="Wraith"/>
+            <Unit value="Wraith"/>
+        </InfoArray>
+        <InfoArray index="Train10" Effect="MercGroundDrop">
+            <Button DefaultButtonFace="Ghost" State="Restricted"/>
+            <Unit value="Ghost"/>
+        </InfoArray>
+        <InfoArray index="Train11" Effect="MercGroundDrop">
+            <Button DefaultButtonFace="Reaper"/>
+            <Unit value="Reaper"/>
+        </InfoArray>
+        <InfoArray index="Train12" Effect="MercGroundDrop">
+            <Button DefaultButtonFace="Hellion"/>
+            <Unit value="Hellion"/>
+        </InfoArray>
+        <InfoArray index="Train13" Effect="MercGroundDrop">
+            <Button DefaultButtonFace="Diamondback"/>
+            <Unit value="Diamondback"/>
+        </InfoArray>
+        <InfoArray index="Train14" Effect="MercGroundDrop">
+            <Button DefaultButtonFace="Odin"/>
+            <Unit value="Odin"/>
+        </InfoArray>
+        <InfoArray index="Train15" Effect="MercAirDrop">
+            <Button DefaultButtonFace="Raven"/>
+            <Unit value="Raven"/>
+        </InfoArray>
+    </CAbilTrain>
+    <CAbilEffectInstant id="Stimpack">
+        <Flags index="AutoCast" value="1"/>
+        <Cost index="0">
+            <Vital index="Life" value="50"/>
+        </Cost>
+        <AutoCastFilters value="Visible;Self,Player,Ally,Neutral,Enemy,Missile,Item,Stasis,UnderConstruction,Dead,Hidden,Invulnerable"/>
+        <AutoCastRange value="1"/>
+        <AutoCastValidatorArray value="MarineIsStimmed"/>
+        <AutoCastValidatorArray value="CasterHasOrders"/>
+        <CmdButtonArray index="Execute" Requirements=""/>
+    </CAbilEffectInstant>
+</Catalog>

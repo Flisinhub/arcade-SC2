@@ -1,0 +1,464 @@
+<?xml version='1.0' encoding='us-ascii'?>
+<Catalog>
+    <CBehaviorBuff id="AttackDecloak">
+        <Alignment value="Negative" />
+        <InfoIcon value="Assets\Textures\btn-ability-terran-decloak.dds" />
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Units" />
+        <RemoveValidatorArray value="IsNotBuried" />
+        <Duration value="8" />
+        <Modification>
+            <StateFlags index="SuppressCloak" value="1" />
+        </Modification>
+        <InfoFlags index="Hidden" value="1" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="CreateSuperBroodlords">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <Period value="20" />
+        <PeriodicEffect value="SuperBroodlords" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="CreateSuperCorruptor">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <Period value="20" />
+        <PeriodicEffect value="SuperCorruptors" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="CreateSuperHydras">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <Period value="7" />
+        <PeriodicEffect value="SuperHydras" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="CreateSuperLings">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <Period value="7" />
+        <PeriodicEffect value="SuperLings" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="CreateSuperMutas">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <Period value="11" />
+        <PeriodicEffect value="SuperMutas" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="CreateSuperRoaches">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <Period value="7" />
+        <PeriodicEffect value="SuperRoaches" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="CreateSuperInfTerran">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <Period value="9" />
+        <PeriodicEffect value="SuperInfCiv" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="CreateSuperUltras">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <Period value="9" />
+        <PeriodicEffect value="SuperUltras" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawnLings">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnLings" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawnSuperLings">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnSuperLings" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawnSuperBroodlords">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnSuperBroodlords" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawnSuperCorruptors">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnSuperCorruptors" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawnSuperHydralisks">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnSuperHydralisks" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawnSuperMutas">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnSuperMutas" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawnSuperOmega">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnSuperOmega" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawnSuperRoaches">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnSuperRoaches" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="TemporaryInvunerability">
+        <InfoIcon value="Assets\Textures\btn-ability-protoss-hardenedshields-color.dds" />
+        <Duration value="3" />
+        <Modification>
+            <StateFlags index="Invulnerable" value="1" />
+            <BehaviorCategoriesEnable index="Temporary" value="1" />
+        </Modification>
+        <DamageResponse Chance="1" ModifyFraction="0" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="OrbitalDisableSlow">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Structures" />
+        <DisableValidatorArray value="NotDeadOrConstruction" />
+        <Period value="0.125" />
+        <PeriodicEffect value="OribtalDisableSearchAreaSlow" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="OribtalDisableApplySlow">
+        <Alignment value="Negative" />
+        <InfoFlags index="Hidden" value="1" />
+        <InfoIcon value="Assets\Textures\btn-building-terran-planetaryfortress.dds" />
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Units" />
+        <Duration value="1.4" />
+        <Modification>
+            <StateFlags index="SuppressAttack" value="1" />
+            <WeaponDisableArray value="TwinIbiksCannon" />
+            <TurretDisableArray value="PlanetaryFortress" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="Yellow">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <DisableValidatorArray value="HealthBuff" />
+        <DisableValidatorArray value="SpeedBuff" />
+        <DisableValidatorArray value="NoAttackBuff" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="Magenta">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <DisableValidatorArray value="HealthBuff" />
+        <DisableValidatorArray value="NoSpeedBuff" />
+        <DisableValidatorArray value="AttackBuff" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="CreateBroodlords">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <Period value="20" />
+        <PeriodicEffect value="Broodlords" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="CreateCorruptor">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <Period value="20" />
+        <PeriodicEffect value="Corruptors" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="Cyan">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <DisableValidatorArray value="NoHealthBuff" />
+        <DisableValidatorArray value="SpeedBuff" />
+        <DisableValidatorArray value="AttackBuff" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="Red">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <DisableValidatorArray value="HealthBuff" />
+        <DisableValidatorArray value="NoSpeedBuff" />
+        <DisableValidatorArray value="NoAttackBuff" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="Blue">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <DisableValidatorArray value="NoHealthBuff" />
+        <DisableValidatorArray value="NoSpeedBuff" />
+        <DisableValidatorArray value="AttackBuff" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="CreateUltras">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <Period value="11" />
+        <PeriodicEffect value="Ultras" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="CreateLings">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <Period value="7" />
+        <PeriodicEffect value="Lings" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="CreateRoaches">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <Period value="7" />
+        <PeriodicEffect value="Roaches" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="CreateHydras">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <Period value="7" />
+        <PeriodicEffect value="Hydras" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="CreateMutas">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <Period value="11" />
+        <PeriodicEffect value="Mutas" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawn3Kerrigan">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawn3Kerrigan" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawn5Kerrigan">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawn5Kerrigan" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawnBroodlords">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnCorruptors2" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawnOmega">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnCorruptors22" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawnMutas">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnMutas" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawnCorruptors">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnCorruptors" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawnRoaches">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnRoaches" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawnHydralisks">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnHydralisks" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawn1Kerrigan">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawn1Kerrigan" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawnPlisk">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnPlisk" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="GravitonPrison">
+        <Modification>
+            <StateFlags index="Invulnerable" value="0" />
+            <StateFlags index="Stasis" value="0" />
+            <StateFlags index="SuppressAttack" value="1" />
+            <PlaneDelta index="Ground" value="1" />
+            <PlaneDelta index="Air" value="-1" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="Green">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <DisableValidatorArray value="NoHealthBuff" />
+        <DisableValidatorArray value="SpeedBuff" />
+        <DisableValidatorArray value="NoAttackBuff" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="SpeedBuff">
+        <Alignment value="Positive" />
+        <InfoIcon value="Assets\Textures\btn-command-move.dds" />
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Structures" />
+        <DisableValidatorArray value="" />
+        <Modification TimeScale="2" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="Invulnerable">
+        <Duration value="15" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="OrbitalDisable">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Structures" />
+        <DisableValidatorArray value="NotDeadOrConstruction" />
+        <Period value="0.125" />
+        <PeriodicEffect value="OribtalDisableSearchArea" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="HealthBuff">
+        <Alignment value="Positive" />
+        <InfoIcon value="Assets\Textures\btn-ability-terran-heal.dds" />
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Structures" />
+        <DisableValidatorArray value="" />
+        <Modification>
+            <VitalMaxFractionArray index="Life" value="1" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="OribtalHealing">
+        <Alignment value="Positive" />
+        <InfoIcon value="Assets\Textures\btn-ability-terran-heal.dds" />
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Units" />
+        <Duration value="0.1875" />
+        <Modification>
+            <VitalRegenArray index="Life" value="30" />
+            <VitalRegenArray index="Energy" value="1" />
+            <RateMultiplierArray index="Queueable" value="0.5" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="OrbitalHealing">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Structures" />
+        <DisableValidatorArray value="NotDeadOrConstruction" />
+        <Period value="0.125" />
+        <PeriodicEffect value="OribtalHealingSearchArea" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="CloakOutOfCombat" />
+    <CBehaviorBuff id="OribtalDisableApply">
+        <Alignment value="Negative" />
+        <InfoIcon value="Assets\Textures\btn-building-terran-planetaryfortress.dds" />
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Units" />
+        <Duration value="0.2" />
+        <Modification>
+            <StateFlags index="SuppressAttack" value="1" />
+            <TurretDisableArray value="PlanetaryFortress" />
+        </Modification>
+        <InfoFlags index="Hidden" value="1" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="PersonalCloakingFree">
+        <InfoFlags index="Hidden" value="1" />
+        <Requirements value="GhostPassiveCloak" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="PointDefenseDroneTimedLife">
+        <Duration value="30" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="ReflectiveShield">
+        <Alignment value="Positive" />
+        <Cost>
+            <Vital index="Energy" value="25" />
+        </Cost>
+        <InfoIcon value="Assets\Textures\btn-techupgrade-terran-combatshield.dds" />
+        <EditorCategories value="AbilityorEffectType:Units,Race:Terran" />
+        <TimeScaleSource Value="Global" />
+        <Duration value="-1" />
+        <DamageResponse Chance="0.25" ModifyFraction="0.5" />
+        <InfoFlags index="Hidden" value="1" />
+        <Requirements value="ReflectiveShieldResearched" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="Slimed">
+        <Duration value="15" />
+        <Modification AttackSpeedMultiplier="0.5" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="AttackBuff">
+        <Alignment value="Positive" />
+        <InfoIcon value="Assets\Textures\btn-command-attack.dds" />
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Structures" />
+        <DisableValidatorArray value="" />
+        <Modification>
+            <DamageDealtFraction index="Spell" value="1" />
+            <DamageDealtFraction index="Melee" value="1" />
+            <DamageDealtFraction index="Ranged" value="1" />
+            <DamageDealtFraction index="Splash" value="1" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="BuffRange">
+        <Alignment value="Positive" />
+        <InfoFlags index="Hidden" value="1" />
+        <InfoIcon value="Assets\Textures\btn-status-radar.dds" />
+        <EditorCategories value="Race:Terran,AbilityorEffectType:Structures" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification RadarFilters="-;Neutral,Structure,RawResource,HarvestableResource,Missile,Destructible,Buried,Cloaked" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="CreateInfTerran">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <Period value="9" />
+        <PeriodicEffect value="InfCiv" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="White">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Protoss,AbilityorEffectType:Units" />
+        <DisableValidatorArray value="HealthBuff" />
+        <DisableValidatorArray value="SpeedBuff" />
+        <DisableValidatorArray value="AttackBuff" />
+    </CBehaviorBuff>
+    <CBehaviorBuff id="ZergBuildingDies62">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnInf" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawnUltra">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnInf2" />
+        </Modification>
+    </CBehaviorBuff>
+    <CBehaviorBuff id="DiesSpawnSuperInf">
+        <InfoFlags index="Hidden" value="1" />
+        <EditorCategories value="Race:Zerg,AbilityorEffectType:Units" />
+        <BuffFlags index="DisableWhileUnderConstruction" value="1" />
+        <Modification>
+            <DeathResponse Chance="1" Effect="FinalSpawnInf3" />
+        </Modification>
+    </CBehaviorBuff>
+<CBehaviorBuff id="BuffTier1_OpticalLens"><Modification><StateFlags index="Cloak" value="1" /></Modification></CBehaviorBuff><CBehaviorBuff id="BuffTier3_Momentum"><Modification MoveSpeedMultiplier="1.25" AttackSpeedMultiplier="1.25" /></CBehaviorBuff><CBehaviorBuff id="Stat_Strength"><MaxStackCount value="100" /><Modification><VitalMaxArray index="Life" value="50" /><VitalRegenArray index="Life" value="1" /></Modification></CBehaviorBuff><CBehaviorBuff id="Stat_Dexterity"><MaxStackCount value="100" /><Modification MoveSpeedBonus="0.1" AttackSpeedMultiplier="1.05" /></CBehaviorBuff><CBehaviorBuff id="Stat_Intelligence"><MaxStackCount value="100" /><Modification><VitalMaxArray index="Energy" value="20" /><VitalRegenArray index="Energy" value="0.5" /></Modification></CBehaviorBuff><CBehaviorBuff id="Stat_Stamina"><MaxStackCount value="100" /><Modification><LifeArmorBonus value="1" /></Modification></CBehaviorBuff></Catalog>

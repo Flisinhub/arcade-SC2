@@ -1,0 +1,1133 @@
+<?xml version='1.0' encoding='us-ascii'?>
+<Catalog>
+    
+    
+    <CActorUnit default="1" id="GenericUnitStandard">
+        <On index="36" Terms="Behavior.HealthBuff.On" Send="SetTintColor 255,0,0" />
+        <On index="37" Terms="Behavior.PhoenixAntiGrav.On" Send="ModelSuddenMotionStart" />
+        <On index="38" Terms="Behavior.PhoenixAntiGrav.Off" Send="ModelSuddenMotionStop" />
+        <On index="39" Terms="UnitTaunt.*.Start; Taunt" Send="AnimPlay Cheer Stand,Victory" />
+        <On index="40" Terms="UnitTaunt.*.Stop; Taunt" Send="AnimClear Cheer" />
+        <On index="41" Terms="UnitTaunt.*.Start; Taunt Dance" Send="AnimPlay Dance Stand,Dance" />
+        <On index="42" Terms="UnitTaunt.*.Stop; Taunt Dance" Send="AnimClear Dance" />
+        <On index="43" Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready" />
+        <On index="44" Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack" />
+        <On index="45" Terms="WeaponStart.*.AttackStart; AnimPlaying Birth" Send="AnimClear Birth" />
+        <On index="46" Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack" />
+        <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready" />
+    </CActorUnit>
+    
+    
+    
+    <CActorUnit id="BabyUltralisk">
+        <On Send="SetTintColor 0,0,255" />
+        <On Send="SetTintColor 0,255,255" />
+        <On Send="SetTintColor 0,255,0" />
+        <On Send="SetTintColor 255,0,255" />
+        <On Send="SetTintColor 255,0,0" />
+        <On Send="SetTintColor {255,255,255 3.000000}" />
+        <On Send="SetTintColor 255,255,0" />
+    </CActorUnit>
+    <CActorUnit id="BroodLord">
+        <On Terms="Behavior.Blue.On" Send="SetTintColor 0,0,255" />
+        <On Terms="Behavior.Cyan.On" Send="SetTintColor 0,255,255" />
+        <On Terms="Behavior.Green.On" Send="SetTintColor 0,255,0" />
+        <On Terms="Behavior.Magenta.On" Send="SetTintColor 255,0,255" />
+        <On Terms="Behavior.Red.On" Send="SetTintColor 255,0,0" />
+        <On Terms="Behavior.White.On" Send="SetTintColor {255,255,255 3.000000}" />
+        <On Terms="Behavior.Yellow.On" Send="SetTintColor 255,255,0" />
+    </CActorUnit>
+    <CActorUnit id="Corruptor">
+        <On Terms="Behavior.Blue.On" Send="SetTintColor 0,0,255" />
+        <On Terms="Behavior.Cyan.On" Send="SetTintColor 0,255,255" />
+        <On Terms="Behavior.Green.On" Send="SetTintColor 0,255,0" />
+        <On Terms="Behavior.Magenta.On" Send="SetTintColor 255,0,255" />
+        <On Terms="Behavior.Red.On" Send="SetTintColor 255,0,0" />
+        <On Terms="Behavior.White.On" Send="SetTintColor {255,255,255 3.000000}" />
+        <On Terms="Behavior.Yellow.On" Send="SetTintColor 255,255,0" />
+    </CActorUnit>
+    
+    
+    
+    <CActorUnit id="DevilDog">
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel3.dds" />
+    </CActorUnit>
+    
+    
+    
+    <CActorUnit id="Diamondback">
+        <On index="36" Terms="Behavior.MercGroundDrop.Create" Send="Create DiamondbackDropModel" />
+        <On index="37" Terms="Behavior.PhoenixAntiGrav.On" Send="ModelSuddenMotionStart" />
+        <On index="38" Terms="Behavior.PhoenixAntiGrav.Off" Send="ModelSuddenMotionStop" />
+        <On index="39" Terms="UnitTaunt.*.Start; Taunt" Send="AnimPlay Cheer Stand,Victory" />
+        <On index="40" Terms="UnitTaunt.*.Stop; Taunt" Send="AnimClear Cheer" />
+        <On index="41" Terms="UnitTaunt.*.Start; Taunt Dance" Send="AnimPlay Dance Stand,Dance" />
+        <On index="42" Terms="UnitTaunt.*.Stop; Taunt Dance" Send="AnimClear Dance" />
+        <On index="43" Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready" />
+        <On index="44" Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack" />
+        <On index="45" Terms="WeaponStart.*.AttackStart; AnimPlaying Birth" Send="AnimClear Birth" />
+        <On index="46" Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack" />
+        <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel3.dds" />
+    </CActorUnit>
+    <CActorAction id="DiamondbackAttack" />
+    
+    
+    
+    <CActorUnit id="DukesRevenge">
+        <Scale value="0.700000" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-shipplatinglevel3.dds" />
+    </CActorUnit>
+    
+    
+    
+    <CActorUnit id="DuskWingBanshee">
+        <Scale value="0.900000" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-shipplatinglevel3.dds" />
+    </CActorUnit>
+    
+    
+    
+    <CActorUnit id="DutchTurret">
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-neosteelframe.dds" />
+    </CActorUnit>
+    <CActorUnit id="EliteForcesBarracks" parent="TerranBuildingFlyer" unitName="EliteForcesBarracks">
+        <Macros value="QueueAnim" />
+        <Macros value="BuildAnim" />
+        <On Terms="Behavior.ColonyInfestation.On" Send="Create InfestationBarracks" />
+        <On Terms="UnitDeathCustomize.BarracksFlying" Send="DeathCustomize Flying" />
+        <HostSiteOps Ops="SOpBankerBuilding" />
+        <Model value="Barracks" />
+        <Scale value="0.660000" />
+        <BuildModel value="Barracks" />
+        <DeathArray index="Normal" ModelLink="BarracksDeath" SoundLink="" />
+        <DeathArray index="UnderConstruction" ModelLink="TerranLargeBuildingDeath" SoundLink="Barracks_Explode" />
+        <DeathCustoms ModelLink="BarracksFlyDeath" SoundLink="Barracks_Explode" Name="Flying" />
+        <PlacementModel value="BarracksPlacement" />
+        <PlacementSound value="Terran_BuildingPlacement" />
+        <PortraitModel value="AdjutantPortrait" />
+        <BarOffset value="155" />
+        <BarWidth value="160" />
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-Barracks.dds" />
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-terran-barracks.dds" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-buildingarmor.dds" />
+        <NameOffset value="110" />
+        <SoundArray index="Ready" value="Barracks_What" />
+        <SoundArray index="What" value="Barracks_What" />
+        <SoundArray index="Movement" value="Barracks_Movement" />
+        <SoundArray index="Construction" value="Terran_ConstructionWhat" />
+        <UnitIcon value="Assets\Textures\btn-building-terran-barracks.dds" />
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Terran-Barracks.dds" />
+        </Wireframe>
+    </CActorUnit>
+    <CActorUnit id="EliteForcesFactory" parent="TerranBuildingFlyer" unitName="EliteForcesFactory">
+        <Macros value="QueueAnim" />
+        <Macros value="BuildAnim" />
+        <On Terms="UnitDeathCustomize.FactoryFlying" Send="DeathCustomize Flying" />
+        <On Terms="Behavior.ColonyInfestation.On" Send="Create InfestedVisual" />
+        <HostSiteOps Ops="SOpBankerBuilding" />
+        <Model value="Factory" />
+        <Scale value="0.660000" />
+        <BuildModel value="Factory" />
+        <DeathArray index="Normal" ModelLink="FactoryDeath" SoundLink="" />
+        <DeathArray index="UnderConstruction" ModelLink="TerranBuildingDeath" SoundLink="Factory_Explode" />
+        <DeathCustoms ModelLink="FactoryFlyDeath" SoundLink="Factory_Explode" Name="Flying" />
+        <PlacementModel value="FactoryPlacement" />
+        <PlacementSound value="Terran_BuildingPlacement" />
+        <PortraitModel value="AdjutantPortrait" />
+        <BarOffset value="150" />
+        <BarWidth value="160" />
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-Factory.dds" />
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-terran-factory.dds" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-buildingarmor.dds" />
+        <NameOffset value="110" />
+        <SoundArray index="Ready" value="Factory_What" />
+        <SoundArray index="What" value="Factory_What" />
+        <SoundArray index="Movement" value="Factory_Movement" />
+        <SoundArray index="Construction" value="Terran_ConstructionWhat" />
+        <UnitIcon value="Assets\Textures\btn-building-terran-factory.dds" />
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Terran-Factory.dds" />
+        </Wireframe>
+    </CActorUnit>
+    <CActorUnit id="EngineeringBay2" parent="TerranBuilding" unitName="EliteRD">
+        <Macros value="QueueAnim" />
+        <On Terms="Behavior.ColonyInfestation.On" Send="Create InfestationEngineeringBay" />
+        <Model value="EngineeringBay" />
+        <BuildModel value="EngineeringBay" />
+        <DeathArray index="Normal" ModelLink="EngineeringBayDeath" SoundLink="" />
+        <DeathArray index="UnderConstruction" ModelLink="TerranBuildingDeath" SoundLink="EngineeringBay_Explode" />
+        <PlacementModel value="EngineeringBayPlacement" />
+        <PlacementSound value="Terran_BuildingPlacement" />
+        <PortraitModel value="AdjutantPortrait" />
+        <BarOffset value="110" />
+        <BarWidth value="135" />
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-EngineeringBay.dds" />
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-terran-engineeringbay.dds" />
+        <HighlightTooltip value="Unit/Name/EngineeringBay2" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-buildingarmor.dds" />
+        <NameOffset value="110" />
+        <SoundArray index="Ready" value="EngineeringBay_What" />
+        <SoundArray index="What" value="EngineeringBay_What" />
+        <SoundArray index="Construction" value="Terran_ConstructionWhat" />
+        <UnitIcon value="Assets\Textures\btn-building-terran-engineeringbay.dds" />
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Terran-EngineeringBay.dds" />
+        </Wireframe>
+        <StatusBarFlags index="Shields" value="0" />
+        <StatusBarFlags index="Life" value="0" />
+        <StatusBarFlags index="Energy" value="0" />
+        <StatusBarFlags index="Cargo" value="0" />
+        <StatusBarFlags index="Progress" value="0" />
+        <StatusBarFlags index="Duration" value="0" />
+    </CActorUnit>
+    <CActorUnit id="EvolutionChamber2" parent="ZergBuilding" unitName="SuperInfestationChamber">
+        <Macros value="QueueAnim" />
+        <On Terms="UnitDeathCustomize; ValidateUnit HasZergGenericDeath" Send="DeathCustomize Detached" />
+        <Model value="EvolutionChamber" />
+        <Scale value="1.660000" />
+        <BuildModel value="EvolutionChamber" />
+        <DeathArray index="Normal" ModelLink="EvolutionChamberDeath" SoundLink="EvolutionChamber_Explode" />
+        <DeathArray index="UnderConstruction" ModelLink="ZergBuildingDeath" SoundLink="EvolutionChamber_Explode" />
+        <DeathCustoms ModelLink="ZergGenericBuildingDeath" Name="Detached" />
+        <PlacementModel value="EvolutionChamber" />
+        <PlacementSound value="Zerg_BuildingPlacement" />
+        <PortraitModel value="OverlordPortrait" />
+        <BarOffset value="95" />
+        <BarWidth value="160" />
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Zerg-EvolutionChamber.dds" />
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-zerg-evolutionchamber.dds" />
+        <HighlightTooltip value="Unit/Name/EvolutionChamber2" />
+        <LifeArmorIcon value="Assets\Textures\btn-armor-zerg-building.dds" />
+        <NameOffset value="100" />
+        <SoundArray index="Ready" value="EvolutionChamber_What" />
+        <SoundArray index="What" value="EvolutionChamber_What" />
+        <SoundArray index="Construction" value="Zerg_BuildingMorphWhat" />
+        <UnitFlags index="ShowBlobShadow" value="0" />
+        <UnitIcon value="Assets\Textures\btn-building-zerg-evolutionchamber.dds" />
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Zerg-EvolutionChamber.dds" />
+        </Wireframe>
+    </CActorUnit>
+    
+    
+    
+    <CActorUnit id="Ghost">
+        <On index="59" Terms="Abil.RaynorSnipe.SourcePrepStart" Send="$Spell,A" />
+        <On index="60" Terms="Abil.EMP.SourceFinishStop" Send="AnimClear SpellC" />
+        <On index="61" Terms="Abil.RaynorSnipe.SourceCastStop" Send="$Spell,C NonLooping" />
+        <On index="62" Terms="Behavior.MercGroundDrop.Create" Send="Create GhostDropModel" />
+        <On index="63" Terms="AnimDone; AnimName Spell" Send="AnimGroupRemove Work" />
+        <On index="64" Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready" />
+        <On index="65" Terms="Behavior.GhostHoldFireB.On" Send="AnimGroupApply Cover" />
+        <On index="66" Terms="Behavior.GhostHoldFireB.On" Send="AnimPlay MorphStart Cover,Start" />
+        <On index="67" Terms="Behavior.GhostHoldFireB.On" Send="AnimClear MorphEnd" />
+        <On index="68" Terms="Behavior.GhostHoldFireB.Off" Send="AnimPlay MorphEnd Cover,End" />
+        <On index="69" Terms="Behavior.GhostHoldFireB.Off" Send="AnimClear MorphStart" />
+        <On index="70" Terms="Behavior.GhostHoldFireB.Off" Send="AnimGroupRemove Cover" />
+        <On index="71" Terms="WeaponStart.*.AttackStart; WeaponTargetElevation GE 20.000000" Send="AnimBracketStart Attack Attack,Superior" />
+        <On Terms="WeaponStart.*.AttackStart; WeaponTargetElevation LE -20.000000" Send="AnimBracketStart Attack Attack,Inferior" />
+        <On Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack" />
+        <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack" />
+        <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel3.dds" />
+    </CActorUnit>
+    <CActorUnit id="GreaterSpire">
+        <Scale value="1.500000,1.500000,1.000000" />
+    </CActorUnit>
+    <CActorUnit id="GreaterSpire2" parent="GreaterSpire" unitName="SuperGreaterSpire">
+        <On index="0" Terms="UnitBirth.SuperGreaterSpire" Send="Create SoundEmitter SuperGreaterSpire_Ambience" />
+        <On index="1" Terms="UnitBirth.SuperGreaterSpire" />
+        <On index="2" Terms="UnitRevive.SuperGreaterSpire" />
+        <On index="3" Terms="UnitConstruction.SuperGreaterSpire.Start" />
+        <On index="4" Terms="UnitConstruction.SuperGreaterSpire.Finish" />
+        <On index="47" Terms="UnitConstruction.SuperGreaterSpire.Start" Send="Create SuperGreaterSpireBuild" />
+        <On index="48" Terms="UnitConstruction.SuperGreaterSpire.Start" />
+        <On index="49" Terms="UnitConstruction.SuperGreaterSpire.Cancel" />
+        <On index="50" Terms="UnitConstruction.SuperGreaterSpire.Finish" />
+        <On index="51" Terms="UnitBirth.SuperGreaterSpire.Normal" />
+        <On index="52" Terms="UnitBirth.SuperGreaterSpire.Suppressed" />
+        <On index="53" Terms="UnitBirth.SuperGreaterSpire.EditorPlaced" />
+        <On index="54" Terms="UnitDeath.SuperGreaterSpire" />
+        <Scale value="2.500000,2.500000,2.000000" />
+        <EventDataFootprint index="0" Model="SuperGreaterSpireFootprint" />
+        <DeathArray index="Normal" VoiceLink="SuperGreaterSpireDeathVoice" />
+        <GroupSoundArray index="What" value="SuperGreaterSpire_GroupWhat" />
+        <GroupSoundArray index="Yes" value="SuperGreaterSpire_GroupYes" />
+        <GroupSoundArray index="Attack" value="SuperGreaterSpire_GroupAttack" />
+        <GroupSoundArray index="Board" value="SuperGreaterSpire_GroupBoard" />
+        <HighlightTooltip value="Unit/Name/GreaterSpire2" />
+        <SoundArray index="Birth" value="SuperGreaterSpire_Birth" />
+        <SoundArray index="Help" value="SuperGreaterSpire_Help" />
+        <SoundArray index="Yes" value="SuperGreaterSpire_Yes" />
+        <SoundArray index="Attack" value="SuperGreaterSpire_Attack" />
+        <SoundArray index="Pissed" value="SuperGreaterSpire_Pissed" />
+        <SoundArray index="Movement" value="SuperGreaterSpire_Movement" />
+        <SoundArray index="Turning" value="SuperGreaterSpire_Turning" />
+        <SoundArray index="Board" value="SuperGreaterSpire_Board" />
+        <SoundArray index="Click" value="SuperGreaterSpire_Click" />
+        <SoundArray index="ClickError" value="SuperGreaterSpire_ClickError" />
+        <SoundArray index="Highlight" value="SuperGreaterSpire_Highlight" />
+    </CActorUnit>
+    
+    
+    
+    <CActorUnit id="Hellion">
+        <On index="34" Terms="Behavior.MercGroundDrop.Create" Send="Create HelionDropModel" />
+        <On index="35" Terms="UnitDeathCustomize; ValidateUnit HasAntiGravTerran" Send="DeathCustomize AntiGravTerran" />
+        <On index="36" Terms="UnitDeathCustomize; ValidateUnit HasAntiGravZerg" Send="DeathCustomize AntiGravZerg" />
+        <On index="37" Terms="Behavior.PhoenixAntiGrav.On" Send="ModelSuddenMotionStart" />
+        <On index="38" Terms="Behavior.PhoenixAntiGrav.Off" Send="ModelSuddenMotionStop" />
+        <On index="39" Terms="UnitTaunt.*.Start; Taunt" Send="AnimPlay Cheer Stand,Victory" />
+        <On index="40" Terms="UnitTaunt.*.Stop; Taunt" Send="AnimClear Cheer" />
+        <On index="41" Terms="UnitTaunt.*.Start; Taunt Dance" Send="AnimPlay Dance Stand,Dance" />
+        <On index="42" Terms="UnitTaunt.*.Stop; Taunt Dance" Send="AnimClear Dance" />
+        <On index="43" Terms="UnitMovementUpdate.*.Walk" />
+        <On index="44" Terms="Abil.attack.ReadyStop" Target="" Send="TimerSet 0.250000 KillBeam" />
+        <On Terms="TimerExpired; TimerName KillBeam" Target="HellionAttackBeam" Send="Destroy" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel3.dds" />
+    </CActorUnit>
+    <CActorModel id="DiamondbackDropModel" parent="MercDropModelBase">
+        <On Terms="ActorCreation" Send="SetScale 1.500000,1.500000,1.000000" />
+    </CActorModel>
+    <CActorUnit id="Hive">
+        <Scale value="1.400000,1.400000,2.000000" />
+    </CActorUnit>
+    <CActorUnit id="Hydralisk">
+        <On Terms="Behavior.Blue.On" Send="SetTintColor 0,0,255" />
+        <On Terms="Behavior.Cyan.On" Send="SetTintColor 0,255,255" />
+        <On Terms="Behavior.Green.On" Send="SetTintColor 0,255,0" />
+        <On Terms="Behavior.Magenta.On" Send="SetTintColor 255,0,255" />
+        <On Terms="Behavior.Red.On" Send="SetTintColor 255,0,0" />
+        <On Terms="Behavior.White.On" Send="SetTintColor {255,255,255 3.000000}" />
+        <On Terms="Behavior.Yellow.On" Send="SetTintColor 255,255,0" />
+    </CActorUnit>
+    <CActorUnit id="HydraliskDen2" parent="ZergBuilding" unitName="SuperHydraliskDen">
+        <Macros value="QueueAnim" />
+        <On Terms="AbilMorph.*.Start; MorphTo LurkerDen" Send="Create LurkerDenMorph" />
+        <On Terms="AbilMorph.*.Start; MorphTo LurkerDen" Send="Signal Morph" />
+        <On Terms="Signal.*.Morph" Send="AnimPlay Morph Morph" />
+        <On Terms="AnimDone.*.Complete; AnimName Morph" Send="Create LurkerDen" />
+        <On Terms="AnimDone.*.Complete; AnimName Morph" Target="LurkerDen" Send="AnimPlay Waiting Build,A,Start PlayForever,NonLooping 0.000000 0.000000 0.000000" />
+        <On Terms="AnimDone.*.Complete; AnimName Morph" Send="Destroy" />
+        <On Terms="AbilMorph.*.Cancel; MorphTo LurkerDen" Send="AnimClear Morph" />
+        <On Terms="AbilMorph.*.Cancel; MorphTo LurkerDen" Send="AnimPlay Rebirth Build,D,Start 0 0.000000 0.000000 0.300000 AsDuration" />
+        <On Terms="UnitDeathCustomize; ValidateUnit HasZergGenericDeath" Send="DeathCustomize Detached" />
+        <Model value="HydraliskDen" />
+        <Scale value="1.660000" />
+        <BuildModel value="HydraliskDen" />
+        <DeathArray index="Normal" ModelLink="HydraliskDenDeath" SoundLink="HydraliskDen_Explode" />
+        <DeathArray index="UnderConstruction" ModelLink="ZergBuildingDeath" SoundLink="HydraliskDen_Explode" />
+        <DeathCustoms ModelLink="ZergGenericBuildingDeath" Name="Detached" />
+        <PlacementModel value="HydraliskDen" />
+        <PlacementSound value="Zerg_BuildingPlacement" />
+        <PortraitModel value="OverlordPortrait" />
+        <BarOffset value="140" />
+        <BarWidth value="160" />
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Zerg-HydraliskDen.dds" />
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-zerg-hydraliskden.dds" />
+        <HighlightTooltip value="Unit/Name/HydraliskDen2" />
+        <LifeArmorIcon value="Assets\Textures\btn-armor-zerg-building.dds" />
+        <NameOffset value="100" />
+        <SoundArray index="Ready" value="HydraliskDen_What" />
+        <SoundArray index="What" value="HydraliskDen_What" />
+        <SoundArray index="Construction" value="Zerg_BuildingMorphWhat" />
+        <UnitFlags index="ShowBlobShadow" value="0" />
+        <UnitIcon value="Assets\Textures\btn-building-zerg-hydraliskden.dds" />
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Zerg-HydraliskDen.dds" />
+        </Wireframe>
+    </CActorUnit>
+    
+    
+    
+    <CActorUnit id="InfestedCivilian">
+        <On Terms="Behavior.Blue.On" Send="SetTintColor 0,0,255" />
+        <On Terms="Behavior.Cyan.On" Send="SetTintColor 0,255,255" />
+        <On Terms="Behavior.Green.On" Send="SetTintColor 0,255,0" />
+        <On Terms="Behavior.Magenta.On" Send="SetTintColor 255,0,255" />
+        <On Terms="Behavior.Red.On" Send="SetTintColor 255,0,0" />
+        <On Terms="Behavior.White.On" Send="SetTintColor {255,255,255 3.000000}" />
+        <On Terms="Behavior.Yellow.On" Send="SetTintColor 255,255,0" />
+    </CActorUnit>
+    
+    
+    
+    
+    
+    
+    
+    
+    <CActorUnit id="KelmorianMiner">
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel3.dds" />
+    </CActorUnit>
+    <CActorUnit id="Mutalisk">
+        <On Terms="Behavior.Blue.On" Send="SetTintColor 0,0,255" />
+        <On Terms="Behavior.Cyan.On" Send="SetTintColor 0,255,255" />
+        <On Terms="Behavior.Green.On" Send="SetTintColor 0,255,0" />
+        <On Terms="Behavior.Magenta.On" Send="SetTintColor 255,0,255" />
+        <On Terms="Behavior.Red.On" Send="SetTintColor 255,0,0" />
+        <On Terms="Behavior.White.On" Send="SetTintColor {255,255,255 3.000000}" />
+        <On Terms="Behavior.Yellow.On" Send="SetTintColor 255,255,0" />
+    </CActorUnit>
+    
+    
+    
+    <CActorUnit id="Omegalisk">
+        <On Terms="Behavior.Blue.On" Send="SetTintColor 0,0,255" />
+        <On Terms="Behavior.Cyan.On" Send="SetTintColor 0,255,255" />
+        <On Terms="Behavior.Green.On" Send="SetTintColor 0,255,0" />
+        <On Terms="Behavior.Magenta.On" Send="SetTintColor 255,0,255" />
+        <On Terms="Behavior.Red.On" Send="SetTintColor 255,0,0" />
+        <On Terms="Behavior.White.On" Send="SetTintColor {255,255,255 3.000000}" />
+        <On Terms="Behavior.Yellow.On" Send="SetTintColor 255,255,0" />
+    </CActorUnit>
+    <CActorUnit id="OrbitalFortress2" parent="GenericUnitStandard" unitName="EliteOrbitalFortress2">
+        <Macros value="QueueAnim" />
+        <Macros value="BuildingFlattenTerrainMacro" />
+        <On index="41" Terms="Abil.OrbitalDisableWeapon.SourceStart" Send="AnimBracketStart Morph Morph,B Stand,B Morph,C 0 1.000000 AsDuration" />
+        <On index="42" Terms="Abil.OrbitalDisableWeapon.SourceStart" Send="Create TerranBuildingLiftOff" />
+        <On index="43" Terms="Abil.OrbitalDisableWeapon.SourceStop" Send="Create TerranBuildingLand" />
+        <On index="44" Terms="Abil.OrbitalDisableWeapon.SourceStop" Send="AnimBracketStop Morph 0 1.000000 AsDuration" />
+        <On index="45" Terms="UnitTaunt.*.Stop; Taunt Dance" Send="AnimClear Dance" />
+        <On index="46" Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready" />
+        <On Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack" />
+        <On Terms="WeaponStart.*.AttackStart; AnimPlaying Birth" Send="AnimClear Birth" />
+        <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack" />
+        <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready" />
+        <On Terms="ActorCreation" Send="AnimGroupApply A" />
+        <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenter; MorphTo PlanetaryFortress" Send="Create" />
+        <On Terms="Behavior.ColonyInfestation.On" Send="Create InfestationCommandCenter" />
+        <On Terms="Abil.*.TransportOccupy" Send="AnimPlay StandC Stand,Work,C PlayForever" />
+        <On Terms="Abil.*.TransportEmpty" Send="AnimClear StandC" />
+        <Model value="CommandCenter" />
+        <Scale value="0.800000,0.800000,1.000000" />
+        <ModelFlags index="IgnoreWalkables" value="1" />
+        <DeathArray index="Normal" ModelLink="PlanetaryFortressDeath" SoundLink="" />
+        <DeathArray index="UnderConstruction" ModelLink="TerranLargeBuildingDeath" SoundLink="PlanetaryFortress_Explode" />
+        <PortraitModel value="AdjutantPortrait" />
+        <BarDistance value="0" />
+        <BarHeight value="1" />
+        <BarOffset value="0" />
+        <BarWidth value="1" />
+        <GlossaryAnim value="Stand,A" />
+        <GroupIcon>
+            <Image value="Assets\Textures\btn-techupgrade-terran-orbitalcommand.dds" />
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-techupgrade-terran-orbitalcommand.dds" />
+        <HighlightTooltip value="Unit/Name/OrbitalFortress2" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-buildingarmor.dds" />
+        <MinimapIcon value="EditorData\Images\MinimapStartLocation.tga" />
+        <NameOffset value="150" />
+        <SoundArray index="What" value="PlanetaryFortress_What" />
+        <StatusBarFlags index="Shields" value="0" />
+        <StatusBarFlags index="Life" value="0" />
+        <StatusBarFlags index="Energy" value="0" />
+        <StatusBarFlags index="Cargo" value="0" />
+        <StatusBarFlags index="Progress" value="0" />
+        <StatusBarFlags index="Duration" value="0" />
+        <UnitFlags index="ShowBlobShadow" value="0" />
+        <UnitFlags index="StandAnimBirthVariation" value="0" />
+        <UnitIcon value="Assets\Textures\btn-techupgrade-terran-orbitalcommand.dds" />
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-terran-orbitalcommand.dds" />
+        </Wireframe>
+    </CActorUnit>
+    <CActorUnit id="OrbitalFortress22" parent="GenericUnitStandard" unitName="EliteOrbitalFortress22">
+        <Macros value="QueueAnim" />
+        <Macros value="BuildingFlattenTerrainMacro" />
+        <On index="41" Terms="Abil.OrbitalDisableWeapon.SourceStart" Send="AnimBracketStart Morph Morph,B Stand,B Morph,C 0 1.000000 AsDuration" />
+        <On index="42" Terms="Abil.OrbitalDisableWeapon.SourceStart" Send="Create TerranBuildingLiftOff" />
+        <On index="43" Terms="Abil.OrbitalDisableWeapon.SourceStop" Send="Create TerranBuildingLand" />
+        <On index="44" Terms="Abil.OrbitalDisableWeapon.SourceStop" Send="AnimBracketStop Morph 0 1.000000 AsDuration" />
+        <On index="45" Terms="UnitTaunt.*.Stop; Taunt Dance" Send="AnimClear Dance" />
+        <On index="46" Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready" />
+        <On Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack" />
+        <On Terms="WeaponStart.*.AttackStart; AnimPlaying Birth" Send="AnimClear Birth" />
+        <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack" />
+        <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready" />
+        <On Terms="ActorCreation" Send="AnimGroupApply A" />
+        <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenter; MorphTo PlanetaryFortress" Send="Create" />
+        <On Terms="Behavior.ColonyInfestation.On" Send="Create InfestationCommandCenter" />
+        <On Terms="Abil.*.TransportOccupy" Send="AnimPlay StandC Stand,Work,C PlayForever" />
+        <On Terms="Abil.*.TransportEmpty" Send="AnimClear StandC" />
+        <Model value="CommandCenter" />
+        <Scale value="0.800000,0.800000,1.000000" />
+        <ModelFlags index="IgnoreWalkables" value="1" />
+        <DeathArray index="Normal" ModelLink="PlanetaryFortressDeath" SoundLink="" />
+        <DeathArray index="UnderConstruction" ModelLink="TerranLargeBuildingDeath" SoundLink="PlanetaryFortress_Explode" />
+        <PortraitModel value="AdjutantPortrait" />
+        <BarDistance value="0" />
+        <BarHeight value="1" />
+        <BarOffset value="0" />
+        <BarWidth value="1" />
+        <GlossaryAnim value="Stand,A" />
+        <GroupIcon>
+            <Image value="Assets\Textures\btn-techupgrade-terran-orbitalcommand.dds" />
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-techupgrade-terran-orbitalcommand.dds" />
+        <HighlightTooltip value="Unit/Name/OrbitalFortress22" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-buildingarmor.dds" />
+        <MinimapIcon value="EditorData\Images\MinimapStartLocation.tga" />
+        <NameOffset value="150" />
+        <SoundArray index="What" value="PlanetaryFortress_What" />
+        <StatusBarFlags index="Shields" value="0" />
+        <StatusBarFlags index="Life" value="0" />
+        <StatusBarFlags index="Energy" value="0" />
+        <StatusBarFlags index="Cargo" value="0" />
+        <StatusBarFlags index="Progress" value="0" />
+        <StatusBarFlags index="Duration" value="0" />
+        <UnitFlags index="ShowBlobShadow" value="0" />
+        <UnitFlags index="StandAnimBirthVariation" value="0" />
+        <UnitIcon value="Assets\Textures\btn-techupgrade-terran-orbitalcommand.dds" />
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-terran-orbitalcommand.dds" />
+        </Wireframe>
+    </CActorUnit>
+    <CActorUnit id="OrbitalFortress222" parent="GenericUnitStandard" unitName="EliteOrbitalFortress222">
+        <Macros value="QueueAnim" />
+        <Macros value="BuildingFlattenTerrainMacro" />
+        <On index="41" Terms="Abil.OrbitalDisableWeapon.SourceStart" Send="AnimBracketStart Morph Morph,B Stand,B Morph,C 0 1.000000 AsDuration" />
+        <On index="42" Terms="Abil.OrbitalDisableWeapon.SourceStart" Send="Create TerranBuildingLiftOff" />
+        <On index="43" Terms="Abil.OrbitalDisableWeapon.SourceStop" Send="Create TerranBuildingLand" />
+        <On index="44" Terms="Abil.OrbitalDisableWeapon.SourceStop" Send="AnimBracketStop Morph 0 1.000000 AsDuration" />
+        <On index="45" Terms="UnitTaunt.*.Stop; Taunt Dance" Send="AnimClear Dance" />
+        <On index="46" Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready" />
+        <On Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack" />
+        <On Terms="WeaponStart.*.AttackStart; AnimPlaying Birth" Send="AnimClear Birth" />
+        <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack" />
+        <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready" />
+        <On Terms="ActorCreation" Send="AnimGroupApply A" />
+        <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenter; MorphTo PlanetaryFortress" Send="Create" />
+        <On Terms="Behavior.ColonyInfestation.On" Send="Create InfestationCommandCenter" />
+        <On Terms="Abil.*.TransportOccupy" Send="AnimPlay StandC Stand,Work,C PlayForever" />
+        <On Terms="Abil.*.TransportEmpty" Send="AnimClear StandC" />
+        <Model value="CommandCenter" />
+        <Scale value="0.800000,0.800000,1.000000" />
+        <ModelFlags index="IgnoreWalkables" value="1" />
+        <DeathArray index="Normal" ModelLink="PlanetaryFortressDeath" SoundLink="" />
+        <DeathArray index="UnderConstruction" ModelLink="TerranLargeBuildingDeath" SoundLink="PlanetaryFortress_Explode" />
+        <PortraitModel value="AdjutantPortrait" />
+        <BarDistance value="0" />
+        <BarHeight value="1" />
+        <BarOffset value="0" />
+        <BarWidth value="1" />
+        <GlossaryAnim value="Stand,A" />
+        <GroupIcon>
+            <Image value="Assets\Textures\btn-techupgrade-terran-orbitalcommand.dds" />
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-techupgrade-terran-orbitalcommand.dds" />
+        <HighlightTooltip value="Unit/Name/OrbitalFortress222" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-buildingarmor.dds" />
+        <MinimapIcon value="EditorData\Images\MinimapStartLocation.tga" />
+        <NameOffset value="150" />
+        <SoundArray index="What" value="PlanetaryFortress_What" />
+        <StatusBarFlags index="Shields" value="0" />
+        <StatusBarFlags index="Life" value="0" />
+        <StatusBarFlags index="Energy" value="0" />
+        <StatusBarFlags index="Cargo" value="0" />
+        <StatusBarFlags index="Progress" value="0" />
+        <StatusBarFlags index="Duration" value="0" />
+        <UnitFlags index="ShowBlobShadow" value="0" />
+        <UnitFlags index="StandAnimBirthVariation" value="0" />
+        <UnitIcon value="Assets\Textures\btn-techupgrade-terran-orbitalcommand.dds" />
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-terran-orbitalcommand.dds" />
+        </Wireframe>
+    </CActorUnit>
+    <CActorUnit id="OrbitalFortress2222" parent="GenericUnitStandard" unitName="EliteOrbitalFortress2222">
+        <Macros value="QueueAnim" />
+        <Macros value="BuildingFlattenTerrainMacro" />
+        <On index="41" Terms="Abil.OrbitalDisableWeapon.SourceStart" Send="AnimBracketStart Morph Morph,B Stand,B Morph,C 0 1.000000 AsDuration" />
+        <On index="42" Terms="Abil.OrbitalDisableWeapon.SourceStart" Send="Create TerranBuildingLiftOff" />
+        <On index="43" Terms="Abil.OrbitalDisableWeapon.SourceStop" Send="Create TerranBuildingLand" />
+        <On index="44" Terms="Abil.OrbitalDisableWeapon.SourceStop" Send="AnimBracketStop Morph 0 1.000000 AsDuration" />
+        <On index="45" Terms="UnitTaunt.*.Stop; Taunt Dance" Send="AnimClear Dance" />
+        <On index="46" Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready" />
+        <On Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack" />
+        <On Terms="WeaponStart.*.AttackStart; AnimPlaying Birth" Send="AnimClear Birth" />
+        <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack" />
+        <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready" />
+        <On Terms="ActorCreation" Send="AnimGroupApply A" />
+        <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenter; MorphTo PlanetaryFortress" Send="Create" />
+        <On Terms="Behavior.ColonyInfestation.On" Send="Create InfestationCommandCenter" />
+        <On Terms="Abil.*.TransportOccupy" Send="AnimPlay StandC Stand,Work,C PlayForever" />
+        <On Terms="Abil.*.TransportEmpty" Send="AnimClear StandC" />
+        <Model value="CommandCenter" />
+        <Scale value="0.800000,0.800000,1.000000" />
+        <ModelFlags index="IgnoreWalkables" value="1" />
+        <DeathArray index="Normal" ModelLink="PlanetaryFortressDeath" SoundLink="" />
+        <DeathArray index="UnderConstruction" ModelLink="TerranLargeBuildingDeath" SoundLink="PlanetaryFortress_Explode" />
+        <PortraitModel value="AdjutantPortrait" />
+        <BarDistance value="0" />
+        <BarHeight value="1" />
+        <BarOffset value="0" />
+        <BarWidth value="1" />
+        <GlossaryAnim value="Stand,A" />
+        <GroupIcon>
+            <Image value="Assets\Textures\btn-techupgrade-terran-orbitalcommand.dds" />
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-techupgrade-terran-orbitalcommand.dds" />
+        <HighlightTooltip value="Unit/Name/OrbitalFortress2222" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-buildingarmor.dds" />
+        <MinimapIcon value="EditorData\Images\MinimapStartLocation.tga" />
+        <NameOffset value="150" />
+        <SoundArray index="What" value="PlanetaryFortress_What" />
+        <StatusBarFlags index="Shields" value="0" />
+        <StatusBarFlags index="Life" value="0" />
+        <StatusBarFlags index="Energy" value="0" />
+        <StatusBarFlags index="Cargo" value="0" />
+        <StatusBarFlags index="Progress" value="0" />
+        <StatusBarFlags index="Duration" value="0" />
+        <UnitFlags index="ShowBlobShadow" value="0" />
+        <UnitFlags index="StandAnimBirthVariation" value="0" />
+        <UnitIcon value="Assets\Textures\btn-techupgrade-terran-orbitalcommand.dds" />
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-terran-orbitalcommand.dds" />
+        </Wireframe>
+    </CActorUnit>
+    
+    
+    
+    <CActorUnit id="PointDefenseDrone">
+        <StatusBarFlags index="Shields" value="0" />
+        <StatusBarFlags index="Life" value="0" />
+        <StatusBarFlags index="Cargo" value="0" />
+        <StatusBarFlags index="Progress" value="0" />
+    </CActorUnit>
+    
+    
+    
+    <CActorUnit id="Raven">
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-shipplatinglevel3.dds" />
+    </CActorUnit>
+    <CActorMissile id="Reaper">
+        <On index="41" Terms="Behavior.MercGroundDrop.Create" Send="Create ReaperDropModel" />
+        <On index="42" Terms="UnitTaunt.*.Stop; Taunt Dance" Send="AnimClear Dance" />
+        <On index="43" Send="AnimBracketStart Jump Jump,Start Jump Jump,End" />
+        <On index="44" Terms="Behavior.ReaperJump.Launch" Send="AnimBlendTimeApply 0.000000" />
+        <On index="45" Send="AnimBracketStop Jump" />
+        <On index="46" Terms="Behavior.ReaperJump.LandDown" Send="AnimBlendTimeApply" />
+        <On index="47" Send="AnimBracketStop Jump" />
+        <On index="48" Terms="Behavior.ReaperJump.LandUp" Send="AnimBlendTimeApply" />
+        <On index="49" Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready" />
+        <On index="50" Terms="WeaponStart.P38ScytheGuassPistol.AttackStart" Send="AnimBracketStart Attack Attack" />
+        <On index="51" Terms="WeaponStop.P38ScytheGuassPistol.AttackStop" Send="AnimBracketStop Attack" />
+        <On index="52" Terms="WeaponStart.D8Charge.AttackStart" Send="AnimBracketStart Attack Spell" />
+        <On index="53" Terms="WeaponStop.D8Charge.AttackStop" Send="AnimBracketStop Attack" />
+        <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel3.dds" />
+    </CActorMissile>
+    <CActorModel id="ReaperDropModel" parent="MercDropModelBase">
+        <On Terms="ActorCreation" Send="SetScale 0.800000" />
+    </CActorModel>
+    
+    
+    
+    <CActorUnit id="HammerSecurity">
+        <On Terms="Abil.BonesTossGrenade.SourceCastStart" Send="AnimPlay Spell Attack,Right 0 -1.000000 -1.000000 2.000000 AsTimeScale" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-infantryarmorlevel3.dds" />
+    </CActorUnit>
+    <CActorUnit id="Interceptor">
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-wraith.dds" />
+        </GroupIcon>
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Terran-wraith.dds" />
+        </Wireframe>
+        <Model value="Wraith" />
+        <Scale value="0.500000" />
+        <BuildModel value="Wraith" />
+        <PlacementModel value="Wraith" />
+    </CActorUnit>
+    
+    
+    
+    <CActorUnit id="Odin">
+        <Scale value="0.500000" />
+        <DeathArray index="Normal" ModelLink="OdinDeath" />
+        <On index="51" Terms="Behavior.MercGroundDrop.Create" Send="Create OdinDropModel" />
+        <On index="52" Terms="AnimDone; AnimName LoopB" Send="AnimPlay LoopC Spell" />
+        <On index="53" Terms="AnimDone; AnimName LoopC" Send="AnimPlay LoopD Spell" />
+        <On index="54" Send="AnimClear LoopA" />
+        <On index="55" Send="AnimClear LoopB" />
+        <On index="56" Send="AnimClear LoopC" />
+        <On index="57" Send="AnimClear LoopD" />
+        <On index="58" Terms="Abil.OdinBarrage.SourceChannelStop" Send="AnimPlay MorphEnd Morph,End 0 -1.000000 -1.000000 1.833000 AsTimeScale" />
+        <On index="59" Send="Create OdinLeftCheerSquib" />
+        <On index="60" Terms="ModelEvent; ModelEventName OdinVictoryLeftSound" Send="Create OdinLeftCheerSquibB" />
+        <On index="61" Send="Create OdinRightCheerSquib" />
+        <On Terms="ModelEvent; ModelEventName OdinVictoryRightSound" Send="Create OdinRightCheerSquibB" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel3.dds" />
+        <BarOffset value="65" />
+        <BarWidth value="102" />
+    </CActorUnit>
+    <CActorUnit id="OrbitalFortress" parent="GenericUnitStandard" unitName="EliteOrbitalFortress">
+        <Macros value="QueueAnim" />
+        <Macros value="BuildingFlattenTerrainMacro" />
+        <On index="41" Terms="Behavior.OribtalDisableApply.On" Send="AnimBracketStart Morph Morph,B Stand,B Morph,C 0 1.000000 AsDuration" />
+        <On index="42" Terms="Behavior.OribtalDisableApply.On" Send="Create TerranBuildingLiftOff" />
+        <On index="43" Terms="Behavior.OribtalDisableApply.Off" Send="Create TerranBuildingLand" />
+        <On index="44" Terms="Behavior.OribtalDisableApply.Off" Send="AnimBracketStop Morph 0 1.000000 AsDuration" />
+        <On index="45" Terms="UnitTaunt.*.Stop; Taunt Dance" Send="AnimClear Dance" />
+        <On index="46" Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready" />
+        <On Terms="WeaponStart.*.AttackStart" Send="AnimBracketStart Attack Attack" />
+        <On Terms="WeaponStart.*.AttackStart; AnimPlaying Birth" Send="AnimClear Birth" />
+        <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack" />
+        <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready" />
+        <On Terms="ActorCreation" Send="AnimGroupApply A" />
+        <On Terms="AbilMorph.*.Finish; MorphFrom CommandCenter; MorphTo PlanetaryFortress" Send="Create" />
+        <On Terms="Behavior.ColonyInfestation.On" Send="Create InfestationCommandCenter" />
+        <On Terms="Abil.*.TransportOccupy" Send="AnimPlay StandC Stand,Work,C PlayForever" />
+        <On Terms="Abil.*.TransportEmpty" Send="AnimClear StandC" />
+        <Model value="CommandCenter" />
+        <Scale value="0.800000,0.800000,1.000000" />
+        <DeathArray index="Normal" ModelLink="PlanetaryFortressDeath" SoundLink="" />
+        <DeathArray index="UnderConstruction" ModelLink="TerranLargeBuildingDeath" SoundLink="PlanetaryFortress_Explode" />
+        <PortraitModel value="AdjutantPortrait" />
+        <BarOffset value="180" />
+        <BarWidth value="200" />
+        <GlossaryAnim value="Stand,A" />
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-PlanetaryFortress.dds" />
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-terran-planetaryfortress.dds" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-buildingarmor.dds" />
+        <NameOffset value="150" />
+        <SoundArray index="What" value="PlanetaryFortress_What" />
+        <UnitFlags index="StandAnimBirthVariation" value="0" />
+        <UnitIcon value="Assets\Textures\btn-building-terran-planetaryfortress.dds" />
+        <Wireframe>
+            <Image value="Assets\Textures\wireframe-terran-orbitalcommand.dds" />
+        </Wireframe>
+        <HighlightTooltip value="Unit/Name/OrbitalFortress" />
+        <MinimapIcon value="EditorData\Images\MinimapStartLocation.tga" />
+        <StatusBarFlags index="Shields" value="0" />
+        <StatusBarFlags index="Energy" value="0" />
+        <StatusBarFlags index="Cargo" value="0" />
+        <StatusBarFlags index="Progress" value="0" />
+        <StatusBarFlags index="Duration" value="0" />
+    </CActorUnit>
+    <CActorModel id="OribtalHealingBuff" parent="ModelAnimationStyleOneShot">
+        <Terms value="Cap 1" />
+        <On Terms="Effect.OribtalHealingApply.Start; At Target" Send="Create" />
+        <Host Subject="_Selectable" />
+        <Model value="MedicHealModel" />
+        <AutoScaleFactor value="1.500000" />
+    </CActorModel>
+    <CActorRange id="OrbitalFortressRadar">
+        <Inherits index="Visibility" value="0" />
+        <FogVisibility value="Visible" />
+        <On Terms="Behavior.BuffRange.On" Send="Create" />
+        <On Terms="Behavior.BuffRange.Off" Send="Destroy" />
+        <Range value="6.500000" />
+        <RangeFlags index="Minimap" value="1" />
+    </CActorRange>
+    <CActorUnit id="EliteForcesStarport" parent="TerranBuildingFlyer" unitName="EliteForcesStarport">
+        <Macros value="QueueAnim" />
+        <Macros value="BuildAnim" />
+        <On Terms="UnitDeathCustomize.StarportFlying" Send="DeathCustomize Flying" />
+        <On Terms="Behavior.ColonyInfestation.On" Send="Create InfestedVisual" />
+        <HostSiteOps Ops="SOpBankerBuilding" />
+        <Model value="Starport" />
+        <Scale value="0.660000" />
+        <BuildModel value="Starport" />
+        <DeathArray index="Normal" ModelLink="StarportDeath" SoundLink="" />
+        <DeathArray index="UnderConstruction" ModelLink="TerranBuildingDeath" SoundLink="Starport_Explode" />
+        <DeathCustoms ModelLink="StarportFlyDeath" SoundLink="Starport_Explode" Name="Flying" />
+        <PlacementModel value="StarportPlacement" />
+        <PlacementSound value="Terran_BuildingPlacement" />
+        <PortraitModel value="AdjutantPortrait" />
+        <BarOffset value="155" />
+        <BarWidth value="160" />
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-Starport.dds" />
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-terran-starport.dds" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-buildingarmor.dds" />
+        <NameOffset value="110" />
+        <SoundArray index="Ready" value="Starport_What" />
+        <SoundArray index="What" value="Starport_What" />
+        <SoundArray index="Movement" value="Starport_Movement" />
+        <SoundArray index="Construction" value="Terran_ConstructionWhat" />
+        <UnitIcon value="Assets\Textures\btn-building-terran-starport.dds" />
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Terran-Starport.dds" />
+        </Wireframe>
+    </CActorUnit>
+    <CActorModel id="RailgunCursorModel">
+        <On index="6" Terms="ActorCreation; ModelName Ghost" Target="" />
+        <On index="7" Target="::Self" />
+    </CActorModel>
+    
+    
+    
+    <CActorUnit id="RaynorCommando">
+        <On index="52" removed="1" />
+        <ModelFlags index="SuppressPlayerDecals" value="0" />
+    </CActorUnit>
+    <CActorBeamSimple id="RaynorSnipeBeam">
+        <HostLaunch Subject="Ghost" Scope="Caster" />
+        <HostImpact Subject="Ghost" Scope="Caster" />
+    </CActorBeamSimple>
+    
+    
+    
+    <CActorUnit id="Roach">
+        <On Terms="Behavior.Blue.On" Send="SetTintColor 0,0,255" />
+        <On Terms="Behavior.Cyan.On" Send="SetTintColor 0,255,255" />
+        <On Terms="Behavior.Green.On" Send="SetTintColor 0,255,0" />
+        <On Terms="Behavior.Magenta.On" Send="SetTintColor 255,0,255" />
+        <On Terms="Behavior.Red.On" Send="SetTintColor 255,0,0" />
+        <On Terms="Behavior.White.On" Send="SetTintColor {255,255,255 3.000000}" />
+        <On Terms="Behavior.Yellow.On" Send="SetTintColor 255,255,0" />
+    </CActorUnit>
+    <CActorUnit id="RoachWarren2" parent="ZergBuilding" unitName="SuperRoachWarren">
+        <Macros value="QueueAnim" />
+        <On Terms="UnitDeathCustomize; ValidateUnit HasZergGenericDeath" Send="DeathCustomize Detached" />
+        <Model value="RoachWarren" />
+        <Scale value="1.660000" />
+        <BuildModel value="RoachWarren" />
+        <DeathArray index="Normal" ModelLink="RoachWarrenDeath" SoundLink="" />
+        <DeathArray index="UnderConstruction" ModelLink="ZergBuildingDeath" SoundLink="RoachWarren_Explode" />
+        <DeathCustoms ModelLink="ZergGenericBuildingDeath" Name="Detached" />
+        <PlacementModel value="RoachWarren" />
+        <PlacementSound value="Zerg_BuildingPlacement" />
+        <PortraitModel value="OverlordPortrait" />
+        <BarOffset value="145" />
+        <BarWidth value="160" />
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Zerg-RoachWarren.dds" />
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-zerg-roachwarren.dds" />
+        <HighlightTooltip value="Unit/Name/RoachWarren2" />
+        <LifeArmorIcon value="Assets\Textures\btn-armor-zerg-building.dds" />
+        <NameOffset value="100" />
+        <SoundArray index="Ready" value="RoachWarren_What" />
+        <SoundArray index="What" value="RoachWarren_What" />
+        <SoundArray index="Construction" value="Zerg_BuildingMorphWhat" />
+        <UnitFlags index="ShowBlobShadow" value="0" />
+        <UnitIcon value="Assets\Textures\btn-building-zerg-roachwarren.dds" />
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Zerg-RoachWarren.dds" />
+        </Wireframe>
+    </CActorUnit>
+    <CActorUnit id="ShapeArrowPointer2" parent="PolygonBase" unitName="Bio">
+        <Model value="ShapeArrowPointer" />
+        <BuildModel value="ShapeArrowPointer" />
+        <DeathArray index="Normal" ModelLink="ShapeArrowPointer" />
+        <PlacementModel value="ShapeArrowPointer" />
+        <HighlightTooltip value="Unit/Name/ShapeArrowPointer2" />
+    </CActorUnit>
+    <CActorModel id="GhostDropModel" parent="MercDropModelBase">
+        <On Terms="ActorCreation" Send="SetScale" />
+    </CActorModel>
+    
+    
+    
+    <CActorUnit id="SiegeBreaker">
+        <Scale value="0.800000" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel3.dds" />
+    </CActorUnit>
+    <CActorModel id="OdinDropModel" parent="MercDropModelBase">
+        <On Terms="ActorCreation" Send="SetScale 1.500000,1.500000,1.000000" />
+    </CActorModel>
+    <CActorUnit id="SiegeBreakerSieged">
+        <Scale value="0.800000" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel3.dds" />
+    </CActorUnit>
+    <CActorAction id="SiegeBreakerSiegedAttack2" parent="GenericAttack" effectAttack="ArcliteShockCannonBlast2">
+        <On Terms="Effect.ArcliteShockCannonFriendlyDamage2.Start; At Caster" Send="Create" />
+        <On Terms="Effect.ArcliteShockCannonEnemyDamage2.Start; At Caster" Send="Create" />
+        <LaunchAssets Model="SiegeBreakerSiegedAttackLaunch" Sound="SiegeTank_SiegedAttackLaunch" />
+        <ImpactSiteOps Ops="SOpActionCenter SOpTargetUnitZ" HoldPosition="1" />
+        <ImpactMap index="None" Model="SiegeBreakerSiegedAttackImpact" Sound="SiegeTank_SiegedAttackImpact" />
+        <DamageMap index="None" Model="SiegeBreakerSiegedAttackDamage" />
+        <ShieldFlashType value="Header" />
+    </CActorAction>
+    <CActorAction id="SiegeBreakerSiegedAttackDirected2" parent="GenericAttack" effectAttack="ArcliteShockCannonDirected2">
+        <LaunchAssets Model="SiegeBreakerSiegedAttackDirectedLaunch" Sound="SiegeTank_SiegedAttackLaunch" />
+        <ImpactSiteOps Ops="SOpAttachHarness SOpAttachVolumeStandard SOpForwardLaunchGuide" />
+        <ImpactMap index="None" Model="SiegeBreakerSiegedAttackDirectedImpact" Sound="SiegeTank_SiegedAttackImpact" />
+        <DamageMap index="None" Model="SiegeBreakerSiegedAttackDirectedDamage" />
+        <ShieldFlashType value="Header" />
+    </CActorAction>
+    
+    
+    <CActorUnit id="SpartanCompany">
+        <Scale value="0.800000" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-vehicleplatinglevel3.dds" />
+    </CActorUnit>
+    <CActorRange id="OdinNukeRange" parent="RangeAbil" abil="TacNukeStrike">
+        <On index="1" Terms="Abil.OdinNuclearStrike.TargetOn" />
+        <On index="2" Terms="Abil.OdinNuclearStrike.TargetOff" />
+        <Abil Link="OdinNuclearStrike" />
+    </CActorRange>
+    <CActorModel id="HelionDropModel" parent="MercDropModelBase">
+        <On Terms="ActorCreation" Send="SetScale 1.300000,1.300000,1.000000" />
+    </CActorModel>
+    <CActorUnit id="SpawningPool2" parent="ZergBuilding" unitName="SuperSpawningPool">
+        <Macros value="QueueAnim" />
+        <On Terms="UnitDeathCustomize; Option Model Low" Send="Create SpawningPool_DeathLow" />
+        <On Terms="UnitDeathCustomize; ValidateUnit HasZergGenericDeath" Send="DeathCustomize Detached" />
+        <Model value="SpawningPool" />
+        <Scale value="1.660000" />
+        <BuildModel value="SpawningPool" />
+        <DeathArray index="Normal" ModelLink="SpawningPoolDeath" SoundLink="" />
+        <DeathArray index="UnderConstruction" ModelLink="ZergBuildingDeath" SoundLink="SpawningPool_Explode" />
+        <DeathCustoms ModelLink="ZergGenericBuildingDeath" Name="Detached" />
+        <PlacementModel value="SpawningPool" />
+        <PlacementSound value="Zerg_BuildingPlacement" />
+        <PortraitModel value="OverlordPortrait" />
+        <BarOffset value="95" />
+        <BarWidth value="160" />
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Zerg-SpawningPool.dds" />
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-zerg-spawningpool.dds" />
+        <HighlightTooltip value="Unit/Name/SpawningPool2" />
+        <LifeArmorIcon value="Assets\Textures\btn-armor-zerg-building.dds" />
+        <NameOffset value="100" />
+        <SoundArray index="Ready" value="SpawningPool_What" />
+        <SoundArray index="What" value="SpawningPool_What" />
+        <SoundArray index="Construction" value="Zerg_BuildingMorphWhat" />
+        <UnitFlags index="ShowBlobShadow" value="0" />
+        <UnitIcon value="Assets\Textures\btn-building-zerg-spawningpool.dds" />
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Zerg-SpawningPool.dds" />
+        </Wireframe>
+    </CActorUnit>
+    <CActorUnit id="SpineCrawler">
+        <On Terms="Behavior.Blue.On" Send="SetTintColor 0,0,255" />
+        <On Terms="Behavior.Cyan.On" Send="SetTintColor 0,255,255" />
+        <On Terms="Behavior.Green.On" Send="SetTintColor 0,255,0" />
+        <On Terms="Behavior.Magenta.On" Send="SetTintColor 255,0,255" />
+        <On Terms="Behavior.Red.On" Send="SetTintColor 255,0,0" />
+        <On Terms="Behavior.White.On" Send="SetTintColor {255,255,255 3.000000}" />
+        <On Terms="Behavior.Yellow.On" Send="SetTintColor 255,255,0" />
+    </CActorUnit>
+    <CActorUnit id="Spire">
+        <Scale value="1.500000,1.500000,1.000000" />
+    </CActorUnit>
+    <CActorUnit id="Spire2" parent="Spire" unitName="SuperSpire">
+        <On index="0" Terms="UnitBirth.SuperSpire" Send="Create SoundEmitter SuperSpire_Ambience" />
+        <On index="1" Terms="UnitBirth.SuperSpire" />
+        <On index="2" Terms="UnitRevive.SuperSpire" />
+        <On index="3" Terms="UnitConstruction.SuperSpire.Start" />
+        <On index="4" Terms="UnitConstruction.SuperSpire.Finish" />
+        <On index="47" Terms="UnitConstruction.SuperSpire.Start" Send="Create SuperSpireBuild" />
+        <On index="48" Terms="UnitConstruction.SuperSpire.Start" />
+        <On index="49" Terms="UnitConstruction.SuperSpire.Cancel" />
+        <On index="50" Terms="UnitConstruction.SuperSpire.Finish" />
+        <On index="51" Terms="UnitBirth.SuperSpire.Normal" />
+        <On index="52" Terms="UnitBirth.SuperSpire.Suppressed" />
+        <On index="53" Terms="UnitBirth.SuperSpire.EditorPlaced" />
+        <On index="54" Terms="UnitDeath.SuperSpire" />
+        <Scale value="2.500000,2.500000,2.000000" />
+        <EventDataFootprint index="0" Model="SuperSpireFootprint" />
+        <DeathArray index="Normal" VoiceLink="SuperSpireDeathVoice" />
+        <GroupSoundArray index="What" value="SuperSpire_GroupWhat" />
+        <GroupSoundArray index="Yes" value="SuperSpire_GroupYes" />
+        <GroupSoundArray index="Attack" value="SuperSpire_GroupAttack" />
+        <GroupSoundArray index="Board" value="SuperSpire_GroupBoard" />
+        <HighlightTooltip value="Unit/Name/Spire2" />
+        <SoundArray index="Birth" value="SuperSpire_Birth" />
+        <SoundArray index="Help" value="SuperSpire_Help" />
+        <SoundArray index="Yes" value="SuperSpire_Yes" />
+        <SoundArray index="Attack" value="SuperSpire_Attack" />
+        <SoundArray index="Pissed" value="SuperSpire_Pissed" />
+        <SoundArray index="Movement" value="SuperSpire_Movement" />
+        <SoundArray index="Turning" value="SuperSpire_Turning" />
+        <SoundArray index="Board" value="SuperSpire_Board" />
+        <SoundArray index="Click" value="SuperSpire_Click" />
+        <SoundArray index="ClickError" value="SuperSpire_ClickError" />
+        <SoundArray index="Highlight" value="SuperSpire_Highlight" />
+    </CActorUnit>
+    <CActorUnit id="SporeCrawler">
+        <On Terms="Behavior.Blue.On" Send="SetTintColor 0,0,255" />
+        <On Terms="Behavior.Cyan.On" Send="SetTintColor 0,255,255" />
+        <On Terms="Behavior.Green.On" Send="SetTintColor 0,255,0" />
+        <On Terms="Behavior.Magenta.On" Send="SetTintColor 255,0,255" />
+        <On Terms="Behavior.Red.On" Send="SetTintColor 255,0,0" />
+        <On Terms="Behavior.White.On" Send="SetTintColor {255,255,255 3.000000}" />
+        <On Terms="Behavior.Yellow.On" Send="SetTintColor 255,255,0" />
+        <On />
+        <On />
+        <On />
+        <On />
+        <On />
+        <On />
+        <On />
+        <On />
+        <On />
+        <On />
+        <On />
+        <On />
+        <On />
+        <On />
+    </CActorUnit>
+    
+    
+    
+    <CActorUnit id="Ultralisk">
+        <On Terms="Behavior.Blue.On" Send="SetTintColor 0,0,255" />
+        <On Terms="Behavior.Cyan.On" Send="SetTintColor 0,255,255" />
+        <On Terms="Behavior.Green.On" Send="SetTintColor 0,255,0" />
+        <On Terms="Behavior.Magenta.On" Send="SetTintColor 255,0,255" />
+        <On Terms="Behavior.Red.On" Send="SetTintColor 255,0,0" />
+        <On Terms="Behavior.White.On" Send="SetTintColor {255,255,255 3.000000}" />
+        <On Terms="Behavior.Yellow.On" Send="SetTintColor 255,255,0" />
+    </CActorUnit>
+    <CActorUnit id="UltraliskCavern2" parent="ZergBuilding" unitName="SuperUltraliskCavern">
+        <Macros value="QueueAnim" />
+        <On Terms="UnitDeathCustomize; ValidateUnit HasZergGenericDeath" Send="DeathCustomize Detached" />
+        <Model value="UltraliskCavern" />
+        <Scale value="1.660000" />
+        <BuildModel value="UltraliskCavern" />
+        <DeathArray index="Normal" ModelLink="UltraliskCavernDeath" SoundLink="UltraliskCavern_Explode" />
+        <DeathArray index="UnderConstruction" ModelLink="ZergLargeBuildingDeath" SoundLink="UltraliskCavern_Explode" />
+        <DeathCustoms ModelLink="ZergGenericBuildingDeath" Name="Detached" />
+        <PlacementModel value="UltraliskCavern" />
+        <PlacementSound value="Zerg_BuildingPlacement" />
+        <PortraitModel value="OverlordPortrait" />
+        <BarOffset value="135" />
+        <BarWidth value="135" />
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Zerg-UltraliskCavern.dds" />
+        </GroupIcon>
+        <HeroIcon value="Assets\Textures\btn-building-zerg-ultraliskcavern.dds" />
+        <HighlightTooltip value="Unit/Name/UltraliskCavern2" />
+        <LifeArmorIcon value="Assets\Textures\btn-armor-zerg-building.dds" />
+        <NameOffset value="110" />
+        <SoundArray index="Ready" value="UltraliskCavern_What" />
+        <SoundArray index="What" value="UltraliskCavern_What" />
+        <SoundArray index="Construction" value="Zerg_BuildingMorphWhat" />
+        <UnitFlags index="ShowBlobShadow" value="0" />
+        <UnitIcon value="Assets\Textures\btn-building-zerg-ultraliskcavern.dds" />
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Zerg-UltraliskCavern.dds" />
+        </Wireframe>
+    </CActorUnit>
+    
+    
+    <CActorUnit id="Val03QueenOfBlades">
+        <MinimapIcon value="Assets\Textures\ui_minimap_icon_biohazard.dds" />
+        <On Terms="Behavior.Blue.On" Send="SetTintColor 0,0,255" />
+        <On Terms="Behavior.Cyan.On" Send="SetTintColor 0,255,255" />
+        <On Terms="Behavior.Green.On" Send="SetTintColor 0,255,0" />
+        <On Terms="Behavior.Magenta.On" Send="SetTintColor 255,0,255" />
+        <On Terms="Behavior.Red.On" Send="SetTintColor 255,0,0" />
+        <On Terms="Behavior.White.On" Send="SetTintColor {255,255,255 3.000000}" />
+        <On Terms="Behavior.Yellow.On" Send="SetTintColor 255,255,0" />
+    </CActorUnit>
+    <CActorAction id="VoidRayAttack">
+        <LaunchAttachQuery Methods="$GenericAttackLaunchMethods" />
+    </CActorAction>
+    <CActorModel id="VoidRayChargeX01">
+        <On index="0" removed="1" />
+        <On index="1" removed="1" />
+        <On index="2" removed="1" />
+        <On index="3" removed="1" />
+        <On index="4" removed="1" />
+        <On index="5" removed="1" />
+        <On index="6" removed="1" />
+        <On index="7" removed="1" />
+        <On index="8" removed="1" />
+        <On index="9" removed="1" />
+        <On index="10" removed="1" />
+    </CActorModel>
+    <CActorModel id="VoidRayChargeX02">
+        <On index="0" removed="1" />
+        <On index="1" removed="1" />
+        <On index="2" removed="1" />
+        <On index="3" removed="1" />
+        <On index="4" removed="1" />
+        <On index="5" removed="1" />
+        <On index="6" removed="1" />
+        <On index="7" removed="1" />
+        <On index="8" removed="1" />
+    </CActorModel>
+    <CActorModel id="VoidRayChargeX03">
+        <On index="0" removed="1" />
+        <On index="1" removed="1" />
+        <On index="2" removed="1" />
+        <On index="3" removed="1" />
+        <On index="4" removed="1" />
+        <On index="5" removed="1" />
+        <On index="6" removed="1" />
+        <On index="7" removed="1" />
+    </CActorModel>
+    
+    
+    
+    <CActorUnit id="Wraith">
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-shipplatinglevel3.dds" />
+    </CActorUnit>
+    <CActorUnit id="Wraith2" parent="GenericUnitBase" unitName="Wraith">
+        <On Terms="Abil.attack.ReadyStart" Send="AnimGroupApply Ready" />
+        <On Terms="WeaponStart.WraithA.AttackStart" Send="AnimBracketStart Attack Attack,Superior" />
+        <On Terms="WeaponStart.WraithG.AttackStart" Send="AnimBracketStart Attack Attack" />
+        <On Terms="WeaponStop.*.AttackStop" Send="AnimBracketStop Attack" />
+        <On Terms="Abil.attack.ReadyStop" Send="AnimGroupRemove Ready" />
+        <HostSiteOps Ops="SOpBankerWraith" />
+        <AnimBlendTime value="0.300000" />
+        <DeathArray index="Normal" ModelLink="WraithDeath" SoundLink="Wraith_Explode" />
+        <PortraitModel value="WraithPortrait" />
+        <BarOffset value="55" />
+        <BarWidth value="66" />
+        <GroupIcon>
+            <Image value="Assets\Textures\Wireframe-Terran-wraith.dds" />
+        </GroupIcon>
+        <GroupSoundArray index="Birth" value="Wraith_Birth" />
+        <GroupSoundArray index="Ready" value="Wraith_Ready" />
+        <GroupSoundArray index="Help" value="Wraith_Help" />
+        <GroupSoundArray index="What" value="Wraith_What" />
+        <GroupSoundArray index="Yes" value="Wraith_Yes" />
+        <GroupSoundArray index="Attack" value="Wraith_Attack" />
+        <GroupSoundArray index="Pissed" value="Wraith_Pissed" />
+        <HeroIcon value="Assets\Textures\btn-unit-terran-wraith.dds" />
+        <HighlightTooltip value="Unit/Name/Wraith2" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-shipplatinglevel3.dds" />
+        <UnitIcon value="Assets\Textures\btn-unit-terran-wraith.dds" />
+        <Wireframe>
+            <Image value="Assets\Textures\Wireframe-Terran-wraith.dds" />
+        </Wireframe>
+    </CActorUnit>
+    <CActorUnit id="WreckingCrewAssault">
+        <Scale value="0.800000" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-shipplatinglevel3.dds" />
+    </CActorUnit>
+    <CActorUnit id="WreckingCrewFighter">
+        <Scale value="0.800000" />
+        <LifeArmorIcon value="Assets\Textures\btn-upgrade-terran-shipplatinglevel3.dds" />
+    </CActorUnit>
+    <CActorUnit id="Zergling">
+        <On index="54" Terms="Behavior.Blue.On" Send="SetTintColor 0,0,255" />
+        <On index="55" Terms="Behavior.Magenta.On" Send="SetTintColor 255,0,255" />
+        <On index="56" Terms="Behavior.Cyan.On" Send="SetTintColor 0,255,255" />
+        <On index="57" Terms="Behavior.Green.On" Send="SetTintColor 0,255,0" />
+        <On index="58" Terms="Behavior.White.On" Send="SetTintColor {255,255,255 3.000000} 0.000000 OneShot {} 155.000000" />
+        <On index="59" Terms="Behavior.Yellow.On" Send="SetTintColor 255,255,0" />
+        <On index="60" Terms="Behavior.Red.On" Send="SetTintColor 255,0,0" />
+        <On index="61" Terms="AbilMorph.*.Finish; MorphTo Zergling; MorphFrom ZerglingBurrowed" Send="AnimBracketStop Burrow" />
+        <On index="62" Terms="ActorCreation; ValidateUnit ZerglingUpgraded" Send="ModelSwap ZerglingUpgrade" />
+        <On Terms="Upgrade.zerglingmovementspeed.Add" Send="ModelSwap ZerglingUpgrade" />
+        <On Terms="Upgrade.zerglingmovementspeed.Add; ValidateUnit IsBuried" Send="AnimBracketStart Burrow Burrow IGNORE Unburrow ClosingFull,OpeningPlayForever,Instant" />
+        <On Terms="UnitDeathCustomize; ValidateUnit ZerglingUpgradedDeathByAcid" Send="DeathCustomize UpgradedAcid" />
+        <On Terms="UnitDeathCustomize; ValidateUnit ZerglingUpgradedDeathByFire" Send="DeathCustomize UpgradedFire" />
+        <On Terms="UnitDeathCustomize; ValidateUnit ZerglingUpgradedDeathByEviscerate" Send="DeathCustomize UpgradedEviscerate" />
+        <On Terms="UnitDeathCustomize; ValidateUnit ZerglingUpgraded" Send="DeathCustomize Upgrade" />
+        <On Terms="UnitDeathCustomize; ValidateUnit IsKillerPhantasm" Send="DeathCustomize Hallucination" />
+    </CActorUnit>
+<CActorUnit id="Warhound" parent="GenericUnitStandard" unitName="Warhound"><Model value="WarhoundMercenary" /><PortraitModel value="WarhoundMercenaryPortrait" /><UnitIcon value="Assets\Textures\btn-unit-terran-warhound-mercenary.dds" /><HeroIcon value="Assets\Textures\btn-unit-terran-warhound-mercenary.dds" /></CActorUnit><CActorUnit id="GastlyOverseer" parent="GenericUnitStandard" unitName="GastlyOverseer"><Model value="GastlyOverseer" /><PortraitModel value="GastlyOverseerPortrait" /></CActorUnit><CActorUnit id="ViperGreen" parent="GenericUnitStandard" unitName="ViperGreen"><Model value="ViperGreen" /><PortraitModel value="ViperGreenPortrait" /><UnitIcon value="Assets\Textures\btn-unit-zerg-viper-ex1a-ds.dds" /></CActorUnit><CActorUnit id="JimRaynor" parent="GenericUnitStandard" unitName="JimRaynor"><Model value="Raynor" /><BuildModel value="Raynor" /><DeathArray index="Normal" ModelLink="RaynorDeath" /><PlacementModel value="Raynor" /><PortraitModel value="RaynorPortrait" /></CActorUnit><CActorUnit id="PrimalKerrigan" parent="GenericUnitStandard" unitName="PrimalKerrigan"><Model value="Kerrigan" /><BuildModel value="Kerrigan" /><DeathArray index="Normal" ModelLink="KerriganDeath" /><PlacementModel value="Kerrigan" /><PortraitModel value="KerriganPortrait" /></CActorUnit><CActorUnit id="ArtanisTank" parent="GenericUnitStandard" unitName="ArtanisTank"><Model value="Artanis" /><BuildModel value="Artanis" /><DeathArray index="Normal" ModelLink="ArtanisDeath" /><PlacementModel value="Artanis" /><PortraitModel value="ArtanisPortrait" /></CActorUnit><CActorUnit id="EgonStetmann" parent="GenericUnitStandard" unitName="EgonStetmann"><Model value="Stetmann" /><BuildModel value="Stetmann" /><DeathArray index="Normal" ModelLink="StetmannDeath" /><PlacementModel value="Stetmann" /><PortraitModel value="StetmannPortrait" /></CActorUnit></Catalog>

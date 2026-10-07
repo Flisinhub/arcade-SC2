@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<Catalog>
+    <CRequirement id="ArmInterceptor4">
+        <NodeArray index="Use" Link="LT2345953344CountUnitInterceptorQueuedOrBetterAtUnit4"/>
+    </CRequirement>
+    <CRequirement id="ArmInterceptor6">
+        <NodeArray index="Use" Link="LT1538368987CountUnitInterceptorQueuedOrBetterAtUnit6"/>
+    </CRequirement>
+    <CRequirement id="GhostPassiveCloak">
+        <NodeArray index="Use" Link="CountUpgradePassiveCloakCompleteOnly1028982313"/>
+    </CRequirement>
+    <CRequirement id="HaveEvolutionChamber2">
+        <EditorCategories value="Race:Zerg,TechType:Unit"/>
+        <NodeArray index="Use" Link="LTECountUnitEvolutionChamberCompleteOnly3"/>
+    </CRequirement>
+    <CRequirement id="HaveEvolutionChamber22">
+        <EditorCategories value="Race:Zerg,TechType:Unit"/>
+        <NodeArray index="Use" Link="GTCountUnitEvolutionChamberCompleteOnly3"/>
+    </CRequirement>
+    <CRequirement id="LearnLifeUpgrade">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="LTCountUpgradeUpgradeLifeQueuedOrBetterTechTreeCheat100"/>
+    </CRequirement>
+    <CRequirement id="LearnG4Clusterbomb">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="NotCountUpgradeClusterBombQueuedOrBetter"/>
+    </CRequirement>
+    <CRequirement id="LearnArtilleryTargeting">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="NotCountUpgradeArtilleryTargetingQueuedOrBetter"/>
+    </CRequirement>
+    <CRequirement id="LearnHunterSeekerMissiles">
+        <NodeArray index="Use" Link=""/>
+    </CRequirement>
+    <CRequirement id="LearnOffensiveBattlecruiserCapabilities">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="NotCountUpgradeOffensiveBattlecruiserCapabilitiesQueuedOrBetterTechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="LearnReflectiveShield">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="NotCountUpgradeCombatShieldQueuedOrBetter"/>
+    </CRequirement>
+    <CRequirement id="LearnShockwave">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="NotCountUpgradeShockwaveQueuedOrBetterTechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="LearnShredderGrenade">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="NotCountUpgradeShredderGrenadeQueuedOrBetterTechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="LearnConstrictingSlime">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="NotCountUpgradeOdinNuke2QueuedOrBetterTechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="LearnPointDefenseDrone">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="NotCountUpgradePointDefenseDroneQueuedOrBetterTechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="LearnFlamingBetty">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="NotCountUpgradeFlamingBettyQueuedOrBetterTechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="LearnGravitonPrison">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="NotCountUpgradeGravitonPrisonQueuedOrBetterTechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="LearnRavenCapacity">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="NotCountUpgradeInterceptorLimit6QueuedOrBetterTechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="LearnWeaponUpgrade">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="LTCountUpgradeUpgradeWeaponsQueuedOrBetterTechTreeCheat100"/>
+    </CRequirement>
+    <CRequirement id="LearnArmorUpgrade">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="LTCountUpgradeUpgradeArQueuedOrBetterTechTreeCheat100"/>
+    </CRequirement>
+    <CRequirement id="QuadDamageResearched">
+        <NodeArray index="Use" Link="CountUpgradeQuadDamageCompleteOnly1278784526TechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="LearnQuadDamage">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="NotCountUpgradeQuadDamageQueuedOrBetter"/>
+    </CRequirement>
+    <CRequirement id="LearnPassiveCloak">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="NotCountUpgradePassiveCloakQueuedOrBetter"/>
+    </CRequirement>
+    <CRequirement id="LearnOdinNuke">
+        <EditorCategories value="Race:Terran,TechType:Upgrade"/>
+        <NodeArray index="Show" Link="NotCountUpgradeOdinNukeQueuedOrBetter"/>
+    </CRequirement>
+    <CRequirement id="ReflectiveShieldResearched">
+        <NodeArray index="Use" Link="CountUpgradeCombatShieldCompleteOnly2839830718TechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="ArtilleryTargetingResearched">
+        <NodeArray index="Use" Link="CountUpgradeArtilleryTargetingCompleteOnly4148612580TechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="UseG4ClusterBombs">
+        <NodeArray index="Show" Link=""/>
+    </CRequirement>
+    <CRequirement id="UseHunterSeekerMissiles">
+        <NodeArray index="Use" Link="CountUpgradeHunterSeekerCompleteOnly2418878204TechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="UseOdinNuke">
+        <EditorCategories value="Race:Terran,TechType:Ability"/>
+        <NodeArray index="Use" Link="CountUpgradeOdinNukeCompleteOnly1330060644TechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="UseFlamingBetty">
+        <EditorCategories value="Race:Terran,TechType:Ability"/>
+        <NodeArray index="Use" Link="CountUpgradeFlamingBettyCompleteOnly87455078TechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="UseShockwave">
+        <EditorCategories value="Race:Terran,TechType:Ability"/>
+        <NodeArray index="Use" Link="CountUpgradeShockwaveCompleteOnly893923979TechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="UseShredderGrenade">
+        <EditorCategories value="Race:Terran,TechType:Ability"/>
+        <NodeArray index="Use" Link="CountUpgradeShredderGrenadeCompleteOnly2494540360TechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="UseConstrictingSlime">
+        <EditorCategories value="Race:Terran,TechType:Ability"/>
+        <NodeArray index="Use" Link="CountUpgradeOdinNuke2CompleteOnly361325049TechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="UsePointDefenseDrone">
+        <EditorCategories value="Race:Terran,TechType:Ability"/>
+        <NodeArray index="Use" Link="CountUpgradePointDefenseDroneCompleteOnly4258817689TechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="UseGravitonPrison">
+        <EditorCategories value="Race:Terran,TechType:Ability"/>
+        <NodeArray index="Use" Link="CountUpgradeGravitonPrisonCompleteOnly570141066TechTreeCheat"/>
+    </CRequirement>
+    <CRequirement id="UseOffensiveBattlecruiserCapabilities">
+        <EditorCategories value="Race:Terran,TechType:Ability"/>
+        <NodeArray index="Use" Link="CountUpgradeOffensiveBattlecruiserCapabilitiesCompleteOnly1077391733TechTreeCheat"/>
+    </CRequirement>
+</Catalog>

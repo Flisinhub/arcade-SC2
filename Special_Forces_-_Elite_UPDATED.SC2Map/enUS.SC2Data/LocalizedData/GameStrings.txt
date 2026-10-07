@@ -1,0 +1,373 @@
+Abil/Name/BarracksTechLabResearch2=Research
+Abil/Name/EliteForcesSummon=Build Units
+Abil/Name/EngineeringBayResearch2=Upgrades
+Abil/Name/OrbitalDisableWeapon=Orbital Disable Weapon
+Abil/Name/OrbitalShareControl=Orbital Share Control
+Attribute001/Desc=Pick the unit which you will start with.
+Attribute001/Name=Starting Unit
+Attribute001/Value001/Name=Marine
+Attribute001/Value003/Name=Viking
+Attribute001/Value004/Name=Random
+Attribute001/Value007/Name=Goliath
+Behavior/Name/AttackBuff=Attack Buff
+Behavior/Name/AttackDecloak=Attack Decloak
+Behavior/Name/Blue=Blue
+Behavior/Name/BuffRange=Buff Range
+Behavior/Name/CloakOutOfCombat=Default Behavior (CBehaviorBuff)
+Behavior/Name/CreateBroodlords=Create Broodlords
+Behavior/Name/CreateCorruptor=Create Corruptor
+Behavior/Name/CreateHydras=Create Hydras
+Behavior/Name/CreateInfTerran=Create Inf Terran
+Behavior/Name/CreateLings=Create Lings
+Behavior/Name/CreateMutas=Create Mutas
+Behavior/Name/CreateRoaches=Create Roaches
+Behavior/Name/CreateSuperBroodlords=Create Super Broodlords
+Behavior/Name/CreateSuperCorruptor=Create Super Corruptor
+Behavior/Name/CreateSuperHydras=Create Super Hydras
+Behavior/Name/CreateSuperInfTerran=Create Super Inf Terran
+Behavior/Name/CreateSuperLings=Create Super Lings
+Behavior/Name/CreateSuperMutas=Create Super Mutas
+Behavior/Name/CreateSuperRoaches=Create Super Roaches
+Behavior/Name/CreateSuperUltras=Create Super Ultras
+Behavior/Name/CreateUltras=Create Ultras
+Behavior/Name/Cyan=Cyan
+Behavior/Name/DiesSpawn1Kerrigan=Dies Spawn 1 Kerrigan
+Behavior/Name/DiesSpawn3Kerrigan=Dies Spawn 3 Kerrigan
+Behavior/Name/DiesSpawn5Kerrigan=Dies Spawn 7 Kerrigan
+Behavior/Name/DiesSpawnBroodlords=Dies Spawn Broodlords
+Behavior/Name/DiesSpawnCorruptors=Dies Spawn Corruptors
+Behavior/Name/DiesSpawnHydralisks=Dies Spawn Hydralisks
+Behavior/Name/DiesSpawnLings=Dies Spawn Lings
+Behavior/Name/DiesSpawnMutas=Dies Spawn Mutas
+Behavior/Name/DiesSpawnOmega=Dies Spawn Omega
+Behavior/Name/DiesSpawnPlisk=Dies Spawn Plisk
+Behavior/Name/DiesSpawnRoaches=Dies Spawn Roaches
+Behavior/Name/DiesSpawnSuperBroodlords=Dies Spawn Super Broodlords
+Behavior/Name/DiesSpawnSuperCorruptors=Dies Spawn Super Corruptors
+Behavior/Name/DiesSpawnSuperHydralisks=Dies Spawn Super Hydralisks
+Behavior/Name/DiesSpawnSuperInf=Dies Spawn Super Inf
+Behavior/Name/DiesSpawnSuperLings=Dies Spawn Super Lings
+Behavior/Name/DiesSpawnSuperMutas=Dies Spawn Super Mutas
+Behavior/Name/DiesSpawnSuperOmega=Dies Spawn Super Omega
+Behavior/Name/DiesSpawnSuperRoaches=Dies Spawn Super Roaches
+Behavior/Name/DiesSpawnUltra=Dies Spawn Ultra
+Behavior/Name/Green=Green
+Behavior/Name/HealthBuff=Health Buff
+Behavior/Name/Magenta=Magenta
+Behavior/Name/OrbitalDisable=Orbital Disable
+Behavior/Name/OrbitalDisableSlow=Orbital Disable Slow
+Behavior/Name/OrbitalHealing=Orbital Healing
+Behavior/Name/OribtalDisableApply=Oribtal Disable Apply
+Behavior/Name/OribtalDisableApplySlow=Oribtal Disable Apply Slow
+Behavior/Name/OribtalHealing=Oribtal Healing
+Behavior/Name/Red=Red
+Behavior/Name/ReflectiveShield=Reflective Shield
+Behavior/Name/SpeedBuff=Speed Buff
+Behavior/Name/TemporaryInvunerability=Temporary Invunerability
+Behavior/Name/White=White
+Behavior/Name/Yellow=Yellow
+Behavior/Name/ZergBuildingDies62=Dies Spawn Inf
+Behavior/Tooltip/AttackBuff=This unit does 2x damage.
+Behavior/Tooltip/AttackDecloak=Target recently attacked or used an ability and has revealed himself.
+Behavior/Tooltip/BuffRange=This structure is able to expose enemy movements within its search radius. Does not reveal the area.
+Behavior/Tooltip/HealthBuff=This unit has 2x health.
+Behavior/Tooltip/OribtalDisableApply=Orbital Fortress is disabled while allies are nearby.
+Behavior/Tooltip/OribtalDisableApplySlow=Orbital Fortress is disabled while allies are nearby.
+Behavior/Tooltip/OribtalHealing=Health and energy regeneration rates increased.
+Behavior/Tooltip/PersonalCloakingFree=This unit is cloaked when stationary or moving.
+Behavior/Tooltip/ReflectiveShield=<n/>
+Behavior/Tooltip/SpeedBuff=This unit is 2x faster.
+Button/Name/ArtilleryTargeting=Artillery Targeting
+Button/Name/BuildAir=Build Air
+Button/Name/BuildInfantry=Build Infantry
+Button/Name/BuildMechanical=Build Mechanical
+Button/Name/Cancel2=Cancel
+Button/Name/Diamondback=Diamondback
+Button/Name/G4Clusterbomb=G-4 Clusterbomb
+Button/Name/Ghost=Ghost
+Button/Name/Hellion=Hellion
+Button/Name/HireDevilDogs=Firebat
+Button/Name/HireDukesRevenge=Battlecruiser
+Button/Name/HireDuskWing=Banshee
+Button/Name/HireHammerSecurities=Marauder
+Button/Name/HireHelsAngels=Viking
+Button/Name/HireKelmorianMiners=Marine
+Button/Name/HireSiegeBreakers=Siege Tank
+Button/Name/HireSpartanCompany=Goliath
+Button/Name/Interceptor=Build Mini Wraith
+Button/Name/Odin=Odin
+Button/Name/PermanentlyCloakedGhost=Passive Cloak
+Button/Name/QuadDamage=Quad Damage
+Button/Name/Raven=Raven
+Button/Name/Reaper=Reaper
+Button/Name/ReflectiveShield=Reflective Shield
+Button/Name/ResearchArtilleryTargeting=Research Artillery Targeting
+Button/Name/ResearchConstrictingSlime=Research Constricting Slime
+Button/Name/ResearchFlamingBetty=Research Flaming Betty
+Button/Name/ResearchG4Clusterbomb=Research G-4 Clusterbomb
+Button/Name/ResearchGravitonPrison=Research Graviton Prison
+Button/Name/ResearchNuclearStrike=Research Nuclear Strike
+Button/Name/ResearchOffensiveBattlecruiserCapabilities=Research Offensive Battlecruiser Capabilities
+Button/Name/ResearchPassiveCloak=Research Passive Cloak
+Button/Name/ResearchPointDefenseDrone=Research Point Defense Drone
+Button/Name/ResearchQuadDamage=Research Quad Damage
+Button/Name/ResearchRavenCapacity=Research Raven Capacity
+Button/Name/ResearchReflectiveShield=Research Reflective Shield
+Button/Name/ResearchShockwave=Research Shockwave
+Button/Name/ResearchShredderGrenade=Research Shredder Grenade
+Button/Name/Shockwave=Shockwave
+Button/Name/UpgradeAir=Upgrade Air
+Button/Name/UpgradeArmor=Upgrade Armor
+Button/Name/UpgradeEnergy=Upgrade Energy
+Button/Name/UpgradeInfantry=Upgrade Infantry
+Button/Name/UpgradeLife=Upgrade Life
+Button/Name/UpgradeMechanical=Upgrade Mechanical
+Button/Name/UpgradeWeapons=Upgrade Weapons
+Button/Name/Upgrades=Upgrades
+Button/Name/Wraith=Wraith
+Button/Tooltip/ArtilleryTargeting=Tanks can shoot air.
+Button/Tooltip/Blink=Teleports the Firebat to a nearby target location.
+Button/Tooltip/BuildAir=Allows you to build air units
+Button/Tooltip/BuildInfantry=Allows you to build infantry units
+Button/Tooltip/BuildMechanical=Allows you to build mechanical units
+Button/Tooltip/Cancel2=Drops the current order without performing it, and allows you to select a different order.
+Button/Tooltip/Diamondback=Fast, high-damage hovertank. Rail Gun can fire while the Diamondback is moving.<n/><n/><c val="#ColorAttackInfo">Can attack ground and air units.</c>
+Button/Tooltip/DutchPlaceTurret=Places a defensive flame turret that lasts for 45 seconds. Good for destroying swarms of small Zerg and soaking damage. Does <d ref="Effect,DutchTurretFlameThrowerDamage,Amount"/> damage.<n/><n/><c val="#ColorAttackInfo">Can attack ground units.</c>
+Button/Tooltip/EliteForcesInfantry=Summons additional reinforcements from orbit.
+Button/Tooltip/EliteOrbitalFortress=Special forces command station. Provides healing when close by, has a constant radar, and will additionally kill any units that come nearby when the special forces are not nearby.<n/><n/><c val="ffff8a">Can attack air and ground units, but not heroes.</c>
+Button/Tooltip/EliteOrbitalFortress2=Special forces command station. Provides healing when close by and will kill any units that come nearby when the special forces are not nearby.<n/><n/><c val="ffff8a">Can attack air and ground units.</c>
+Button/Tooltip/EliteOrbitalFortress22=Special forces command station. Provides healing when close by and will kill any units that come nearby when the special forces are not nearby.<n/><n/><c val="ffff8a">Can attack air and ground units.</c>
+Button/Tooltip/EliteOrbitalFortress222=Special forces command station. Provides healing when close by and will kill any units that come nearby when the special forces are not nearby.<n/><n/><c val="ffff8a">Can attack air and ground units.</c>
+Button/Tooltip/EliteOrbitalFortress2222=Special forces command station. Provides healing when close by and will kill any units that come nearby when the special forces are not nearby.<n/><n/><c val="ffff8a">Can attack air and ground units.</c>
+Button/Tooltip/EliteRD=Trains Mercenary units.
+Button/Tooltip/G4Clusterbomb=Reaper throws a timed explosive that does <d ref="Effect,D8ChargeDamage,Amount * Effect,D8ClusterBombCreatePersistant,PeriodCount"/> damage over a large radius.
+Button/Tooltip/Ghost=Long range specialist. Can use snipe and penetrator rounds.<n/><n/><c val="#ColorAttackInfo">Can attack ground and air units.</c>
+Button/Tooltip/GravitonPrison=Makes an air target unit float in the air, preventing any attack and allowing ground units to attack it.
+Button/Tooltip/Hellion=Fast scout. Fires a laser that increases in damage the longer it stays on a target. Can attack while moving.<n/><n/><c val="#ColorAttackInfo">Can attack ground and air units.</c>
+Button/Tooltip/HelperEmitterSelectionArrow2=Summons additional reinforcements from orbit.
+Button/Tooltip/HireDevilDogs=Fire melee specialist. Effective against swarms.<n/><n/><c val="#ColorAttackInfo">Can attack ground units.</c>
+Button/Tooltip/HireDukesRevenge=Powerful warship.<n/><n/><c val="#ColorAttackInfo">Can attack ground and air units.</c>
+Button/Tooltip/HireDuskWing=Tactical-strike aircraft.<n/><n/><c val="#ColorAttackInfo">Can attack ground units.</c>
+Button/Tooltip/HireHammerSecurities=Heavy assault infantry. Slows enemies with each hit.<n/><n/><c val="#ColorAttackInfo">Can attack ground and air units.</c>
+Button/Tooltip/HireHelsAngels=Strong anti-air fighter. Can switch into Assault Mode to attack ground units.<n/><n/><c val="#ColorAttackInfo">Can attack air units.</c>
+Button/Tooltip/HireKelmorianMiners=All purpose infantry.<n/><n/><c val="#ColorAttackInfo">Can attack ground and air units.</c>
+Button/Tooltip/HireSiegeBreakers=Heavy tank. Can be upgraded to switch into Siege Mode to provide long-range artillery support.<n/><n/><c val="#ColorAttackInfo">Can attack ground and air units.</c>
+Button/Tooltip/HireSpartanCompany=All purpose mechanical support.<n/><n/><c val="#ColorAttackInfo">Can attack ground and air units.</c>
+Button/Tooltip/HunterSeekerMissile=Missile that chases its target. Deals up to <d ref="Effect,SeekerMissileDamage,Amount"/> area damage.
+Button/Tooltip/HybridFAoEStun=Sprays slime on nearby enemies, slowing movement and attack speed for 15 seconds.
+Button/Tooltip/Interceptor=Builds mini wraiths that automatically attack the Raven's target. Ravens may not attack without mini wraiths.<n/><n/><c val="#ColorAttackInfo">Can attack ground and air units.</c>
+Button/Tooltip/Irradiate=Irradiates a single target, causing <d ref="Effect,IrradiatePeriodicDamage,Amount"/> damage over time to target and any nearby units for <d ref="Behavior,Irradiate,Duration"/> seconds. Nearby biological units will take damage from an Irradiated mechanical unit.
+Button/Tooltip/JackhammerConcussionGrenade=Marauder attack temporarily slows all units in target area.<n/><n/><c val="#ColorAttackInfo">Massive, air and heroic units are immune.</c>
+Button/Tooltip/LogisticsHeadquarters2=Local Dominion Headquarters. Destroy it to break the Dominion's hold over Mar Sara.
+Button/Tooltip/MercCompound2=Trains Mercenary units.
+Button/Tooltip/MissilePods=Missile Pods deal <d ref="Effect,HurricaneMissileDamage,Amount * Effect,HurricaneMissileDamagePersistent,PeriodCount"/> damage to all units in target area.
+Button/Tooltip/Odin=The Odin is a powerful siege walker.<n/><n/><c val="#ColorAttackInfo">Can attack ground and air units.</c>
+Button/Tooltip/OdinBarrage=Fires a barrage of shells at an area, inflicting <d ref="Effect,BarrageDamage,Amount"/> damage.<n/><n/><c val="#ColorAttackInfo">Can hit ground units and structures.</c>
+Button/Tooltip/OdinNukeCalldown=Calls down a Nuclear Strike at a target location. Nukes take time to land, but they deal up to <d ref="Effect,OdinNukeDamage,Amount"/> damage to enemies in a large radius.
+Button/Tooltip/OdinNukeCalldown2=Calls down a Nuclear Strike at a target location. Nukes take time to land, but they deal up to 200 damage to enemies in a large radius.
+Button/Tooltip/PermanentlyCloakedGhost=The Ghost is permanently cloaked, but suffers a 8 second cloak debuff if he attacks or uses an ability.
+Button/Tooltip/QuadDamage=Upgrades helion add an additional damage level which does 4x damage.
+Button/Tooltip/Raven=Can build and launch mini wraiths to make attacks.<n/><n/><c val="ffff8a">Can attack ground and air units.</c>
+Button/Tooltip/RaynorSnipe=Fires a Penetrator Round that strikes enemies along its path, dealing <d ref="Effect,RaynorSnipeDamage,Amount"/> damage.
+Button/Tooltip/Reaper=Raider. Capable of jumping up and down cliffs.<n/><n/><c val="#ColorAttackInfo">Can attack ground and air units.</c>
+Button/Tooltip/ReflectiveShield=Marine gains a 25% chance to halve incoming damage.
+Button/Tooltip/ResearchArtilleryTargeting=Enables siege tanks to hit air units.
+Button/Tooltip/ResearchConstrictingSlime=Goliaths gain the ability to slow down movement and attack speeds of units within a large radius around them for 15 seconds.
+Button/Tooltip/ResearchFlamingBetty=Vikings gain the ability to place flaming betty turrets. Good for absorbing damage and killing swarms of zerg.
+Button/Tooltip/ResearchG4Clusterbomb=Reapers gain the ability to throw G-4 Clusterbombs.
+Button/Tooltip/ResearchGravitonPrison=Allows the banshee to send air units to the ground, stunning them and allowing the banshee to attack them.
+Button/Tooltip/ResearchNuclearStrike=Odins gain the ability to launch Nuclear Strikes.
+Button/Tooltip/ResearchOffensiveBattlecruiserCapabilities=Enables Yammato Cannon and Hellfire Missiles on Battlecruisers.
+Button/Tooltip/ResearchPassiveCloak=Upgrades the Ghost to cloak when he isn't attacking or using his special abilities.
+Button/Tooltip/ResearchPointDefenseDrone=Wraiths gain the ability to launch point defense drones to shoot down enemy projectiles.
+Button/Tooltip/ResearchQuadDamage=Adds an extra damage level to the helion laser.
+Button/Tooltip/ResearchRavenCapacity=Ravens gain +2 mini wraith capacity.
+Button/Tooltip/ResearchReflectiveShield=Marines gain a 25% chance to halve incoming damage.
+Button/Tooltip/ResearchSeekerMissile=Enables Diamondbacks to use the Seeker Missile armament. This missile chases its target.
+Button/Tooltip/ResearchShockwave=Firebats gain the ability to cause a massive shockwave to stun enemies around him and cause damage.
+Button/Tooltip/ResearchShredderGrenade=Marauders can throw grenades to inflict splash damage on groups of units.
+Button/Tooltip/ResearchStalkerTeleport=Allows Firebats to teleport to a nearby target location.
+Button/Tooltip/Shockwave=Knocks all enemies near the firebat back and causes <d ref="Effect,PsionicShockwaveDamage,Amount"/> damage.
+Button/Tooltip/Snipe=A careful shot, dealing <d ref="Effect,SnipeDamage,Amount"/> damage. Ignores armor.<n/><n/><c val="#ColorAttackInfo">Can only target biological units.</c>
+Button/Tooltip/Stim=Marine takes 50 damage. Fires and moves 50% faster for 15 seconds.
+Button/Tooltip/SuperGreaterSpire=Contains upgrades for Zerg air units.<n/><n/><c val="ffff8a">Enables:</c><n/>- Brood Lords from Corruptors
+Button/Tooltip/SuperHydraliskDen=Contains upgrades for Hydralisks.<n/><n/><c val="ffff8a">Enables:</c><n/>- Hydralisks from Larvae
+Button/Tooltip/SuperInfestationChamber=Contains upgrades for Zerg ground units. <n/><n/><c val="ffff8a">Enables:</c><n/>- Spore Crawlers from Drones
+Button/Tooltip/SuperRoachWarren=Contains upgrades for Roaches.<n/><n/><c val="ffff8a">Enables:</c><n/>- Roaches from Larvae
+Button/Tooltip/SuperSpawningPool=Contains upgrades for Zerglings.<n/><n/><c val="ffff8a">Enables:</c><n/>- Queens at the Hatchery, Lair, or Hive<n/>- Zerglings from Larvae<n/>- Spine Crawlers from Drones
+Button/Tooltip/SuperSpire=Contains upgrades for Zerg air units. Can mutate into a Greater Spire.<n/><n/><c val="ffff8a">Enables:</c><n/>- Mutalisks from Larvae<n/>- Corruptors from Larvae
+Button/Tooltip/SuperUltraliskCavern=Contains upgrades for Ultralisks.<n/><n/><c val="ffff8a">Enables:</c><n/>- Ultralisks from Larvae
+Button/Tooltip/TossGrenadeTychus=Tosses a grenade that explodes for <d ref="Effect,BonesTossGrenadeDamage,Amount"/> damage in a small radius. <n/><n/><c val="ffff8a">Does not harm friendly units.</c>
+Button/Tooltip/UpgradeAir=Allows you to upgrade air units
+Button/Tooltip/UpgradeArmor=Maximizes the armor of all units.
+Button/Tooltip/UpgradeEnergy=Maximizes energy and energy regeneration of caster units.
+Button/Tooltip/UpgradeInfantry=Allows you to upgrade infantry units
+Button/Tooltip/UpgradeLife=Maximizes life and life regeneration of all units.
+Button/Tooltip/UpgradeMechanical=Allows you to upgrade mechanical units
+Button/Tooltip/UpgradeWeapons=Maximizes the damage dealt by all units and spells.
+Button/Tooltip/Upgrades=Accesses upgrades menu.
+Button/Tooltip/Wraith=Highly mobile flying unit. Excellent at surgical strikes.<n/><n/><c val="ffff8a">Can attack ground and air units.</c>
+Button/Tooltip/Wraith2Unit=Combat drones that automatically strafe their Carrier's target. Carriers may not attack without Interceptors.<n/><n/><c val="#ColorAttackInfo">Can attack ground and air units.</c>
+Button/Tooltip/YamatoGun=Blasts a target with a devastating plasma cannon, causing <d ref="Effect,YamatoU,Amount"/> damage.
+DocInfo/Author=mikelat
+DocInfo/DescLong=Deploy your elite special forces against swarms of zerg. Kill all buildings and heroes to win.<n/><n/>New version includes bigger map size, more enemies, higher difficulty, and other improvements.
+DocInfo/DescShort=Deploy your elite special forces against swarms of zerg.
+DocInfo/Name=Special Forces: Elite
+LoadingScreen/Help00=You can set the Marines stim pack ability to autocast and he will cast it automatically when he needs it.1
+LoadingScreen/Help01=You can store a unit selection by pressing <k val="ControlGroupAssign1"/>. Press<k val="ControlGroupRecall1"/> to recall the selection.2
+LoadingScreen/Help02=Press<k val="SubgroupNext"/> to cycle through different types of selected units, making it easier to use their abilities.3
+LoadingScreen/Help03=Units on higher ground can attack without endangering themselves. To counter this, gain vision of the attackers by running up ramps or bringing air units.4
+LoadingScreen/Help04=Xel'Naga Towers provide vision across a large area. Stand a unit near a Xel'Naga Tower to control it.5
+LoadingScreen/Help05=Destructible Rocks can be destroyed to open up new paths.6
+LoadingScreen/Help06=Your starting area will eventually run out of resources. Expand to new resource locations to secure additional income.7
+LoadingScreen/Help07=Expanding to a new resource location early in a game is risky, but the extra income is sometimes worth the risk.8
+LoadingScreen/Help08=Weapon and armor upgrades affect existing and future units, so their benefits quickly add up over the course of longer games.9
+LoadingScreen/Help09=The key to a strong economy is constantly training SCVs, Probes, or Drones.0
+LoadingScreen/Help10=It takes 3 SCVs, Probes, or Drones to optimally harvest a Mineral Field or Vespene Geyser.1
+LoadingScreen/Help11=You can use control groups to train units without even looking at your base.2
+LoadingScreen/Help12=You can select all nearby units of a given type by double-clicking on a unit, or by holding CTRL and clicking on a unit.1
+LoadingScreen/Help13=Rich Mineral Fields are yellow, and can be harvested faster than normal Mineral Fields.1
+LoadingScreen/Help14=To win a multiplayer game, destroy all enemy structures or be the last player still in the game.1
+LoadingScreen/Help15=Achievements are online trophies for accomplishing various goals in the game. View your profile to see what achievements you can earn.1
+LoadingScreen/Help16=Weapons that list damage as "vs Armored: 5" do a total of 5 damage to targets that are considered Armored.1
+LoadingScreen/Help17=Cloaked or burrowed units cannot be attacked unless spotted by a detector, such as a Raven, Observer, or Overseer.1
+LoadingScreen/Help18=Detectors like Ravens, Observers, and Overseers can spot the difference between Protoss Hallucinations and real units.1
+LoadingScreen/Help19=If you have a microphone, you can hold down the TILDE key to talk to your allies.1
+LoadingScreen/Help20=Press<k val="CameraFollow"/> to have the game follow a selected unit as it moves across the battlefield.1
+LoadingScreen/Help21=SCVs can be used to repair buildings or mechanical units. The more SCVs repairing, the faster the repair is complete.1
+LoadingScreen/Help22=Use several SCVs to keep vital defenses or combat units alive during a fight.1
+LoadingScreen/Help23=Use Medivacs to support large infantry groups. Use their transport abilities to take infantry behind enemy lines for surprise attacks.1
+LoadingScreen/Help24=Hellions do damage in a straight line with their flame thrower. Get close to packs of enemies to maximize your damage.1
+LoadingScreen/Help25=Siege Tanks cannot fire at units that get too close. Put other units or structures in front of your Siege Tanks to keep the enemy back.1
+LoadingScreen/Help26=Reapers can jump up and down short cliffs. Use them to scout the enemy or make surprise attacks against their workers.1
+LoadingScreen/Help27=Place Supply Depots in narrow areas to block enemy access to your base. Lower them when you want to leave.1
+LoadingScreen/Help28=Use Stim Packs to make your infantry more dangerous in battle. Use Medivacs to heal the damage done by Stim Packs.1
+LoadingScreen/Help29=Orbital Command Centers can call-down MULEs to gather additional resources. Use MULEs every chance you get.1
+LoadingScreen/Help30=Building extra Barracks, Factories, and Starports enbles you to train more troops at a time.1
+LoadingScreen/Help31=Once started, Protoss structures construct themselves, freeing up the Probe to do other things.1
+LoadingScreen/Help32=You can rapidly train Probes by using the Nexus' Chrono Boost ability on the Nexus itself.1
+LoadingScreen/Help33=Warp Gates allow you to rapidly train units at any location where you have power.1
+LoadingScreen/Help34=Stalkers can blink to anyplace that you can see. Use fliers to see up cliffs to gain access to high ground areas.2
+LoadingScreen/Help35=Void Rays do more damage the longer they fight the enemy. Try to protect your Void Rays so they can get to full power.2
+LoadingScreen/Help36=A Colossus can walk up short cliffs. Use this ability to protect your Colossus or to make surprise attacks.2
+MapInfo/Player00/Name=Neutral
+MapInfo/Player01/Name=Player 1
+MapInfo/Player02/Name=Player 2
+MapInfo/Player03/Name=Player 3
+MapInfo/Player04/Name=Player 4
+MapInfo/Player05/Name=Player 5
+MapInfo/Player06/Name=Player 6
+MapInfo/Player07/Name=Player 7
+MapInfo/Player08/Name=Player 8
+MapInfo/Player09/Name=Player 9
+MapInfo/Player10/Name=Player 11
+MapInfo/Player11/Name=Player 12
+MapInfo/Player12/Name=Player 13
+MapInfo/Player13/Name=Player 14
+MapInfo/Player14/Name=Elite Forces
+MapInfo/Player15/Name=Hostile
+Param/Value/05685C27=The objective of the game is to build up a team of special forces and eliminate all the zerg off the map. Standing beside the Orbital Fortress will heal you, and moving away from it will give it it's firing capabilities (so it won't steal your kills). Many units you are acustomed to have been changed, as some have new abilities, can attack air, and so on.<n/><n/>Tips:<n/>- If you are having trouble, remember that teamwork is very important, and that you can kill the constantly spawning units to harvest more minerals before moving forward.<n/>- Killing buildings or heroes units will result in all players getting a piece of the minerals, represented by larger text for when the enemy dies.<n/>- If you use a lot of the same unit, consider getting the special unique upgrade for it to increase it's effectiveness.<n/>- Some abilities are changed, for example: stim pack has an autocast. Look around for slight alterations!
+Param/Value/08C28801=Oribtal Fortress Health
+Param/Value/20898EA6=Credits
+Param/Value/38FE1685=<c val="FF0000">Created by:</c> <c val="FF8080">mikelat</c> <c val="FF0080">(US, char code 610)</c><n/><c val="00FF00">http://www.mikelat.com</c><n/><n/><c val="00FFFF">Special thanks to Odin for helping with testing!</c><n/><c val="FF8040">Plus thanks to www.SC2Mapster.com and www.StarEdit.net</c>
+Param/Value/3983F821=<c val="00FF00">YOU ARE VICTORIOUS</c>
+Param/Value/41CD7C17=Credits
+Param/Value/998F3DB0=<c val="FF0000">YOU HAVE BEEN DEFEATED</c>
+Param/Value/C146C32D=How to Play
+Param/Value/D47DAD9C=+5 Grenades
+Param/Value/DBDCB531=+
+Param/Value/FBA01ECF=How to Play
+RequirementNode/Tooltip/CountUpgradeArtilleryTargetingCompleteOnly4148612580TechTreeCheat=Artillery Targeting Research
+RequirementNode/Tooltip/CountUpgradeCombatShieldCompleteOnly2839830718TechTreeCheat=Reflective Shield Research
+RequirementNode/Tooltip/CountUpgradeFlamingBettyCompleteOnly87455078TechTreeCheat=Research Flaming Betty
+RequirementNode/Tooltip/CountUpgradeGravitonPrisonCompleteOnly570141066TechTreeCheat=Research Graviton Prison
+RequirementNode/Tooltip/CountUpgradeHunterSeekerCompleteOnly2418878204TechTreeCheat=Research Seeker Missile
+RequirementNode/Tooltip/CountUpgradeOdinNuke2CompleteOnly361325049TechTreeCheat=Research Constricting Slime
+RequirementNode/Tooltip/CountUpgradeOdinNukeCompleteOnly1330060644TechTreeCheat=Research Odin Nuke
+RequirementNode/Tooltip/CountUpgradeOffensiveBattlecruiserCapabilitiesCompleteOnly1077391733TechTreeCheat=Research Offensive Battlecruiser Capabilities
+RequirementNode/Tooltip/CountUpgradePassiveCloakCompleteOnly1028982313=Passive Cloak Research
+RequirementNode/Tooltip/CountUpgradePointDefenseDroneCompleteOnly4258817689TechTreeCheat=Research Point Defense Drone
+RequirementNode/Tooltip/CountUpgradeQuadDamageCompleteOnly1278784526TechTreeCheat=Quad Damage Research
+RequirementNode/Tooltip/CountUpgradeShockwaveCompleteOnly893923979TechTreeCheat=Research Shockwave
+RequirementNode/Tooltip/CountUpgradeShredderGrenadeCompleteOnly2494540360TechTreeCheat=Research Shredder Grenade
+RequirementNode/Tooltip/LT1538368987CountUnitInterceptorQueuedOrBetterAtUnit6=Raven must have fewer than 6 miniwraiths.
+RequirementNode/Tooltip/LT2345953344CountUnitInterceptorQueuedOrBetterAtUnit4=Raven must have fewer than 4 mini wraiths.
+Unit/Name/DevilDog=Firebat
+Unit/Name/DukesRevenge=Battlecruiser
+Unit/Name/DuskWing=Banshee
+Unit/Name/EliteOrbitalFortress=Elite Orbital Fortress
+Unit/Name/EliteOrbitalFortress2=Elite Orbital Fortress
+Unit/Name/EliteOrbitalFortress22=Elite Orbital Fortress
+Unit/Name/EliteOrbitalFortress222=Elite Orbital Fortress
+Unit/Name/EliteOrbitalFortress2222=Elite Orbital Fortress
+Unit/Name/EliteRD=Elite R&D
+Unit/Name/EvolutionChamber=Infestation Chamber
+Unit/Name/HammerSecurity=Marauder
+Unit/Name/HelsAngelAssault=Viking
+Unit/Name/HelsAngelFighter=Viking
+Unit/Name/Interceptor=Mini Wraith
+Unit/Name/MercCompound=Merc Compound
+Unit/Name/OrbitalFortress2=
+Unit/Name/OrbitalFortress22=
+Unit/Name/OrbitalFortress222=
+Unit/Name/OrbitalFortress2222=
+Unit/Name/Raven=Raven
+Unit/Name/ShapeArrowPointer2=Arrow Pointer
+Unit/Name/SiegeBreaker=Siege Tank
+Unit/Name/SiegeBreakerSieged=Siege Tank
+Unit/Name/SpartanCompany=Goliath
+Unit/Name/SuperGreaterSpire=Super Greater Spire
+Unit/Name/SuperHydraliskDen=Super Hydralisk Den
+Unit/Name/SuperInfestationChamber=Super Infestation Chamber
+Unit/Name/SuperRoachWarren=Super Roach Warren
+Unit/Name/SuperSpawningPool=Super Spawning Pool
+Unit/Name/SuperSpire=Super Spire
+Unit/Name/SuperUltraliskCavern=Super Ultralisk Cavern
+Unit/Name/WarPig=Marine
+UnitKillRank/FlamingBetty=Viking's BFF
+Upgrade/Name/ArtilleryTargeting=Artillery Targeting
+Upgrade/Name/ArtilleryTargeting2=Artillery Targeting Copy
+Upgrade/Name/CombatShield=Combat Shield
+Upgrade/Name/FlamingBetty=Flaming Betty
+Upgrade/Name/GravitonPrison=Graviton Prison
+Upgrade/Name/OdinNuke=OdinNuke
+Upgrade/Name/OdinNuke2=Constricting Slime
+Upgrade/Name/OffensiveBattlecruiserCapabilities=Offensive Battlecruiser Capabilities
+Upgrade/Name/PassiveCloak=Passive Cloak
+Upgrade/Name/PointDefenseDrone=Point Defense Drone
+Upgrade/Name/QuadDamage=Quad Damage
+Upgrade/Name/Shockwave=Shockwave
+Upgrade/Name/ShredderGrenade=Shredder Grenade
+Upgrade/Name/UpgradeAr=Upgrade Ar
+Upgrade/Name/UpgradeLife=Upgrade Life
+Upgrade/Name/UpgradeWeapons=Upgrade Weapons
+Variant001/CategoryDesc=All settings may be customized.
+Variant001/CategoryName=Special Forces
+Variant001/ModeDesc=All settings may be customized.
+Variant001/ModeName=Special Forces
+Variant001/Name=Special Forces
+Weapon/Name/ArcliteShockCannon2=Arclite Shock Cannon
+Weapon/Name/InterceptorLaunch=Mini Wraith Launch
+Weapon/Name/InterceptorsDummy=Mini Wraiths
+Weapon/Name/MiniMissiles=Mini Missiles
+Weapon/Name/PerditionTurretFlamethrower=Super Flamethrower
+Weapon/Name/UberCannon=UberCannon
+Weapon/Name/WraithA2=Mini Gemini Missiles
+
+Unit/Name/Warhound=Warhound Mercenary
+Unit/Name/GastlyOverseer=Gastly Overseer
+Unit/Name/ViperGreen=Green Viper
+
+Button/Name/ConsoleBuffT1=Optical Lens
+Button/Tooltip/ConsoleBuffT1=Grants permanent cloaking. Cost: 500 Minerals.
+Button/Name/ConsoleBuffT3=Momentum
+Button/Tooltip/ConsoleBuffT3=Increases movement and attack speed. Cost: 1000 Minerals.
+Button/Name/ConsoleStatStr=Strength
+Button/Name/ConsoleStatDex=Dexterity
+Button/Name/ConsoleStatInt=Intelligence
+Button/Name/ConsoleStatSta=Stamina
+
+Unit/Name/JimRaynor=Jim Raynor
+Unit/Name/PrimalKerrigan=Kerrigan
+Unit/Name/ArtanisTank=Artanis
+Unit/Name/EgonStetmann=Stetmann

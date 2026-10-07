@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<Catalog>
+    <CUpgrade id="ArtilleryTargeting2">
+        <Icon value="Assets\Textures\btn-techupgrade-terran-attacksair.dds"/>
+        <Alert value="ResearchComplete"/>
+        <Race value="Terr"/>
+        <ScoreAmount value="300"/>
+        <ScoreResult value="BuildOrder"/>
+        <EffectArray Operation="Set" Reference="Weapon,SiegeBreaker,TargetFilters" Value="Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <EffectArray Operation="Set" Reference="Weapon,ArcliteShockCannon,TargetFilters" Value="Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <EffectArray Operation="Set" Reference="Weapon,ArcliteShockCannon,DisplayEffect" Value="ArcliteShockCannonDummy2"/>
+        <EffectArray Operation="Set" Reference="Weapon,ArcliteShockCannon,Effect" Value="ArcliteShockCannonSet2"/>
+        <EditorCategories value="Race:Terran,UpgradeType:Talents"/>
+    </CUpgrade>
+    <CUpgrade id="ClusterBomb">
+        <Flags index="UpgradeCheat" value="1"/>
+        <Icon value="Assets\Textures\btn-ability-terran-d8charge.dds"/>
+        <Alert value="ResearchComplete"/>
+    </CUpgrade>
+    <CUpgrade id="ArtilleryTargeting">
+        <Icon value="Assets\Textures\btn-techupgrade-terran-attacksair.dds"/>
+        <Alert value="ResearchComplete"/>
+        <Race value="Terr"/>
+        <ScoreAmount value="300"/>
+        <ScoreResult value="BuildOrder"/>
+        <EffectArray Operation="Set" Reference="Weapon,SiegeBreaker,TargetFilters" Value="Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <EffectArray Operation="Set" Reference="Weapon,ArcliteShockCannon,TargetFilters" Value="Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <EffectArray Operation="Set" Reference="Weapon,ArcliteShockCannon,DisplayEffect" Value="ArcliteShockCannonDummy2"/>
+        <EffectArray Operation="Set" Reference="Weapon,ArcliteShockCannon,Effect" Value="ArcliteShockCannonSet2"/>
+        <EditorCategories value="Race:Terran,UpgradeType:Talents"/>
+    </CUpgrade>
+    <CUpgrade id="CombatShield">
+        <EffectArray index="0" Operation="Set" Reference="Actor,Marine,GroupIcon.Image[0]" Value="Assets\Textures\wireframe-terran-marine-shield.dds"/>
+        <EffectArray index="1" Operation="Set" Reference="Actor,Marine,Wireframe.Image[0]" Value="Assets\Textures\wireframe-terran-marine-shield.dds"/>
+        <EffectArray index="2" Reference="Actor,KelmorianMiner,GroupIcon.Image[0]" Value="Assets\Textures\wireframe-terran-marine-mercenary-shield.dds"/>
+        <EffectArray index="3" Reference="Actor,KelmorianMiner,Wireframe.Image[0]" Value="Assets\Textures\wireframe-terran-marine-mercenary-shield.dds"/>
+        <EffectArray index="4" removed="1"/>
+        <EffectArray index="5" removed="1"/>
+        <EffectArray index="6" removed="1"/>
+        <EffectArray index="7" removed="1"/>
+    </CUpgrade>
+    <CUpgrade id="InterceptorLimit4"/>
+    <CUpgrade id="InterceptorLimit6"/>
+    <CUpgrade id="OdinNuke2">
+        <Icon value="Assets\Textures\btn-ability-zerg-sporecloud.dds"/>
+        <Alert value="ResearchComplete"/>
+        <Race value="Terr"/>
+        <ScoreAmount value="400"/>
+        <ScoreResult value="BuildOrder"/>
+        <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
+        <AffectedUnitArray value="SpartanCompany"/>
+    </CUpgrade>
+    <CUpgrade id="ShieldWall">
+        <EffectArray index="0" Operation="Set" Reference="Actor,Marine,Wireframe.Image[0]" Value="Assets\Textures\wireframe-terran-marine-shield.dds"/>
+        <EffectArray index="1" Operation="Set" Reference="Actor,Marine,GroupIcon.Image[0]" Value="Assets\Textures\wireframe-terran-marine-shield.dds"/>
+        <EffectArray index="2" removed="1"/>
+        <EffectArray index="3" removed="1"/>
+    </CUpgrade>
+    <CUpgrade id="ShredderGrenade">
+        <Icon value="Assets\Textures\btn-ability-terran-tychustossgrenade.dds"/>
+        <Alert value="ResearchComplete"/>
+        <Race value="Terr"/>
+        <ScoreAmount value="400"/>
+        <ScoreResult value="BuildOrder"/>
+        <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
+        <AffectedUnitArray value="HammerSecurity"/>
+    </CUpgrade>
+    <CUpgrade id="Shockwave">
+        <Icon value="Assets\Textures\btn-techupgrade-terran-empround.dds"/>
+        <Alert value="ResearchComplete"/>
+        <Race value="Terr"/>
+        <ScoreAmount value="400"/>
+        <ScoreResult value="BuildOrder"/>
+        <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
+        <AffectedUnitArray value="DevilDog"/>
+    </CUpgrade>
+    <CUpgrade id="PassiveCloak">
+        <Icon value="Assets\Textures\btn-ability-terran-cloak.dds"/>
+        <Alert value="ResearchComplete"/>
+        <Race value="Terr"/>
+        <ScoreAmount value="300"/>
+        <ScoreResult value="BuildOrder"/>
+        <EditorCategories value="Race:Terran,UpgradeType:Talents"/>
+    </CUpgrade>
+    <CUpgrade id="OdinNuke">
+        <Icon value="Assets\Textures\btn-techupgrade-terran-nuclearstrike.dds"/>
+        <Alert value="ResearchComplete"/>
+        <Race value="Terr"/>
+        <ScoreAmount value="400"/>
+        <ScoreResult value="BuildOrder"/>
+        <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
+        <AffectedUnitArray value="Odin"/>
+    </CUpgrade>
+    <CUpgrade id="QuadDamage">
+        <Icon value="Assets\Textures\btn-ability-protoss-prismaticbeam.dds"/>
+        <Alert value="ResearchComplete"/>
+        <Race value="Terr"/>
+        <ScoreAmount value="300"/>
+        <ScoreResult value="BuildOrder"/>
+        <EditorCategories value="Race:Terran,UpgradeType:Talents"/>
+        <EffectArray Operation="Set" Reference="Effect,PrismaticBeamChargeEffect02,ExpireEffect" Value="PrismaticBeamChainSet3"/>
+    </CUpgrade>
+    <CUpgrade id="PointDefenseDrone">
+        <Icon value="Assets\Textures\btn-ability-terran-pointdefenselaser.dds"/>
+        <Alert value="ResearchComplete"/>
+        <Race value="Terr"/>
+        <ScoreAmount value="400"/>
+        <ScoreResult value="BuildOrder"/>
+        <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
+        <AffectedUnitArray value="Wraith"/>
+    </CUpgrade>
+    <CUpgrade id="FlamingBetty">
+        <Icon value="Assets\Textures\btn-building-terran-autoturret.dds"/>
+        <Alert value="ResearchComplete"/>
+        <Race value="Terr"/>
+        <ScoreAmount value="400"/>
+        <ScoreResult value="BuildOrder"/>
+        <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
+        <AffectedUnitArray value="HelsAngelFighter"/>
+    </CUpgrade>
+    <CUpgrade id="GravitonPrison">
+        <Icon value="Assets\Textures\btn-ability-protoss-voidprison.dds"/>
+        <Alert value="ResearchComplete"/>
+        <Race value="Terr"/>
+        <ScoreAmount value="400"/>
+        <ScoreResult value="BuildOrder"/>
+        <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
+        <AffectedUnitArray value="DuskWing"/>
+    </CUpgrade>
+    <CUpgrade id="OffensiveBattlecruiserCapabilities">
+        <Icon value="Assets\Textures\btn-ability-terran-yamatogun.dds"/>
+        <Alert value="ResearchComplete"/>
+        <Race value="Terr"/>
+        <ScoreAmount value="400"/>
+        <ScoreResult value="BuildOrder"/>
+        <EditorCategories value="Race:Terran,UpgradeType:SpellResearch"/>
+        <AffectedUnitArray value="DukesRevenge"/>
+    </CUpgrade>
+    <CUpgrade id="UpgradeAr">
+        <Icon value="Assets\Textures\btn-upgrade-terran-infantryweaponslevel3.dds"/>
+        <ScoreAmount value="500"/>
+        <ScoreCount value="ArmorTechnologyCount"/>
+        <ScoreValue value="ArmorTechnologyValue"/>
+        <EffectArray Reference="Unit,DuskWing,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,DuskWing,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,DukesRevenge,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,DukesRevenge,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,Diamondback,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,Diamondback,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,Raven,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,Raven,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,DevilDog,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,DevilDog,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,Ghost,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,Ghost,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,SpartanCompany,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,SpartanCompany,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,Hellion,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,Hellion,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,HammerSecurity,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,HammerSecurity,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,WarPig,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,WarPig,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,Odin,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,Odin,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,Reaper,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,Reaper,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,SiegeBreakerSieged,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,SiegeBreakerSieged,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,SiegeBreaker,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,SiegeBreaker,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,HelsAngelAssault,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,HelsAngelAssault,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,HelsAngelFighter,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,HelsAngelFighter,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,Wraith,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,Wraith,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,Interceptor,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,Interceptor,LifeArmor" Value="1"/>
+        <EffectArray Reference="Unit,FlamingBetty,LifeArmorLevel" Value="1"/>
+        <EffectArray Reference="Unit,FlamingBetty,LifeArmor" Value="1"/>
+        <EffectArray Reference="Abil,EngineeringBayResearch2,InfoArray[Research2].Charge.CountMax" Value="1"/>
+        <EffectArray Reference="Abil,EngineeringBayResearch2,InfoArray[Research2].Resource[Minerals]" Value="25"/>
+        <EditorCategories value="Race:Terran,UpgradeType:ArmorBonus"/>
+        <MaxLevel value="100"/>
+        <Race value="Terr"/>
+        <ScoreResult value="BuildOrder"/>
+    </CUpgrade>
+    <CUpgrade id="UpgradeLife">
+        <Icon value="Assets\Textures\btn-upgrade-terran-infantryweaponslevel3.dds"/>
+        <ScoreAmount value="500"/>
+        <ScoreCount value="ArmorTechnologyCount"/>
+        <ScoreValue value="ArmorTechnologyValue"/>
+        <EffectArray Reference="Unit,DuskWing,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,DuskWing,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,DukesRevenge,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,DukesRevenge,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,Diamondback,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,Diamondback,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,Raven,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,Raven,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,DevilDog,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,DevilDog,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,Ghost,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,Ghost,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,SpartanCompany,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,SpartanCompany,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,Hellion,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,Hellion,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,HammerSecurity,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,HammerSecurity,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,WarPig,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,WarPig,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,Odin,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,Odin,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,Reaper,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,Reaper,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,SiegeBreakerSieged,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,SiegeBreakerSieged,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,SiegeBreaker,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,SiegeBreaker,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,HelsAngelAssault,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,HelsAngelAssault,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,HelsAngelFighter,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,HelsAngelFighter,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,Wraith,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,Wraith,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,Interceptor,LifeStart" Value="5"/>
+        <EffectArray Reference="Unit,Interceptor,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Unit,FlamingBetty,LifeStart" Value="25"/>
+        <EffectArray Reference="Unit,FlamingBetty,LifeRegenRate" Value="0.25"/>
+        <EffectArray Reference="Abil,EngineeringBayResearch2,InfoArray[Research3].Charge.CountMax" Value="1"/>
+        <EffectArray Reference="Abil,EngineeringBayResearch2,InfoArray[Research3].Resource[Minerals]" Value="25"/>
+        <EffectArray Reference="Unit,DuskWing,LifeMax" Value="25"/>
+        <EffectArray Reference="Unit,DukesRevenge,LifeMax" Value="25"/>
+        <EffectArray Reference="Unit,Diamondback,LifeMax" Value="25"/>
+        <EffectArray Reference="Unit,DevilDog,LifeMax" Value="25"/>
+        <EffectArray Reference="Unit,Ghost,LifeMax" Value="25"/>
+        <EffectArray Reference="Unit,SpartanCompany,LifeMax" Value="25"/>
+        <EffectArray Reference="Unit,Hellion,LifeMax" Value="25"/>
+        <EffectArray Reference="Unit,HammerSecurity,LifeMax" Value="25"/>
+        <EffectArray Reference="Unit,WarPig,LifeMax" Value="25"/>
+        <EffectArray Reference="Unit,Odin,LifeMax" Value="25"/>
+        <EffectArray Reference="Unit,Raven,LifeMax" Value="25"/>
+        <EffectArray Reference="Unit,SiegeBreakerSieged,LifeMax" Value="25"/>
+        <EffectArray Reference="Unit,SiegeBreaker,LifeMax" Value="25"/>
+        <EffectArray Reference="Unit,HelsAngelAssault,LifeMax" Value="25"/>
+        <EffectArray Reference="Unit,HelsAngelFighter,LifeMax" Value="25"/>
+        <EffectArray Reference="Unit,Wraith,LifeMax" Value="25"/>
+        <EffectArray Reference="Unit,FlamingBetty,LifeMax" Value="25"/>
+        <EffectArray Reference="Unit,Interceptor,LifeMax" Value="5"/>
+        <EffectArray Reference="Unit,Reaper,LifeMax" Value="25"/>
+        <EditorCategories value="Race:Terran,UpgradeType:ArmorBonus"/>
+        <MaxLevel value="100"/>
+    </CUpgrade>
+    <CUpgrade id="UpgradeWeapons" parent="TerranInfantryWeapons">
+        <Name value="Upgrade/Name/UpgradeWeapons"/>
+        <InfoTooltipPriority value="0"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-infantryweaponslevel3.dds"/>
+        <ScoreAmount value="500"/>
+        <EffectArray index="0" Reference="Weapon,KelmorianMinerGaussRifle,Level"/>
+        <EffectArray index="1" Reference="Effect,P38ScytheGuassPistol,Amount" Value="2"/>
+        <EffectArray index="3" Reference="Effect,KelmorianMinerDamage,Amount" Value="2"/>
+        <EffectArray index="4" Reference="Weapon,HammerSecurity,Level"/>
+        <EffectArray index="5" Reference="Effect,HammerSecurityDamage,Amount"/>
+        <EffectArray index="6" Reference="Weapon,C10CanisterRifle,Level"/>
+        <EffectArray index="7" Reference="Effect,C10CanisterRifle,Amount" Value="3"/>
+        <EffectArray index="8" Reference="Abil,EngineeringBayResearch2,InfoArray[Research1].Charge.CountMax" Value="1"/>
+        <EffectArray index="9" Reference="Abil,EngineeringBayResearch2,InfoArray[Research1].Resource[Minerals]" Value="25"/>
+        <EffectArray index="10" Reference="Effect,PerditionTurretFlameThrowerDamage,Amount" Value="3"/>
+        <EffectArray index="11" Reference="Effect,BonesTossGrenadeDamage,Amount" Value="15"/>
+        <EffectArray Reference="Effect,PsionicShockwaveDamage,Amount" Value="15"/>
+        <EffectArray Reference="Effect,SnipeDamage,Amount" Value="15"/>
+        <EffectArray Reference="Effect,RaynorSnipeDamage,Amount" Value="10"/>
+        <EffectArray Reference="Weapon,PerditionTurretFlamethrower,Level" Value="1"/>
+        <EffectArray Reference="Effect,D8ChargeDamage,Amount" Value="3"/>
+        <EffectArray Reference="Effect,PrismaticBeamMUx2,Amount" Value="1.5"/>
+        <EffectArray Reference="Effect,PrismaticBeamMUx1,Amount" Value="1"/>
+        <EffectArray Reference="Effect,PrismaticBeamMUx3,Amount" Value="2"/>
+        <EffectArray Reference="Effect,SpartanCompanyAU,Amount" Value="2"/>
+        <EffectArray Reference="Effect,SpartanCompanyG,Amount" Value="3"/>
+        <EffectArray Reference="Effect,DiamondbackBeam,Amount" Value="3"/>
+        <EffectArray Reference="Effect,ArcliteShockCannonBlast2,Amount" Value="5"/>
+        <EffectArray Reference="Effect,ArcliteShockCannonBlast,Amount" Value="5"/>
+        <EffectArray Reference="Effect,SiegeBreakerDamage,Amount" Value="3"/>
+        <EffectArray Reference="Effect,OdinAADamage,Amount" Value="2"/>
+        <EffectArray Reference="Effect,BarrageDamage,Amount" Value="3"/>
+        <EffectArray Reference="Effect,OdinDamage,Amount" Value="2"/>
+        <EffectArray Reference="Effect,SeekerMissileDamage,Amount" Value="15"/>
+        <EffectArray Reference="Effect,OdinNukeDamage,Amount" Value="20"/>
+        <EffectArray Reference="Weapon,WreckingCrewAssault,Level" Value="1"/>
+        <EffectArray Reference="Weapon,SpartanCompanyG,Level" Value="1"/>
+        <EffectArray Reference="Weapon,SpartanCompanyA,Level" Value="1"/>
+        <EffectArray Reference="Weapon,SpartanCompanyAUpgraded,Level" Value="1"/>
+        <EffectArray Reference="Weapon,Diamondback,Level" Value="1"/>
+        <EffectArray Reference="Weapon,PrismaticBeam,Level" Value="1"/>
+        <EffectArray Reference="Weapon,ArcliteShockCannon,Level" Value="1"/>
+        <EffectArray Reference="Weapon,ArcliteShockCannon2,Level" Value="1"/>
+        <EffectArray Reference="Weapon,SiegeBreaker,Level" Value="1"/>
+        <EffectArray Reference="Weapon,Nova,Level" Value="1"/>
+        <EffectArray Reference="Weapon,Odin,Level" Value="1"/>
+        <EffectArray Reference="Effect,WreckingCrewFighterU,Amount" Value="2"/>
+        <EffectArray Reference="Effect,WreckingCrewAssault,Amount" Value="2"/>
+        <EffectArray Reference="Effect,WraithAU,Amount" Value="2"/>
+        <EffectArray Reference="Effect,WraithGU,Amount" Value="3"/>
+        <EffectArray Reference="Effect,MiniHurricaneMissiles,Amount" Value="1"/>
+        <EffectArray Reference="Effect,DRBattlecruiserAU,Amount" Value="3"/>
+        <EffectArray Reference="Effect,DRBattlecruiserGU,Amount" Value="3"/>
+        <EffectArray Reference="Effect,DRCannonsA,Amount" Value="3"/>
+        <EffectArray Reference="Effect,DRCannonsG,Amount" Value="3"/>
+        <EffectArray Reference="Effect,DuskWingScreecherMissilesCarpetBombDamage,Amount" Value="3"/>
+        <EffectArray Reference="Effect,DuskWingBansheeDamage,Amount" Value="3"/>
+        <EffectArray Reference="Weapon,WreckingCrewFighter,Level" Value="1"/>
+        <EffectArray Reference="Weapon,DuskWingBanshee,Level" Value="1"/>
+        <EffectArray Reference="Weapon,WraithG,Level" Value="1"/>
+        <EffectArray Reference="Weapon,WraithA,Level" Value="1"/>
+        <EffectArray Reference="Weapon,InterceptorsDummy,Level" Value="1"/>
+        <EffectArray Reference="Weapon,DRCannonsA,Level" Value="1"/>
+        <EffectArray Reference="Weapon,DRCannonsG,Level" Value="1"/>
+        <EffectArray Reference="Effect,IrradiatePeriodicDamage,Amount" Value="2"/>
+        <EffectArray Reference="Effect,DutchTurretFlameThrowerDamage,Amount" Value="3"/>
+        <EffectArray Reference="Effect,YamatoU,Amount" Value="25"/>
+        <EffectArray Reference="Effect,HurricaneMissileDamage,Amount" Value="3"/>
+        <EffectArray Reference="Weapon,DutchTurretFlameThrower,Level" Value="1"/>
+        <EffectArray Reference="Weapon,DRBattlecruiserFakeA,Level" Value="1"/>
+        <EffectArray Reference="Weapon,DRBattlecruiserA,Level" Value="1"/>
+        <EffectArray Reference="Weapon,DRBattlecruiserFakeG,Level" Value="1"/>
+        <EffectArray Reference="Weapon,DRBattlecruiserG,Level" Value="1"/>
+        <EffectArray Reference="Effect,ArcliteShockCannonDirected,Amount" Value="5"/>
+        <EffectArray Reference="Effect,ArcliteShockCannonDirected2,Amount" Value="5"/>
+        <EffectArray Reference="Effect,ArcliteShockCannonDummy,Amount" Value="5"/>
+        <EffectArray Reference="Effect,ArcliteShockCannonDummy2,Amount" Value="5"/>
+        <EffectArray Reference="Weapon,OdinAntiAir,Level" Value="1"/>
+        <EffectArray Reference="Weapon,SpartanCompanyGUpgraded,Level" Value="1"/>
+        <MaxLevel value="100"/>
+        <AffectedUnitArray index="0" removed="1"/>
+        <AffectedUnitArray index="1" removed="1"/>
+        <AffectedUnitArray index="2" removed="1"/>
+        <AffectedUnitArray index="3" removed="1"/>
+    </CUpgrade>
+</Catalog>

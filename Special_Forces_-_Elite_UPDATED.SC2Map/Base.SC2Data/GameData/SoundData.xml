@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<Catalog>
+    <CSound id="GameMusicTerr">
+        <AssetArray index="0" File="Assets\Music\Jukebox\Jukebox_SweetHomeAlabama.ogg" FacialGroup=""/>
+        <AssetArray index="1" File="Assets\Music\TerranSC2-01.ogg" Volume="-6.000000,-6.000000"/>
+        <AssetArray index="2" File="Assets\Music\TerranSC2-02.ogg" Volume="-6.000000,-6.000000"/>
+        <AssetArray index="3" File="Assets\Music\TerranSC2-03.ogg" Volume="-6.000000,-6.000000"/>
+        <AssetArray index="4" File="Assets\Music\TerranSC2-04.ogg" Volume="-6.000000,-6.000000"/>
+        <AssetArray index="5" File="Assets\Music\TerranSC2-05.ogg" Volume="-6.000000,-6.000000"/>
+        <AssetArray index="6" File="Assets\Music\MissionMusic\Music_LowTensionInspriational_Full.ogg" Volume="-6.000000,-6.000000"/>
+        <AssetArray index="7" File="Assets\Music\MissionMusic\Music_RhythmicTensionFull.ogg" Volume="-9.000000,-9.000000"/>
+        <AssetArray index="8" File="Assets\Music\MissionMusic\Music_DarkVictory_AmbientFasterTempo.ogg" Volume="-6.000000,-6.000000"/>
+        <AssetArray index="9" File="Assets\Music\MissionMusic\Music_ActionScaryNoRhythm.ogg" Volume="-6.000000,-6.000000"/>
+        <AssetArray index="10" File="Assets\Music\MissionMusic\Music_ActionScary.ogg" Volume="-6.000000,-6.000000"/>
+        <AssetArray index="11" File="Assets\Music\MissionMusic\Music_DangerAlertClusters&amp;Gongs.ogg" Volume="-6.000000,-6.000000"/>
+        <AssetArray index="12" File="Assets\Music\MissionMusic\Music_AmbientTension_Full.ogg" Volume="-6.000000,0.000000"/>
+        <AssetArray index="13" File="Assets\Music\MissionMusic\Music_SadOminousNoOstinatosNoGuitars.ogg" Volume="-6.000000,-6.000000"/>
+        <AssetArray File="Assets\Music\MissionMusic\Music_SadOminousFull.ogg" Volume="-6.000000,-6.000000"/>
+        <Volume value="0.000000,0.000000"/>
+    </CSound>
+</Catalog>

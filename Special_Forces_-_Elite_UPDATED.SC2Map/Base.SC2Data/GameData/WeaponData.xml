@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<Catalog>
+    <CWeaponLegacy id="ATALaserBattery">
+        <Icon value="Assets\Textures\btn-upgrade-terran-shipweaponslevel3.dds"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="ATSLaserBattery">
+        <Icon value="Assets\Textures\btn-upgrade-terran-shipweaponslevel3.dds"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="AcidSaliva">
+        <TargetFilters value="Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <MinimumRange value="0"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="ArcliteShockCannon">
+        <TargetFilters value="Ground,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleweaponslevel3.dds"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="ArcliteShockCannon2">
+        <EditorCategories value="Race:Terran"/>
+        <Options index="DisplayCooldown" value="1"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleweaponslevel0.dds"/>
+        <DisplayEffect value="ArcliteShockCannonDummy2"/>
+        <TargetFilters value="Visible;Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Range value="13"/>
+        <MinimumRange value="2"/>
+        <Period value="3"/>
+        <Effect value="ArcliteShockCannonSet2"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="BabyUltralisk">
+        <TargetFilters value="Ground,Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="C10CanisterRifle">
+        <Effect value="SnipeSet3"/>
+        <TargetFilters value="Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Range value="8"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-infantryweaponslevel3.dds"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="DRBattlecruiserA">
+        <Icon value="Assets\Textures\btn-upgrade-terran-shipweaponslevel3.dds"/>
+        <Period value="5"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="DRBattlecruiserFakeA">
+        <Icon value="Assets\Textures\btn-upgrade-terran-shipweaponslevel3.dds"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="DRBattlecruiserFakeG">
+        <Icon value="Assets\Textures\btn-upgrade-terran-shipweaponslevel3.dds"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="DRBattlecruiserG">
+        <Icon value="Assets\Textures\btn-upgrade-terran-shipweaponslevel3.dds"/>
+        <Period value="0.5"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="DRCannonsA">
+        <Icon value="Assets\Textures\btn-upgrade-terran-shipweaponslevel3.dds"/>
+        <Period value="0.6"/>
+        <MinimumRange value="0"/>
+        <TargetFilters value="Air,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="DRCannonsG">
+        <Icon value="Assets\Textures\btn-upgrade-terran-shipweaponslevel3.dds"/>
+        <Period value="0.6"/>
+        <MinimumRange value="0"/>
+        <TargetFilters value="Ground,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="DevilDogFlameThrower">
+        <TargetFilters value="Ground,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-infantryweaponslevel3.dds"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="Diamondback">
+        <TargetFilters value="Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleweaponslevel3.dds"/>
+        <Period value="1.5"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="DuskWingBanshee">
+        <Icon value="Assets\Textures\btn-upgrade-terran-shipweaponslevel3.dds"/>
+        <TargetFilters value="Ground,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="DutchTurretFlameThrower">
+        <Icon value="Assets\Textures\btn-upgrade-terran-infantryweaponslevel3.dds"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="GlaiveWurm">
+        <Period value="1.25"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="HammerSecurity">
+        <TargetFilters value="Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-infantryweaponslevel3.dds"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="InterceptorLaunch">
+        <Icon value="Assets\Textures\btn-unit-terran-wraith.dds"/>
+        <TargetFilters value="Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Range value="6"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="InterceptorsDummy">
+        <Icon value="Assets\Textures\btn-unit-terran-wraith.dds"/>
+        <DisplayEffect value="MiniHurricaneMissiles"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="KaiserBlades">
+        <TargetFilters value="Ground,Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="KelmorianMinerGaussRifle">
+        <TargetFilters value="Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-infantryweaponslevel3.dds"/>
+    </CWeaponLegacy>
+    <CWeaponStrafe id="MiniMissiles">
+        <EditorCategories value=""/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-shipweaponslevel0.dds"/>
+        <DisplayEffect value="MiniHurricaneMissiles"/>
+        <DisplayAttackCount value="2"/>
+        <TargetFilters value="Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Range value="2"/>
+        <Arc value="19.6875"/>
+        <Marker Link="Weapon/InterceptorBeam"/>
+        <Cost>
+            <Cooldown Link="Weapon/InterceptorBeam"/>
+        </Cost>
+        <Period value="3"/>
+        <Effect value="WraithAPersistent2"/>
+    </CWeaponStrafe>
+    <CWeaponLegacy id="Odin">
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleweaponslevel3.dds"/>
+        <TargetFilters value="Ground,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <AcquireFilters value="Ground,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Period value="1.6"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="OdinAntiAir">
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleweaponslevel3.dds"/>
+        <TargetFilters value="Air,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <AcquireFilters value="Air,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Period value="2"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="Omegalisk">
+        <TargetFilters value="Ground,Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="P38ScytheGuassPistol">
+        <TargetFilters value="Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-infantryweaponslevel3.dds"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="ParasiteSpore">
+        <Period value="1.5"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="PerditionTurretFlamethrower">
+        <Icon value="Assets\Textures\btn-upgrade-terran-infantryweaponslevel3.dds"/>
+        <Period value="1.6"/>
+        <TargetFilters value="Ground,Visible;Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="PointDefenseLaser">
+        <TargetFilters value="Missile,Visible;Self,Player,Ally,Neutral,Heroic,Stasis,Dead,Hidden,Invulnerable"/>
+        <AcquireFilters value="Missile,Visible;Self,Player,Ally,Neutral,Heroic,Stasis,Dead,Hidden,Invulnerable"/>
+        <Cost>
+            <Vital index="Energy" value="4"/>
+        </Cost>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="PrismaticBeam">
+        <Period value="0.8"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleweaponslevel3.dds"/>
+        <TargetFilters value="Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="SiegeBreaker">
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleweaponslevel3.dds"/>
+        <TargetFilters value="Ground,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="SpartanCompanyA">
+        <Options index="Disabled" value="1"/>
+        <Options index="Hidden" value="1"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleweaponslevel3.dds"/>
+        <TargetFilters value="Air,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="SpartanCompanyAUpgraded">
+        <Options index="Disabled" value="0"/>
+        <Options index="Hidden" value="0"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleweaponslevel3.dds"/>
+        <TargetFilters value="Air,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="SpartanCompanyG">
+        <Options index="Disabled" value="1"/>
+        <Options index="Hidden" value="1"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleweaponslevel3.dds"/>
+        <TargetFilters value="Ground,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="SpartanCompanyGUpgraded">
+        <Options index="Disabled" value="0"/>
+        <Options index="Hidden" value="0"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-vehicleweaponslevel3.dds"/>
+        <TargetFilters value="Ground,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="TwinIbiksCannon">
+        <TargetFilters value="Visible;Self,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Period value="0.5"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="UberCannon">
+        <EditorCategories value="Race:Terran"/>
+        <Options index="OnlyFireAtAttackOrderTarget" value="0"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-hisecautotracking.dds"/>
+        <TargetFilters value="Visible;Self,Player,Ally,Neutral,Heroic,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Range value="6"/>
+        <Arc value="90"/>
+        <Period value="0.5"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="Val03QueenOfBladesPsiBlast">
+        <TargetFilters value="Visible;Psionic,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="Val03RazorTalons">
+        <TargetFilters value="Ground,Visible;Psionic,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="WraithA">
+        <Icon value="Assets\Textures\btn-upgrade-terran-shipweaponslevel3.dds"/>
+        <TargetFilters value="Air,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Period value="1.5"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="WraithA2">
+        <EditorCategories value="Race:Terran"/>
+        <Icon value="Assets\Textures\btn-upgrade-terran-shipweaponslevel0.dds"/>
+        <DisplayEffect value="MiniHurricaneMissiles"/>
+        <DisplayAttackCount value="2"/>
+        <TargetFilters value="Visible;Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Range value="2"/>
+        <Arc value="19.995"/>
+        <Period value="3"/>
+        <AllowedMovement value="Moving"/>
+        <Effect value="WraithAPersistent2"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="WraithG">
+        <Icon value="Assets\Textures\btn-upgrade-terran-shipweaponslevel3.dds"/>
+        <TargetFilters value="Ground,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+        <Period value="1.5"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="WreckingCrewAssault">
+        <Icon value="Assets\Textures\btn-upgrade-terran-shipweaponslevel3.dds"/>
+        <Period value="1.5"/>
+        <TargetFilters value="Ground,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CWeaponLegacy>
+    <CWeaponLegacy id="WreckingCrewFighter">
+        <Icon value="Assets\Textures\btn-upgrade-terran-shipweaponslevel3.dds"/>
+        <Range value="6"/>
+        <TargetFilters value="Air,Visible;Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable"/>
+    </CWeaponLegacy>
+</Catalog>

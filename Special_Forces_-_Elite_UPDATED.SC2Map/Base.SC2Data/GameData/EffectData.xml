@@ -1,0 +1,770 @@
+<?xml version='1.0' encoding='us-ascii'?>
+<Catalog>
+    <CEffectDamage id="AcidSalivaU">
+        <Amount value="25" />
+    </CEffectDamage>
+    <CEffectApplyBehavior id="ApplyDecloak">
+        <ValidatorArray index="0" removed="1" />
+        <EditorCategories value="Race:Terran" />
+        <WhichUnit Value="Caster" />
+        <Behavior value="AttackDecloak" />
+    </CEffectApplyBehavior>
+    <CEffectDamage id="ArcliteShockCannonBlast">
+        <SearchFilters value="Ground;Self,Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable" />
+        <Amount value="70" />
+    </CEffectDamage>
+    <CEffectDamage id="ArcliteShockCannonBlast2" parent="DU_WEAP">
+        <ValidatorArray value="TargetRadiusSmall" />
+        <ValidatorArray value="NoShapedBlast" />
+        <EditorCategories value="Race:Terran" />
+        <Kind value="Splash" />
+        <Amount value="100" />
+        <Death value="Blast" />
+        <AreaArray Radius="0.4687" Fraction="1" />
+        <AreaArray Radius="0.7812" Fraction="0.5" />
+        <AreaArray Radius="1.25" Fraction="0.25" />
+        <ExcludeArray Value="Target" />
+        <SearchFilters value="-;Self,Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable" />
+        <SearchFlags index="OffsetByUnitRadius" value="0" />
+    </CEffectDamage>
+    <CEffectSet id="ArcliteShockCannonBlastSet">
+        <EffectArray index="1" value="ArcliteShockCannonEnemyDamage" />
+        <EffectArray index="2" removed="1" />
+    </CEffectSet>
+    <CEffectSet id="ArcliteShockCannonBlastSet2">
+        <EditorCategories value="Race:Terran" />
+        <EffectArray value="ArcliteShockCannonBlast2" />
+        <EffectArray value="ArcliteShockCannonEnemyDamage2" />
+    </CEffectSet>
+    <CEffectDamage id="ArcliteShockCannonDirected">
+        <SearchFilters value="Ground;Self,Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable" />
+        <Amount value="70" />
+    </CEffectDamage>
+    <CEffectDamage id="ArcliteShockCannonDirected2" parent="DU_WEAP">
+        <ValidatorArray value="TargetRadiusLarge" />
+        <EditorCategories value="Race:Terran" />
+        <Kind value="Splash" />
+        <Amount value="100" />
+        <Death value="Blast" />
+        <SearchFilters value="-;Self,Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable" />
+    </CEffectDamage>
+    <CEffectDamage id="ArcliteShockCannonDummy2" parent="DU_WEAP">
+        <EditorCategories value="Race:Terran" />
+        <Kind value="Splash" />
+        <Amount value="100" />
+        <Death value="Blast" />
+    </CEffectDamage>
+    <CEffectDamage id="ArcliteShockCannonEnemyDamage">
+        <Amount value="70" />
+    </CEffectDamage>
+    <CEffectDamage id="ArcliteShockCannonEnemyDamage2" parent="DU_WEAP">
+        <ValidatorArray value="TargetRadiusSmall" />
+        <ValidatorArray value="HasShapedBlast" />
+        <EditorCategories value="Race:Terran" />
+        <ImpactUnitValidator value="EnemyTarget" />
+        <Kind value="Splash" />
+        <Amount value="100" />
+        <Death value="Blast" />
+        <AreaArray Radius="0.4687" Fraction="1" />
+        <AreaArray Radius="0.7812" Fraction="0.5" />
+        <AreaArray Radius="1.25" Fraction="0.25" />
+        <ExcludeArray Value="Target" />
+        <SearchFilters value="-;Self,Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable" />
+        <SearchFlags index="OffsetByUnitRadius" value="0" />
+    </CEffectDamage>
+    <CEffectDamage id="ArcliteShockCannonFriendlyDamage">
+        <SearchFilters value="Ground;Self,Player,Ally,Neutral,Enemy,Missile,Stasis,Dead,Hidden,Invulnerable" />
+    </CEffectDamage>
+    <CEffectDamage id="ArcliteShockCannonFriendlyDamage2" parent="DU_WEAP">
+        <ValidatorArray value="TargetRadiusSmall" />
+        <ValidatorArray value="HasShapedBlast" />
+        <EditorCategories value="Race:Terran" />
+        <ImpactUnitValidator value="FriendlyOrNeutralTarget" />
+        <Kind value="Splash" />
+        <Amount value="25" />
+        <Death value="Blast" />
+        <AreaArray Radius="0.4687" Fraction="1" />
+        <AreaArray Radius="0.7812" Fraction="0.5" />
+        <AreaArray Radius="1.25" Fraction="0.25" />
+        <ExcludeArray Value="Target" />
+        <SearchFilters value="-;Self,Player,Ally,Neutral,Enemy,Missile,Stasis,Dead,Hidden,Invulnerable" />
+        <SearchFlags index="OffsetByUnitRadius" value="0" />
+    </CEffectDamage>
+    <CEffectSet id="ArcliteShockCannonSet2">
+        <EditorCategories value="Race:Terran" />
+        <EffectArray value="ArcliteShockCannonBlastSet2" />
+        <EffectArray value="ArcliteShockCannonDirected2" />
+        <EffectArray value="MaelstromRounds2" />
+    </CEffectSet>
+    <CEffectDamage id="BabyUltralisk">
+        <Amount value="35" />
+    </CEffectDamage>
+    <CEffectDamage id="BarrageDamage">
+        <Amount value="40" />
+    </CEffectDamage>
+    <CEffectEnumArea id="BarrageSearchArea">
+        <SearchFilters value="Ground;Self,Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable" />
+    </CEffectEnumArea>
+    <CEffectDamage id="BonesTossGrenadeDamage">
+        <SearchFilters value="Visible;Self,Player,Ally,Neutral,Air,Missile,Stasis,Dead,Invulnerable" />
+        <Amount value="150" />
+    </CEffectDamage>
+    <CEffectDamage id="BroodlingEscortDamage">
+        <Amount value="60" />
+    </CEffectDamage>
+    <CEffectCreateUnit id="FinalSpawnLings">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnEffect value="ApplyTempInvunerability" />
+        <SpawnUnit value="Zergling" />
+        <SpawnCount value="50" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawnSuperLings">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnEffect value="ApplyTempInvunerability" />
+        <SpawnUnit value="Zergling" />
+        <SpawnCount value="75" />
+    </CEffectCreateUnit>
+    <CEffectDamage id="OdinDamageLeft">
+        <Amount value="30" />
+    </CEffectDamage>
+    <CEffectDamage id="OdinDamageRight">
+        <Amount value="30" />
+    </CEffectDamage>
+    <CEffectDamage id="PerditionTurretFlameThrowerDamage">
+        <AttributeBonus index="Light" value="0" />
+        <Amount value="14" />
+    </CEffectDamage>
+    <CEffectEnumArea id="PerditionTurretFlameThrowerSearchArea">
+        <SearchFilters value="Ground;Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable" />
+    </CEffectEnumArea>
+    <CEffectCreatePersistent id="PrismaticBeamChargeEffect01">
+        <PeriodicPeriodArray index="0" value="0.4" />
+    </CEffectCreatePersistent>
+    <CEffectCreateUnit id="SuperBroodlords">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="ProvideFood" value="0" />
+        <CreateFlags index="UseFood" value="0" />
+        <SpawnUnit value="BroodLord" />
+        <SpawnCount value="7" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="Corruptors">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="ProvideFood" value="0" />
+        <CreateFlags index="UseFood" value="0" />
+        <SpawnUnit value="Corruptor" />
+        <SpawnCount value="4" />
+    </CEffectCreateUnit>
+    <CEffectDamage id="C10CanisterRifle">
+        <AttributeBonus index="Light" value="0" />
+        <Amount value="70" />
+    </CEffectDamage>
+    <CEffectDamage id="Claws">
+        <Amount value="10" />
+    </CEffectDamage>
+    <CEffectCreateUnit id="SuperCorruptors">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="ProvideFood" value="0" />
+        <CreateFlags index="UseFood" value="0" />
+        <SpawnUnit value="GastlyOverseer" />
+        <SpawnCount value="7" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="CorruptorsMoar">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="ProvideFood" value="0" />
+        <CreateFlags index="UseFood" value="0" />
+        <SpawnUnit value="Corruptor" />
+        <SpawnCount value="3" />
+    </CEffectCreateUnit>
+    <CEffectDamage id="DRBattlecruiserAU">
+        <Amount value="12" />
+    </CEffectDamage>
+    <CEffectDamage id="DRBattlecruiserGU">
+        <Amount value="16" />
+    </CEffectDamage>
+    <CEffectDamage id="DRCannonsA">
+        <Amount value="12" />
+    </CEffectDamage>
+    <CEffectDamage id="DRCannonsG">
+        <Amount value="16" />
+    </CEffectDamage>
+    <CEffectDamage id="DevilDogDamage">
+        <AttributeBonus index="Light" value="0" />
+        <Amount value="15" />
+    </CEffectDamage>
+    <CEffectEnumArea id="DevilDogSearchArea">
+        <SearchFilters value="Ground;Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable" />
+    </CEffectEnumArea>
+    <CEffectDamage id="DiamondbackBeam">
+        <AttributeBonus index="Armored" value="0" />
+        <Amount value="30" />
+    </CEffectDamage>
+    <CEffectDamage id="DuskWingBansheeDamage">
+        <Amount value="14" />
+    </CEffectDamage>
+    <CEffectDamage id="DuskWingScreecherMissilesCarpetBombDamage">
+        <Amount value="14" />
+    </CEffectDamage>
+    <CEffectEnumArea id="DuskWingScreecherMissilesCarpetBombSearchArea">
+        <ValidatorArray index="0" removed="1" />
+    </CEffectEnumArea>
+    <CEffectEnumArea id="DutchTurretFlameThrowerSearchArea">
+        <SearchFilters value="Ground;Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable" />
+    </CEffectEnumArea>
+    <CEffectCreateUnit id="FinalSpawn3Kerrigan">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnUnit value="KerriganChar" />
+        <SpawnCount value="3" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawn5Kerrigan">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnUnit value="KerriganChar" />
+        <SpawnCount value="7" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawnCorruptors2">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnUnit value="BroodLord" />
+        <SpawnCount value="15" />
+        <SpawnEffect value="ApplyTempInvunerability" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawnCorruptors22">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnUnit value="Omegalisk" />
+        <SpawnCount value="5" />
+        <SpawnEffect value="ApplyTempInvunerability" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawnSuperBroodlords">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnEffect value="ApplyTempInvunerability" />
+        <SpawnUnit value="BroodLord" />
+        <SpawnCount value="20" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawnSuperCorruptors">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnEffect value="ApplyTempInvunerability" />
+        <SpawnUnit value="GastlyOverseer" />
+        <SpawnCount value="20" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawnSuperHydralisks">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnEffect value="ApplyTempInvunerability" />
+        <SpawnUnit value="Hydralisk" />
+        <SpawnCount value="60" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawnSuperMutas">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnEffect value="ApplyTempInvunerability" />
+        <SpawnUnit value="ViperGreen" />
+        <SpawnCount value="30" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawnSuperOmega">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnEffect value="ApplyTempInvunerability" />
+        <SpawnUnit value="Omegalisk" />
+        <SpawnCount value="10" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawnInf3">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnEffect value="ApplyTempInvunerability" />
+        <SpawnUnit value="InfestedCivilian" />
+        <SpawnCount value="150" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawnSuperRoaches">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnEffect value="ApplyTempInvunerability" />
+        <SpawnUnit value="Roach" />
+        <SpawnCount value="100" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawnSuperInf">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnEffect value="ApplyTempInvunerability2" />
+        <SpawnUnit value="InfestedCivilian" />
+        <SpawnCount value="200" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawnPlisk">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnUnit value="Pygalisk" />
+        <SpawnCount value="5" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawnMutas">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnUnit value="Mutalisk" />
+        <SpawnCount value="15" />
+        <SpawnEffect value="ApplyTempInvunerability" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawnInf2">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnUnit value="Ultralisk" />
+        <SpawnCount value="5" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawnCorruptors">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnUnit value="Corruptor" />
+        <SpawnCount value="25" />
+        <SpawnEffect value="ApplyTempInvunerability" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawnRoaches">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnUnit value="Roach" />
+        <SpawnCount value="45" />
+        <SpawnEffect value="ApplyTempInvunerability" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawnHydralisks">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnUnit value="Hydralisk" />
+        <SpawnCount value="35" />
+        <SpawnEffect value="ApplyTempInvunerability" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="FinalSpawn1Kerrigan">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnUnit value="KerriganChar" />
+    </CEffectCreateUnit>
+    <CEffectDamage id="GlaiveWurmU1">
+        <Amount value="25" />
+    </CEffectDamage>
+    <CEffectDamage id="GlaiveWurmU2">
+        <Amount value="20" />
+    </CEffectDamage>
+    <CEffectDamage id="GlaiveWurmU3">
+        <Amount value="15" />
+    </CEffectDamage>
+    <CEffectDamage id="GravitonPrisonDamage">
+        <Amount value="0" />
+    </CEffectDamage>
+    <CEffectModifyUnit id="GravitonPrisonLower">
+        <Height value="3.75" />
+    </CEffectModifyUnit>
+    <CEffectModifyUnit id="GravitonPrisonRaise">
+        <Height value="-3.75" />
+    </CEffectModifyUnit>
+    <CEffectDamage id="HammerSecurityDamage">
+        <AttributeBonus index="Armored" value="0" />
+        <Amount value="35" />
+    </CEffectDamage>
+    <CEffectDamage id="HurricaneMissileDamage">
+        <AttributeBonus index="Light" value="0" />
+        <Amount value="20" />
+        <SearchFilters value="-;Missile,Stasis,Dead,Hidden,Invulnerable" />
+    </CEffectDamage>
+    <CEffectEnumArea id="HybridFAoESearch">
+        <SearchFilters value="Visible;Self,Player,Ally,Neutral,Heroic,Missile,Buried,Dead,Invulnerable" />
+        <AreaArray index="0" Radius="10" />
+    </CEffectEnumArea>
+    <CEffectDamage id="HydraliskMelee">
+        <Amount value="30" />
+    </CEffectDamage>
+    <CEffectCreateUnit id="Broodlords">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="ProvideFood" value="0" />
+        <CreateFlags index="UseFood" value="0" />
+        <SpawnUnit value="BroodLord" />
+        <SpawnCount value="4" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="SuperHydras">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="ProvideFood" value="0" />
+        <CreateFlags index="UseFood" value="0" />
+        <SpawnUnit value="Hydralisk" />
+        <SpawnCount value="7" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="SuperLings">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="ProvideFood" value="0" />
+        <CreateFlags index="UseFood" value="0" />
+        <SpawnUnit value="Zergling" />
+        <SpawnCount value="7" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="SuperMutas">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="ProvideFood" value="0" />
+        <CreateFlags index="UseFood" value="0" />
+        <SpawnUnit value="ViperGreen" />
+        <SpawnCount value="7" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="SuperRoaches">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="ProvideFood" value="0" />
+        <CreateFlags index="UseFood" value="0" />
+        <SpawnUnit value="Roach" />
+        <SpawnCount value="6" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="SuperInfCiv">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="ProvideFood" value="0" />
+        <CreateFlags index="UseFood" value="0" />
+        <SpawnUnit value="InfestedCivilian" />
+        <SpawnCount value="15" />
+    </CEffectCreateUnit>
+    <CEffectEnumArea id="IrradiateSearchArea">
+        <SearchFilters value="Biological;Ally,Neutral,Structure,Dead,Hidden,Invulnerable" />
+    </CEffectEnumArea>
+    <CEffectApplyBehavior id="ApplyTempInvunerability">
+        <ValidatorArray index="0" removed="1" />
+        <EditorCategories value="Race:Terran" />
+        <Behavior value="TemporaryInvunerability" />
+    </CEffectApplyBehavior>
+    <CEffectApplyBehavior id="OribtalDisableApplySlow">
+        <ValidatorArray index="0" removed="1" />
+        <EditorCategories value="Race:Terran" />
+        <WhichUnit Value="Caster" />
+    </CEffectApplyBehavior>
+    <CEffectEnumArea id="OribtalDisableSearchAreaSlow">
+        <EditorCategories value="Race:Terran" />
+        <SearchFilters value="-;Self,Enemy,Structure,Missile,Stasis,Dead,Hidden" />
+        <AreaArray Radius="8" Effect="OribtalDisableApplySlow" />
+    </CEffectEnumArea>
+    <CEffectCreatePersistent id="PrismaticBeamChargeEffect03">
+        <PeriodicPeriodArray index="0" value="0.4" />
+    </CEffectCreatePersistent>
+    <CEffectCreateUnit id="Ultras">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="ProvideFood" value="0" />
+        <CreateFlags index="UseFood" value="0" />
+        <SpawnUnit value="Ultralisk" />
+        <SpawnCount value="2" />
+    </CEffectCreateUnit>
+    <CEffectDamage id="ImpalerTentacleU">
+        <AttributeBonus index="Armored" value="0" />
+        <Amount value="75" />
+    </CEffectDamage>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <CEffectDamage id="KelmorianMinerDamage">
+        <Amount value="10" />
+    </CEffectDamage>
+    <CEffectCreateUnit id="Lings">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="ProvideFood" value="0" />
+        <CreateFlags index="UseFood" value="0" />
+        <SpawnUnit value="Zergling" />
+        <SpawnCount value="4" />
+    </CEffectCreateUnit>
+    <CEffectCreatePersistent id="InterceptorLaunchPersistent">
+        <WhichLocation Value="TargetPoint" />
+    </CEffectCreatePersistent>
+    <CEffectDamage id="KaiserBladesDamage">
+        <Amount value="60" />
+    </CEffectDamage>
+    <CEffectCreateUnit id="Roaches">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="ProvideFood" value="0" />
+        <CreateFlags index="UseFood" value="0" />
+        <SpawnUnit value="Roach" />
+        <SpawnCount value="3" />
+    </CEffectCreateUnit>
+    <CEffectDamage id="MaelstromRounds2" parent="DU_WEAP">
+        <ValidatorArray value="HasMaelstromRounds" />
+        <EditorCategories value="Race:Terran" />
+        <ArmorReduction value="0" />
+        <Kind value="Ranged" />
+        <Amount value="40" />
+        <Death value="Blast" />
+    </CEffectDamage>
+    <CEffectEnumArea id="MarauderSlowAOE">
+        <ValidatorArray index="0" removed="1" />
+    </CEffectEnumArea>
+    <CEffectDamage id="NeedleSpinesDamage">
+        <Amount value="30" />
+    </CEffectDamage>
+    <CEffectUseCalldown id="NovaNukeCalldown">
+        <ValidatorArray index="0" removed="1" />
+    </CEffectUseCalldown>
+    <CEffectDamage id="OdinDamage">
+        <AttributeBonus index="Structure" value="0" />
+        <Amount value="30" />
+    </CEffectDamage>
+    <CEffectDamage id="OdinNukeDamage">
+        <Amount value="200" />
+        <AreaArray index="0" Radius="4" />
+        <AreaArray index="1" Radius="6" />
+        <AreaArray index="2" Radius="8" />
+        <SearchFilters value="-;Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable" />
+    </CEffectDamage>
+    <CEffectDamage id="OmegaliskCleaveMU">
+        <Amount value="125" />
+    </CEffectDamage>
+    <CEffectDamage id="OmegaliskU">
+        <Amount value="125" />
+    </CEffectDamage>
+    <CEffectApplyBehavior id="OribtalHealingApply">
+        <ValidatorArray index="0" removed="1" />
+        <EditorCategories value="Race:Terran" />
+        <Behavior value="OribtalHealing" />
+    </CEffectApplyBehavior>
+    <CEffectApplyBehavior id="OribtalDisableApply">
+        <ValidatorArray index="0" removed="1" />
+        <EditorCategories value="Race:Terran" />
+        <WhichUnit Value="Caster" />
+    </CEffectApplyBehavior>
+    <CEffectEnumArea id="OribtalHealingSearchArea">
+        <EditorCategories value="Race:Terran" />
+        <SearchFilters value="-;Self,Enemy,Structure,Missile,Stasis,Dead,Hidden" />
+        <AreaArray Radius="8" Effect="OribtalHealingApply" />
+    </CEffectEnumArea>
+    <CEffectEnumArea id="OribtalDisableSearchArea">
+        <EditorCategories value="Race:Terran" />
+        <SearchFilters value="-;Self,Enemy,Structure,Missile,Stasis,Dead,Hidden" />
+        <AreaArray Radius="8" Effect="OribtalDisableApply" />
+    </CEffectEnumArea>
+    <CEffectDamage id="P38ScytheGuassPistol">
+        <AttributeBonus index="Light" value="0" />
+        <Amount value="15" />
+    </CEffectDamage>
+    <CEffectDamage id="ParasiteSporeDamage">
+        <Amount value="80" />
+        <AttributeBonus index="Massive" value="0" />
+    </CEffectDamage>
+    <CEffectCreatePersistent id="PrismaticBeamChargeEffect02">
+        <ExpireEffect value="PrismaticBeamChainSet2" />
+        <PeriodicPeriodArray index="0" value="0.4" />
+    </CEffectCreatePersistent>
+    <CEffectDamage id="PrismaticBeamMUx1">
+        <AttributeBonus index="Armored" value="0" />
+        <Amount value="10" />
+    </CEffectDamage>
+    <CEffectDamage id="PrismaticBeamMUx2">
+        <AttributeBonus index="Armored" value="0" />
+        <Amount value="14" />
+    </CEffectDamage>
+    <CEffectDamage id="PrismaticBeamMUx3">
+        <AttributeBonus index="Armored" value="0" />
+        <Amount value="18" />
+    </CEffectDamage>
+    <CEffectDamage id="PsionicShockwaveDamage">
+        <AttributeBonus index="Biological" value="0" />
+        <Amount value="30" />
+        <AreaArray index="0" Radius="0.1" />
+    </CEffectDamage>
+    <CEffectEnumArea id="PsionicShockwaveSearchArea">
+        <SearchFilters value="Ground;Player,Ally,Neutral,Structure,Stasis,Hidden,Invulnerable" />
+    </CEffectEnumArea>
+    <CEffectApplyBehavior id="PunisherGrenadesSlow">
+        <ValidatorArray index="0" value="PunisherGrenadesSlowTargetFilters" />
+        <ValidatorArray index="1" value="NotStructure" />
+        <ValidatorArray index="2" value="NotFrenzied" />
+        <ValidatorArray index="3" removed="1" />
+    </CEffectApplyBehavior>
+    <CEffectDamage id="RaynorSnipeDamage">
+        <Amount value="100" />
+    </CEffectDamage>
+    <CEffectDamage id="RoachUMelee">
+        <Amount value="25" />
+    </CEffectDamage>
+    <CEffectCreateUnit id="Hydras">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="ProvideFood" value="0" />
+        <CreateFlags index="UseFood" value="0" />
+        <SpawnUnit value="Hydralisk" />
+        <SpawnCount value="4" />
+    </CEffectCreateUnit>
+    <CEffectDamage id="SeekerMissileDamage">
+        <Amount value="150" />
+        <SearchFilters value="-;Player,Ally,Neutral,Missile,Stasis,Dead,Hidden,Invulnerable" />
+    </CEffectDamage>
+    <CEffectDamage id="SiegeBreakerDamage">
+        <AttributeBonus index="Armored" value="0" />
+        <Amount value="20" />
+    </CEffectDamage>
+    <CEffectDamage id="SnipeDamage">
+        <Amount value="140" />
+    </CEffectDamage>
+    <CEffectSet id="SnipeSet">
+        <EditorCategories value="Race:Terran" />
+        <EffectArray value="SnipeDamage" />
+        <EffectArray value="ApplyDecloak" />
+    </CEffectSet>
+    <CEffectSet id="SnipeSet2">
+        <EditorCategories value="Race:Terran" />
+        <EffectArray value="RaynorSnipeCreatePersistent" />
+        <EffectArray value="ApplyDecloak" />
+        <TargetLocationType value="UnitOrPoint" />
+    </CEffectSet>
+    <CEffectSet id="SnipeSet3">
+        <EditorCategories value="Race:Terran" />
+        <EffectArray value="C10CanisterRifle" />
+        <EffectArray value="ApplyDecloak" />
+    </CEffectSet>
+    <CEffectCreateUnit id="InfCiv">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="ProvideFood" value="0" />
+        <CreateFlags index="UseFood" value="0" />
+        <SpawnUnit value="InfestedCivilian" />
+        <SpawnCount value="6" />
+    </CEffectCreateUnit>
+    <CEffectDamage id="SpartanCompanyAU">
+        <AttributeBonus index="Armored" value="0" />
+        <Amount value="15" />
+    </CEffectDamage>
+    <CEffectDamage id="SpartanCompanyG">
+        <Amount value="18" />
+    </CEffectDamage>
+    <CEffectDamage id="SporeCrawlerU">
+        <Amount value="45" />
+    </CEffectDamage>
+    <CEffectDamage id="TwinIbiksCannon">
+        <Amount value="75" />
+        <SearchFilters value="-;Self,Player,Ally,Heroic,Missile,Stasis,Dead,Hidden,Invulnerable" />
+    </CEffectDamage>
+    <CEffectDamage id="UberCannon" parent="DU_WEAP">
+        <EditorCategories value="Race:Terran" />
+        <Kind value="Splash" />
+        <Amount value="5" />
+        <Death value="Fire" />
+        <AreaArray Radius="0.5" Fraction="1" />
+        <AreaArray Radius="0.8" Fraction="0.75" />
+        <AreaArray Radius="1.25" Fraction="0.375" />
+        <ExcludeArray Value="Outer" />
+        <ExcludeArray Value="Target" />
+        <SearchFilters value="-;Self,Player,Ally,Neutral,Heroic,Missile,Stasis,Dead,Hidden,Invulnerable" />
+        <SearchFlags index="OffsetByUnitRadius" value="0" />
+    </CEffectDamage>
+    <CEffectDamage id="MiniHurricaneMissiles" parent="DU_WEAP_MISSILE">
+        <EditorCategories value="Race:Terran" />
+        <Visibility value="Visible" />
+        <Amount value="15" />
+    </CEffectDamage>
+    <CEffectCreateUnit id="Mutas">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="ProvideFood" value="0" />
+        <CreateFlags index="UseFood" value="0" />
+        <SpawnUnit value="Mutalisk" />
+        <SpawnCount value="3" />
+    </CEffectCreateUnit>
+    <CEffectCreateUnit id="SuperUltras">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="ProvideFood" value="0" />
+        <CreateFlags index="UseFood" value="0" />
+        <SpawnUnit value="Ultralisk" />
+        <SpawnCount value="3" />
+    </CEffectCreateUnit>
+    <CEffectDamage id="Val03PsiBlastDamage">
+        <AttributeBonus index="Structure" value="0" />
+        <Amount value="400" />
+    </CEffectDamage>
+    <CEffectDamage id="Val03RazorTalonsDamage">
+        <AttributeBonus index="Structure" value="0" />
+        <Amount value="600" />
+    </CEffectDamage>
+    <CEffectLaunchMissile id="WraithALeftLaunchMissile2">
+        <EditorCategories value="Race:Terran" />
+        <ImpactEffect value="MiniHurricaneMissiles" />
+        <AmmoUnit value="WraithAirWeaponLeft" />
+    </CEffectLaunchMissile>
+    <CEffectCreatePersistent id="WraithAPersistent2">
+        <EditorCategories value="Race:Terran" />
+        <WhichLocation Value="TargetUnitOrPoint" />
+        <Flags index="Channeled" value="1" />
+        <PeriodCount value="2" />
+        <PeriodicEffectArray value="WraithALeftLaunchMissile2" />
+        <PeriodicEffectArray value="WraithARightLaunchMissile2" />
+        <PeriodicPeriodArray value="0" />
+        <PeriodicPeriodArray value="0" />
+    </CEffectCreatePersistent>
+    <CEffectLaunchMissile id="WraithARightLaunchMissile2">
+        <EditorCategories value="Race:Terran" />
+        <ImpactEffect value="MiniHurricaneMissiles" />
+        <AmmoUnit value="WraithAirWeaponRight" />
+    </CEffectLaunchMissile>
+    <CEffectDamage id="WraithAU">
+        <AttributeBonus index="Armored" value="0" />
+        <Amount value="15" />
+    </CEffectDamage>
+    <CEffectDamage id="WraithGU">
+        <Amount value="25" />
+    </CEffectDamage>
+    <CEffectDamage id="WreckingCrewFighterU">
+        <AttributeBonus index="Armored" value="0" />
+    </CEffectDamage>
+    <CEffectCreateUnit id="FinalSpawnInf">
+        <EditorCategories value="Race:Zerg" />
+        <WhichLocation Value="TargetPoint" />
+        <CreateFlags index="Placement" value="0" />
+        <SpawnUnit value="InfestedCivilian" />
+        <SpawnCount value="75" />
+        <SpawnEffect value="ApplyTempInvunerability" />
+    </CEffectCreateUnit>
+    <CEffectDamage id="YamatoU">
+        <Amount value="400" />
+    </CEffectDamage>
+</Catalog>

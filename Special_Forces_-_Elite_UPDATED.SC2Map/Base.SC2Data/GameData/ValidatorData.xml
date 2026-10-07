@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<Catalog>
+    <CValidatorUnitCompareBehaviorCount id="AttackBuff">
+        <Compare value="GT"/>
+        <Behavior value="AttackBuff"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="NoHealthBuff">
+        <Compare value="LE"/>
+        <Behavior value="HealthBuff"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="NoAttackBuff">
+        <Compare value="LE"/>
+        <Behavior value="AttackBuff"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="HealthBuff">
+        <Compare value="GT"/>
+        <Behavior value="HealthBuff"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="NoSpeedBuff">
+        <Compare value="LE"/>
+        <Behavior value="SpeedBuff"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitCompareBehaviorCount id="SpeedBuff">
+        <Compare value="GT"/>
+        <Behavior value="SpeedBuff"/>
+    </CValidatorUnitCompareBehaviorCount>
+    <CValidatorUnitFilters id="PunisherGrenadesSlowTargetFilters">
+        <Filters value="-;Player,Ally,Neutral,Air,Massive,Heroic,Invulnerable"/>
+    </CValidatorUnitFilters>
+    <CValidatorCombine id="QuadDamageCheck">
+        <Type value="And"/>
+        <CombineArray value="QuadDamageResearched"/>
+        <CombineArray value="QuadDamage"/>
+    </CValidatorCombine>
+    <CValidatorPlayerRequirement id="QuadDamageResearched">
+        <Find value="1"/>
+        <Value value="QuadDamageResearched"/>
+    </CValidatorPlayerRequirement>
+    <CValidatorUnitCompareDamageTakenTime id="CasterNotInCombat2">
+        <WhichUnit Value="Caster"/>
+        <Compare value="GE"/>
+        <Value value="10"/>
+    </CValidatorUnitCompareDamageTakenTime>
+    <CValidatorPlayerRequirement id="ReflectiveShieldResearched">
+        <Find value="1"/>
+        <Value value="ReflectiveShieldResearched"/>
+    </CValidatorPlayerRequirement>
+    <CValidatorUnitCompareBehaviorCount id="MarineIsStimmed">
+        <WhichUnit Value="Caster"/>
+        <Behavior value="Stimpack"/>
+    </CValidatorUnitCompareBehaviorCount>
+</Catalog>
